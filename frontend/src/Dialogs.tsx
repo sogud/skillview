@@ -2,7 +2,8 @@ import { useLocale } from './locales'
 import { Virtuoso } from 'react-virtuoso'
 import { useEffect, useRef, useState } from 'react'
 import { FolderPlus, RotateCw, Link, Folder, X } from 'lucide-react'
-import { IconButton, Modal } from './components'
+import { IconButton, Modal, Disclosure } from './components'
+import { Select } from './Select'
 import * as api from './api'
 import type { Source, Catalog, TranslationSettings } from './api'
 import { AgentIcon } from './AgentIcon'
@@ -117,14 +118,16 @@ export function Settings(props: SettingsProps) {
             </div>
             <label className="field language-field">
               {t('Interface language')}
-              <select
+              <Select
+                label={t('Interface language')}
                 value={props.language}
-                onChange={(event) => props.onLanguage(event.target.value)}
-              >
-                <option value="system">{t('Follow system')}</option>
-                <option value="en">English</option>
-                <option value="zh-CN">简体中文</option>
-              </select>
+                onChange={props.onLanguage}
+                options={[
+                  { value: 'system', label: t('Follow system') },
+                  { value: 'en', label: 'English' },
+                  { value: 'zh-CN', label: '简体中文' },
+                ]}
+              />
             </label>
             <button
               onClick={() => {
@@ -150,8 +153,7 @@ export function Settings(props: SettingsProps) {
               </p>
             )}
             {!!recentTrash.length && (
-              <details className="scan-issues">
-                <summary>{t('Recovery')}</summary>
+              <Disclosure className="scan-issues" label={t('Recovery')}>
                 {recentTrash
                   .slice(-5)
                   .reverse()
@@ -179,7 +181,7 @@ export function Settings(props: SettingsProps) {
                       </button>
                     </div>
                   ))}
-              </details>
+              </Disclosure>
             )}
             <div className="about">
               <Folder size={25} strokeWidth={1.3} />
@@ -306,12 +308,12 @@ export function Settings(props: SettingsProps) {
               />
             </div>
             {(props.catalog?.issues?.length ?? 0) > 0 && (
-              <details className="scan-issues">
-                <summary>
-                  {t('{count} paths need attention', {
-                    count: props.catalog?.issues?.length ?? 0,
-                  })}
-                </summary>
+              <Disclosure
+                className="scan-issues"
+                label={t('{count} paths need attention', {
+                  count: props.catalog?.issues?.length ?? 0,
+                })}
+              >
                 {props.catalog?.issues?.map((issue, index) => (
                   <div key={index}>
                     <code>{issue.path}</code>
@@ -319,21 +321,21 @@ export function Settings(props: SettingsProps) {
                     {issue.target && <code>{issue.target}</code>}
                   </div>
                 ))}
-              </details>
+              </Disclosure>
             )}
             {props.catalog?.discovery?.completed && (
-              <details className="scan-issues">
-                <summary>
-                  {t('{count} directories checked', {
-                    count: props.catalog.discovery.directories,
-                  })}
-                </summary>
+              <Disclosure
+                className="scan-issues"
+                label={t('{count} directories checked', {
+                  count: props.catalog.discovery.directories,
+                })}
+              >
                 {props.catalog.discovery.roots?.map((root) => (
                   <p className="path" key={root} title={root}>
                     {root}
                   </p>
                 ))}
-              </details>
+              </Disclosure>
             )}
             {props.catalog?.discovery?.limited && (
               <p className="quiet-note">
@@ -464,16 +466,16 @@ export function CreateDialog({
           <>
             <label className="field">
               {t('Source')}
-              <select
+              <Select
+                label={t('Source')}
                 value={selectedSource?.id ?? ''}
-                onChange={(event) => setSourceId(event.target.value)}
-              >
-                {writable.map((source) => (
-                  <option key={source.id} value={source.id}>
-                    {source.name}
-                  </option>
-                ))}
-              </select>
+                onChange={setSourceId}
+                options={writable.map((source) => ({
+                  value: source.id,
+                  label: source.name,
+                  description: source.resolvedPath,
+                }))}
+              />
             </label>
             <label className="field">
               {t('Name')}
@@ -627,36 +629,37 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
       <fieldset disabled={busy} className="translation-fields">
         <label className="field">
           {t('Translation provider')}
-          <select
+          <Select
+            label={t('Translation provider')}
             value={settings.provider}
-            onChange={(event) => {
-              setSettings({ ...settings, provider: event.target.value })
+            onChange={(provider) => {
+              setSettings({ ...settings, provider })
               setSaved(false)
             }}
-          >
-            <option value="google">
-              {t('Google Translate (free web service)')}
-            </option>
-            <option value="google-cloud">
-              {t('Google Cloud Translation')}
-            </option>
-            <option value="ai">{t('AI translation')}</option>
-          </select>
+            options={[
+              {
+                value: 'google',
+                label: t('Google Translate (free web service)'),
+              },
+              { value: 'google-cloud', label: t('Google Cloud Translation') },
+              { value: 'ai', label: t('AI translation') },
+            ]}
+          />
         </label>
         <label className="field">
           {t('Target language')}
-          <select
+          <Select
+            label={t('Target language')}
             value={settings.targetLanguage}
-            onChange={(event) =>
-              setSettings({ ...settings, targetLanguage: event.target.value })
-            }
-          >
-            {targetLanguages.map(([id, label]) => (
-              <option key={id} value={id}>
-                {label}
-              </option>
-            ))}
-          </select>
+            onChange={(targetLanguage) => {
+              setSettings({ ...settings, targetLanguage })
+              setSaved(false)
+            }}
+            options={targetLanguages.map(([value, label]) => ({
+              value,
+              label,
+            }))}
+          />
         </label>
         {settings.provider === 'google' && (
           <p className="quiet-note">

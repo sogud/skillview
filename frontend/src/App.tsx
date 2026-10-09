@@ -47,7 +47,6 @@ export default function App() {
   const [resources, setResources] = useState<Resource[]>([])
   const [draft, setDraft] = useState<Draft | null>(null)
   const [raw, setRaw] = useState(false)
-  const [tab, setTab] = useState<'document' | 'resources'>('document')
   const [loading, setLoading] = useState(false)
   const [scanning, setScanning] = useState(false)
   const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null)
@@ -76,7 +75,8 @@ export default function App() {
   const search = useRef<HTMLInputElement>(null)
   const readSequence = useRef(0)
   const mounted = useRef(true)
-  const scanPromise = useRef<Promise<Catalog> | null>(null)
+  const scanPromise = useRef<ReturnType<typeof api.Scan> | null>(null)
+  const scanCanceled = useRef(false)
   const currentState = useRef({ draft, saving, selected, document })
   currentState.current = { draft, saving, selected, document }
   const dirty = !!draft && draft.text !== draft.base.text
@@ -114,6 +114,7 @@ export default function App() {
     if (scanPromise.current) return scanPromise.current
     setScanning(true)
     setScanProgress(null)
+    scanCanceled.current = false
     const promise = discover ? api.Discover() : api.Scan()
     scanPromise.current = promise
     try {
@@ -129,6 +130,8 @@ export default function App() {
         )
       }
       return next
+    } catch (failure) {
+      if (!scanCanceled.current) throw failure
     } finally {
       scanPromise.current = null
       if (mounted.current) setScanning(false)
@@ -149,13 +152,11 @@ export default function App() {
     void api
       .CachedCatalog()
       .then((cached) => {
-        if (mounted.current && cached.scannedAt)
+        if (mounted.current) {
           setCatalog((previous) => previous ?? cached)
+          setVerified(!cached.needsScan)
+        }
       })
-      .catch(() => {})
-    // Known sources become readable before the broader file-name search.
-    void refresh()
-      .then(() => (mounted.current ? refresh(true) : undefined))
       .catch((failure) => failRef.current(failure))
     void api.Ready().catch((failure) => failRef.current(failure))
     return () => {
@@ -177,45 +178,40 @@ export default function App() {
   }, [notice, lastTrash])
 
   useEffect(() => {
-    const onFocus = () => {
-      if (!currentState.current.saving)
-        void refresh()
-          .then(async () => {
-            const state = currentState.current
-            if (!state.selected || !state.document || state.draft) return
-            const sequence = readSequence.current
-            try {
-              const [next, list] = await Promise.all([
-                api.Read(state.selected.id, state.document.path),
-                api.Resources(state.selected.id),
-              ])
-              if (
-                mounted.current &&
-                sequence === readSequence.current &&
-                !currentState.current.draft
-              ) {
-                setDocument(next)
-                setResources(list ?? [])
-                setReadError('')
-              }
-            } catch (failure) {
-              if (
-                mounted.current &&
-                sequence === readSequence.current &&
-                !currentState.current.draft
-              )
-                setReadError(message(failure))
-            }
-          })
-          .catch(fail)
+    const onFocus = async () => {
+      if (!currentState.current.saving) {
+        const state = currentState.current
+        if (!state.selected || !state.document || state.draft) return
+        const sequence = readSequence.current
+        try {
+          const [next, list] = await Promise.all([
+            api.Read(state.selected.id, state.document.path),
+            api.Resources(state.selected.id),
+          ])
+          if (
+            mounted.current &&
+            sequence === readSequence.current &&
+            !currentState.current.draft
+          ) {
+            setDocument(next)
+            setResources(list ?? [])
+            setReadError('')
+          }
+        } catch (failure) {
+          if (
+            mounted.current &&
+            sequence === readSequence.current &&
+            !currentState.current.draft
+          )
+            setReadError(message(failure))
+        }
+      }
     }
-    const unsubscribe = Events.On('skillview:catalog', onFocus)
     window.addEventListener('focus', onFocus)
     return () => {
-      unsubscribe()
       window.removeEventListener('focus', onFocus)
     }
-  }, [fail, refresh])
+  }, [message])
 
   function request(action: () => void) {
     if (saving) return
@@ -239,7 +235,6 @@ export default function App() {
   async function load(skill: Skill, path = 'SKILL.md', edit = false) {
     const sequence = ++readSequence.current
     setSelected(skill)
-    setTab('document')
     setDocument(null)
     setDraft(null)
     setRaw(false)
@@ -365,7 +360,7 @@ export default function App() {
   async function create(sourceId: string, name: string, description: string) {
     const id = await api.Create(sourceId, name, description)
     const next = await refresh()
-    const skill = next.skills?.find((item) => item.id === id)
+    const skill = next?.skills?.find((item) => item.id === id)
     setQuery('')
     setFavoritesOnly(false)
     setAgentFilter('')
@@ -577,6 +572,14 @@ export default function App() {
                           count: scanProgress?.skills ?? 0,
                         })}
                   </span>
+                  <button
+                    onClick={() => {
+                      scanCanceled.current = true
+                      scanPromise.current?.cancel()
+                    }}
+                  >
+                    {t('Cancel scan')}
+                  </button>
                 </div>
                 <progress
                   aria-label={t('Scan progress')}
@@ -589,6 +592,11 @@ export default function App() {
                   max={scanProgress?.sourcesTotal || 1}
                 />
               </div>
+            )}
+            {!scanning && catalog?.needsScan && !!catalog.skills?.length && (
+              <p className="scan-hint">
+                {t('Scan once to reopen your saved Skills.')}
+              </p>
             )}
             <SkillsList
               groups={skills}
@@ -610,21 +618,25 @@ export default function App() {
                         ? t('No Skills match your search')
                         : favoritesOnly
                           ? t('Your favorites will appear here')
-                          : t('Add your Skills folders')}
+                          : t('Scan your Skills folders')}
                   </h2>
                   <p>
                     {query
                       ? t('Try a Skill name or a word from its description.')
                       : favoritesOnly
                         ? t('Use the star beside a Skill to save it here.')
-                        : t('Choose an existing folder to start reading.')}
+                        : t(
+                            'Scanning only starts when you click Scan folders.',
+                          )}
                   </p>
                   {!query && !favoritesOnly && !scanning && (
                     <button
                       className="primary"
-                      onClick={() => setSettings('sources')}
+                      onClick={() => {
+                        void refresh(true).catch(fail)
+                      }}
                     >
-                      {t('Add Skills folder')}
+                      {t('Scan folders')}
                     </button>
                   )}
                 </div>
@@ -693,12 +705,10 @@ export default function App() {
               document={document}
               resources={resources}
               draft={draft}
-              tab={tab}
               raw={raw}
               loading={loading}
               error={readError}
               saving={saving}
-              onTab={setTab}
               onRaw={() => setRaw((value) => !value)}
               onEdit={() => {
                 if (document?.editable)

@@ -6,10 +6,8 @@ import (
 	"net/url"
 	"os/exec"
 	"path/filepath"
-	"skillview/internal/watch"
 	"strings"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
@@ -35,8 +33,6 @@ type Service struct {
 	allowQuit   bool
 	discoveryMu sync.Mutex
 	translator  *translation.Service
-	watcher     *watch.Coordinator
-	sequence    atomic.Int64
 }
 
 func New(l *library.Library, native Native, translator *translation.Service) *Service {
@@ -46,13 +42,7 @@ func New(l *library.Library, native Native, translator *translation.Service) *Se
 func (s *Service) Scan(ctx context.Context) (library.Catalog, error) {
 	s.discoveryMu.Lock()
 	defer s.discoveryMu.Unlock()
-	catalog, err := s.library.Scan(ctx, s.scanReporter())
-	if err == nil {
-		if !s.updateWatch() {
-			catalog.Issues = append(catalog.Issues, library.Issue{Message: "Folder watching is unavailable for some paths; refresh to check them."})
-		}
-	}
-	return catalog, err
+	return s.library.Scan(ctx, s.scanReporter())
 }
 func (s *Service) Discover(ctx context.Context) (library.Catalog, error) {
 	s.discoveryMu.Lock()
@@ -62,13 +52,7 @@ func (s *Service) Discover(ctx context.Context) (library.Catalog, error) {
 			return library.Catalog{}, err
 		}
 	}
-	catalog, err := s.library.Scan(ctx, s.scanReporter())
-	if err == nil {
-		if !s.updateWatch() {
-			catalog.Issues = append(catalog.Issues, library.Issue{Message: "Folder watching is unavailable for some paths; refresh to check them."})
-		}
-	}
-	return catalog, err
+	return s.library.Scan(ctx, s.scanReporter())
 }
 
 func (s *Service) scanReporter() func(library.ScanProgress) {
@@ -233,28 +217,10 @@ func (s *Service) Ready() {
 	if s.native.Updates != nil {
 		s.native.Updates().Start()
 	}
-	watcher, err := watch.New(func() { s.native.Application().Event.Emit("skillview:catalog", s.sequence.Add(1)) })
-	if err == nil {
-		s.watcher = watcher
-		watcher.Set(s.library.WatchDirectories())
-	}
-}
-func (s *Service) updateWatch() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.watcher != nil {
-		return s.watcher.Set(s.library.WatchDirectories())
-	}
-	return !s.ready
 }
 func (s *Service) Close() {
 	if s.native.Updates != nil {
 		s.native.Updates().Close()
-	}
-	s.mu.Lock()
-	defer s.mu.Unlock()
-	if s.watcher != nil {
-		s.watcher.Close()
 	}
 }
 

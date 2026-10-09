@@ -7,22 +7,21 @@ import {
   Save,
   Eye,
   ArrowLeft,
-  Image,
   FileCode,
   Link,
   Lock,
   AlertCircle,
   Languages,
-  Plus,
-  Upload,
   Trash2,
-  FilePenLine,
   Copy,
   Download,
+  PanelLeft,
 } from 'lucide-react'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Events } from '@wailsio/runtime'
-import { IconButton, Markdown } from './components'
+import { IconButton, Markdown, Disclosure } from './components'
+import { Select } from './Select'
+import { FileTree } from './FileTree'
 import * as api from './api'
 import type {
   Document,
@@ -53,12 +52,10 @@ type ReaderProps = {
   document: Document | null
   resources: Resource[]
   draft: Draft | null
-  tab: 'document' | 'resources'
   raw: boolean
   loading: boolean
   error: string
   saving: boolean
-  onTab: (tab: 'document' | 'resources') => void
   onRaw: () => void
   onEdit: () => void
   onChange: (text: string) => void
@@ -81,7 +78,7 @@ export function Reader(props: ReaderProps) {
   const [translationError, setTranslationError] = useState('')
   const [translationNotice, setTranslationNotice] = useState('')
   const [exporting, setExporting] = useState(false)
-  const [copiesOpen, setCopiesOpen] = useState(false)
+  const [explorerOpen, setExplorerOpen] = useState(true)
   const pending = useRef<ReturnType<typeof api.Translate> | null>(null)
   const sequence = useRef(0)
   const requestID = useRef('')
@@ -125,10 +122,7 @@ export function Reader(props: ReaderProps) {
     return () => window.clearTimeout(timeout)
   }, [translationNotice])
   const canTranslate =
-    !!doc &&
-    (doc.kind === 'markdown' || doc.kind === 'text') &&
-    !draft &&
-    props.tab === 'document'
+    !!doc && (doc.kind === 'markdown' || doc.kind === 'text') && !draft
   async function translate() {
     if (!doc || translating) return
     if (translation) {
@@ -219,6 +213,12 @@ export function Reader(props: ReaderProps) {
           <ArrowLeft size={15} />
           {t('Back to Skills')}
         </button>
+        <IconButton
+          icon={PanelLeft}
+          label={t(explorerOpen ? 'Hide file tree' : 'Show file tree')}
+          active={explorerOpen}
+          onClick={() => setExplorerOpen((open) => !open)}
+        />
         <span className="filename" title={doc?.path}>
           {doc?.path ?? 'SKILL.md'}
           {dirty && (
@@ -251,7 +251,6 @@ export function Reader(props: ReaderProps) {
             </button>
           )}
           {doc &&
-            props.tab === 'document' &&
             !draft &&
             (doc.kind === 'markdown' || doc.kind === 'text') && (
               <IconButton
@@ -288,58 +287,21 @@ export function Reader(props: ReaderProps) {
           />
         </div>
       </header>
-      <div
-        className="reader-tabs"
-        role="tablist"
-        aria-label={t('Skill sections')}
-      >
-        <button
-          role="tab"
-          aria-selected={props.tab === 'document'}
-          onClick={() => props.onTab('document')}
-        >
-          {t('Document')}
-        </button>
-        <button
-          role="tab"
-          aria-selected={props.tab === 'resources'}
-          onClick={() => props.onTab('resources')}
-        >
-          {t('Resources')}
-          <span>{props.resources.length}</span>
-        </button>
-      </div>
-      {(props.copies.length > 1 ||
-        props.copies.some((copy) =>
-          copy.occurrences?.some((entry) => entry.removable),
-        )) && (
-        <details
-          className="skill-copies"
-          open={copiesOpen}
-          onToggle={(event) => setCopiesOpen(event.currentTarget.open)}
-        >
-          <summary>
-            {t('{count} copies', { count: props.copies.length })}
-          </summary>
-          {copiesOpen && (
-            <div className="copy-list">
-              <p>{t('Only the selected copy is edited.')}</p>
-              {props.versions > 1 && (
-                <p>
-                  {t('These copies contain {count} different versions.', {
-                    count: props.versions,
-                  })}
-                </p>
-              )}
-              {props.copies.map((copy) => (
-                <div key={copy.id} className="copy-entry">
-                  <button
-                    aria-pressed={copy.id === skill.id}
-                    title={copy.path}
-                    onClick={() => props.onCopy(copy)}
-                  >
-                    <strong>
-                      {(copy.tools ?? [])
+      <div className="reader-body">
+        {explorerOpen && (
+          <nav className="file-explorer" aria-label={t('Skill files')}>
+            <div className="explorer-title" title={skill.path}>
+              {skill.name}
+            </div>
+            {props.copies.length > 1 && (
+              <div className="explorer-copy">
+                <Select
+                  label={t('Skill copy')}
+                  value={skill.id}
+                  options={props.copies.map((copy) => ({
+                    value: copy.id,
+                    label:
+                      (copy.tools ?? [])
                         .map((tool) =>
                           t(
                             tool === 'Shared'
@@ -349,315 +311,286 @@ export function Reader(props: ReaderProps) {
                                 : tool,
                           ),
                         )
-                        .join(' · ')}
-                    </strong>
-                    <span>{copy.path}</span>
-                  </button>
-                  {copy.occurrences
-                    ?.filter((entry) => entry.removable)
-                    .map((entry) => (
-                      <div
-                        key={entry.sourceId + entry.path}
-                        className="link-entry"
-                      >
-                        <Link size={12} />
-                        <span title={entry.path}>{entry.path}</span>
-                        <IconButton
-                          icon={Trash2}
-                          label={t('Remove link ({path})', {
-                            path: entry.path,
-                          })}
-                          onClick={() => props.onRemoveLink(copy, entry)}
-                        />
-                      </div>
-                    ))}
-                </div>
-              ))}
-            </div>
-          )}
-        </details>
-      )}
-      {translating && (
-        <div className="translation-progress" role="status" aria-live="polite">
-          <span>
-            {progress
-              ? t('Translating {done} / {total} sections', {
-                  done: progress.completed,
-                  total: progress.total,
-                })
-              : t('Preparing translation…')}
-            {' · '}
-            {t('{seconds}s elapsed', { seconds: elapsed })}
-            {progress
-              ? ` · ${progress.provider === 'ai' ? 'AI' : 'Google'} → ${progress.targetLanguage}`
-              : ''}
-          </span>
-          <progress
-            aria-label={t('Translation progress')}
-            value={
-              progress && progress.total > 0 ? progress.completed : undefined
-            }
-            max={progress?.total || 1}
-          />
-          {progress && progress.completed === progress.total && (
-            <span>{t('Checking the complete translation…')}</span>
-          )}
-        </div>
-      )}
-      {translationError && (
-        <p className="translation-error" role="alert">
-          {translationError}{' '}
-          <button
-            onClick={() => {
-              void translate()
-            }}
-          >
-            {t('Try again')}
-          </button>
-          {!translated && (
-            <button onClick={props.onConfigureTranslation}>
-              {t('Configure translation')}
-            </button>
-          )}
-        </p>
-      )}
-      {translated && translation && (
-        <p
-          className="translation-note"
-          title={t('Translation does not change the original file.')}
-        >
-          <strong>
-            {translation.sections === 0
-              ? t('No prose to translate')
-              : t('Translation complete')}
-          </strong>
-          {' · '}
-          {translation.provider === 'ai' ? 'AI' : 'Google'} →{' '}
-          {translation.targetLanguage}
-          {translation.cached ? ` · ${t('Cached translation')}` : ''}
-          <span className="translation-actions">
-            <IconButton
-              icon={Copy}
-              label={t('Copy translation ({language})', {
-                language: translation.targetLanguage,
-              })}
-              onClick={() => {
-                void copyTranslation()
-              }}
-              disabled={exporting}
-            />
-            <IconButton
-              icon={Download}
-              label={t('Export translation')}
-              onClick={() => {
-                void exportTranslation()
-              }}
-              disabled={exporting}
-            />
-          </span>
-        </p>
-      )}
-      {translationNotice && (
-        <p className="quiet-note translation-status" role="status">
-          {translationNotice}
-        </p>
-      )}
-      <div className={`reader-content${draft ? ' editing' : ''}`}>
-        {props.loading ? (
-          <p className="quiet-note">{t('Reading file\u2026')}</p>
-        ) : props.error ? (
-          <div className="file-error">
-            <AlertCircle size={20} />
-            <p>{props.error}</p>
-            <button onClick={() => props.onResource(doc?.path ?? 'SKILL.md')}>
-              {t('Try again')}
-            </button>
-          </div>
-        ) : props.tab === 'resources' ? (
-          <div className="resource-list">
-            {skill.editable && (
-              <div className="resource-actions">
-                <IconButton
-                  icon={Plus}
-                  label={t('New resource')}
-                  onClick={props.onNewResource}
+                        .join(' · ') || t('Local files'),
+                    description: copy.path,
+                  }))}
+                  onChange={(id) => {
+                    const copy = props.copies.find((copy) => copy.id === id)
+                    if (copy) props.onCopy(copy)
+                  }}
                 />
-                <IconButton
-                  icon={Upload}
-                  label={t('Import resource')}
-                  onClick={props.onImportResource}
-                />
+                <small>
+                  {t('{count} copies', { count: props.copies.length })}
+                  {props.versions > 1
+                    ? ` · ${t('{count} versions', { count: props.versions })}`
+                    : ''}
+                </small>
               </div>
             )}
-            {props.resources.map((resource) => {
-              const Icon =
-                resource.kind === 'link'
-                  ? Link
-                  : resource.kind === 'image'
-                    ? Image
-                    : FileText
-              return (
-                <div className="resource-item" key={resource.path}>
-                  <button
-                    className={`resource${doc?.path === resource.path ? ' selected' : ''}`}
-                    key={resource.path}
-                    disabled={resource.kind === 'link'}
-                    onClick={() => props.onResource(resource.path)}
-                    title={
-                      resource.kind === 'link'
-                        ? t('Resource links are not followed')
-                        : resource.path
-                    }
-                  >
-                    <Icon size={14} />
-                    <span>{resource.path}</span>
-                    <small>
-                      {resource.kind === 'link'
-                        ? t('Link')
-                        : formatSize(resource.size)}
-                    </small>
-                  </button>
-                  {skill.editable && resource.path !== 'SKILL.md' && (
-                    <div className="resource-tools">
-                      {resource.kind !== 'link' && (
-                        <IconButton
-                          icon={FilePenLine}
-                          label={t('Rename {name}', { name: resource.path })}
-                          onClick={() => props.onRenameResource(resource)}
-                        />
-                      )}
+            {skill.occurrences?.some((entry) => entry.removable) && (
+              <Disclosure
+                label={t('Linked entries')}
+                className="explorer-links"
+              >
+                {skill.occurrences
+                  .filter((entry) => entry.removable)
+                  .map((entry) => (
+                    <div
+                      key={entry.sourceId + entry.path}
+                      className="link-entry"
+                    >
+                      <Link size={12} />
+                      <span title={entry.path}>{entry.path}</span>
                       <IconButton
                         icon={Trash2}
-                        label={
-                          resource.kind === 'link'
-                            ? t('Remove link ({path})', { path: resource.path })
-                            : t('Move {name} to Trash', { name: resource.path })
-                        }
-                        onClick={() => props.onTrashResource(resource)}
+                        label={t('Remove link ({path})', { path: entry.path })}
+                        onClick={() => props.onRemoveLink(skill, entry)}
                       />
                     </div>
-                  )}
-                </div>
-              )
-            })}
-            {props.resources.length === 0 && (
-              <p className="quiet-note">
-                {t('No readable resources. Refresh the library to try again.')}
-              </p>
+                  ))}
+              </Disclosure>
             )}
-          </div>
-        ) : draft ? (
-          <>
-            <Suspense
-              fallback={
-                <p className="quiet-note">{t('Opening editor\u2026')}</p>
-              }
+            <FileTree
+              key={skill.id}
+              resources={props.resources}
+              path={doc?.path ?? 'SKILL.md'}
+              editable={skill.editable}
+              onOpen={props.onResource}
+              onRename={props.onRenameResource}
+              onTrash={props.onTrashResource}
+              onNew={props.onNewResource}
+              onImport={props.onImportResource}
+            />
+          </nav>
+        )}
+        <section
+          className="reader-document"
+          aria-label={doc?.path ?? 'SKILL.md'}
+        >
+          {translating && (
+            <div
+              className="translation-progress"
+              role="status"
+              aria-live="polite"
             >
-              <Editor
-                key={`${draft.base.skillId}:${draft.base.path}:${draft.base.revision}`}
-                text={draft.text}
-                newline={draft.base.newline}
-                onChange={props.onChange}
+              <span>
+                {progress
+                  ? t('Translating {done} / {total} sections', {
+                      done: progress.completed,
+                      total: progress.total,
+                    })
+                  : t('Preparing translation…')}
+                {' · '}
+                {t('{seconds}s elapsed', { seconds: elapsed })}
+                {progress
+                  ? ` · ${progress.provider === 'ai' ? 'AI' : 'Google'} → ${progress.targetLanguage}`
+                  : ''}
+              </span>
+              <progress
+                aria-label={t('Translation progress')}
+                value={
+                  progress && progress.total > 0
+                    ? progress.completed
+                    : undefined
+                }
+                max={progress?.total || 1}
               />
-            </Suspense>
-          </>
-        ) : doc ? (
-          <>
-            {doc.path === 'SKILL.md' && (
-              <div className="skill-intro">
-                {!translated && !props.raw && !/^\s*#\s/.test(doc.body) && (
-                  <>
-                    <h1>{skill.name}</h1>
-                    {skill.description && <p>{skill.description}</p>}
-                  </>
-                )}
-                {(skill.warnings ?? []).length > 0 && (
-                  <details className="parse-warning">
-                    <summary>
-                      <AlertCircle size={12} />
-                      {t('Metadata needs attention')}
-                    </summary>
-                    {skill.warnings?.map((warning) => (
-                      <p key={warning}>{warning}</p>
-                    ))}
-                  </details>
-                )}
-              </div>
-            )}
-            {doc.path !== 'SKILL.md' && (
+              {progress && progress.completed === progress.total && (
+                <span>{t('Checking the complete translation…')}</span>
+              )}
+            </div>
+          )}
+          {translationError && (
+            <p className="translation-error" role="alert">
+              {translationError}{' '}
               <button
-                className="back-to-skill"
-                onClick={() => props.onResource('SKILL.md')}
+                onClick={() => {
+                  void translate()
+                }}
               >
-                <ArrowLeft size={12} />
-                SKILL.md
+                {t('Try again')}
               </button>
-            )}
-            {translated && translation ? (
-              doc.kind === 'markdown' ? (
-                <Markdown text={translation.text} onLink={props.onLink} />
-              ) : (
-                <pre className="raw-file">{translation.text}</pre>
-              )
-            ) : doc.kind === 'image' ? (
-              <img
-                className="resource-image"
-                src={doc.dataUrl}
-                alt={doc.path}
-              />
-            ) : doc.kind === 'binary' ? (
-              <div className="binary-info">
-                <FileText size={28} />
-                <p>{doc.path}</p>
-                <span>{formatSize(doc.size)}</span>
-                <p>
-                  {translationErrorMessage(
-                    doc.readOnlyReason ||
-                      'Preview is unavailable for this file type.',
-                  )}
-                </p>
-                <button onClick={props.onReveal}>{t('Show in Finder')}</button>
+              {!translated && (
+                <button onClick={props.onConfigureTranslation}>
+                  {t('Configure translation')}
+                </button>
+              )}
+            </p>
+          )}
+          {translated && translation && (
+            <p
+              className="translation-note"
+              title={t('Translation does not change the original file.')}
+            >
+              <strong>
+                {translation.sections === 0
+                  ? t('No prose to translate')
+                  : t('Translation complete')}
+              </strong>
+              {' · '}
+              {translation.provider === 'ai' ? 'AI' : 'Google'} →{' '}
+              {translation.targetLanguage}
+              {translation.cached ? ` · ${t('Cached translation')}` : ''}
+              <span className="translation-actions">
+                <IconButton
+                  icon={Copy}
+                  label={t('Copy translation ({language})', {
+                    language: translation.targetLanguage,
+                  })}
+                  onClick={() => {
+                    void copyTranslation()
+                  }}
+                  disabled={exporting}
+                />
+                <IconButton
+                  icon={Download}
+                  label={t('Export translation')}
+                  onClick={() => {
+                    void exportTranslation()
+                  }}
+                  disabled={exporting}
+                />
+              </span>
+            </p>
+          )}
+          {translationNotice && (
+            <p className="quiet-note translation-status" role="status">
+              {translationNotice}
+            </p>
+          )}
+          <div className={`reader-content${draft ? ' editing' : ''}`}>
+            {props.loading ? (
+              <p className="quiet-note">{t('Reading file\u2026')}</p>
+            ) : props.error ? (
+              <div className="file-error">
+                <AlertCircle size={20} />
+                <p>{props.error}</p>
+                <button
+                  onClick={() => props.onResource(doc?.path ?? 'SKILL.md')}
+                >
+                  {t('Try again')}
+                </button>
               </div>
-            ) : props.raw || doc.kind !== 'markdown' ? (
-              <pre className="raw-file">{doc.text}</pre>
-            ) : (
-              <Markdown text={doc.body} onLink={props.onLink} />
-            )}
-          </>
-        ) : null}
+            ) : draft ? (
+              <>
+                <Suspense
+                  fallback={
+                    <p className="quiet-note">{t('Opening editor\u2026')}</p>
+                  }
+                >
+                  <Editor
+                    key={`${draft.base.skillId}:${draft.base.path}:${draft.base.revision}`}
+                    text={draft.text}
+                    newline={draft.base.newline}
+                    onChange={props.onChange}
+                  />
+                </Suspense>
+              </>
+            ) : doc ? (
+              <>
+                {doc.path === 'SKILL.md' && (
+                  <div className="skill-intro">
+                    {!translated && !props.raw && !/^\s*#\s/.test(doc.body) && (
+                      <>
+                        <h1>{skill.name}</h1>
+                        {skill.description && <p>{skill.description}</p>}
+                      </>
+                    )}
+                    {(skill.warnings ?? []).length > 0 && (
+                      <Disclosure
+                        className="parse-warning"
+                        label={
+                          <>
+                            <AlertCircle size={12} />{' '}
+                            {t('Metadata needs attention')}
+                          </>
+                        }
+                      >
+                        {skill.warnings?.map((warning) => (
+                          <p key={warning}>{warning}</p>
+                        ))}
+                      </Disclosure>
+                    )}
+                  </div>
+                )}
+                {doc.path !== 'SKILL.md' && !explorerOpen && (
+                  <button
+                    className="back-to-skill"
+                    onClick={() => props.onResource('SKILL.md')}
+                  >
+                    <ArrowLeft size={12} />
+                    SKILL.md
+                  </button>
+                )}
+                {translated && translation ? (
+                  doc.kind === 'markdown' ? (
+                    <Markdown text={translation.text} onLink={props.onLink} />
+                  ) : (
+                    <pre className="raw-file">{translation.text}</pre>
+                  )
+                ) : doc.kind === 'image' ? (
+                  <img
+                    className="resource-image"
+                    src={doc.dataUrl}
+                    alt={doc.path}
+                  />
+                ) : doc.kind === 'binary' ? (
+                  <div className="binary-info">
+                    <FileText size={28} />
+                    <p>{doc.path}</p>
+                    <span>{formatSize(doc.size)}</span>
+                    <p>
+                      {translationErrorMessage(
+                        doc.readOnlyReason ||
+                          'Preview is unavailable for this file type.',
+                      )}
+                    </p>
+                    <button onClick={props.onReveal}>
+                      {t('Show in Finder')}
+                    </button>
+                  </div>
+                ) : props.raw || doc.kind !== 'markdown' ? (
+                  <pre className="raw-file">{doc.text}</pre>
+                ) : (
+                  <Markdown text={doc.body} onLink={props.onLink} />
+                )}
+              </>
+            ) : null}
+          </div>
+          {draft && (
+            <div className="edit-actions">
+              <span>
+                {props.saving
+                  ? t('Saving…')
+                  : dirty
+                    ? t('Unsaved changes')
+                    : t('No changes')}
+              </span>
+              <button onClick={props.onCancel} disabled={props.saving}>
+                {t('Done')}
+              </button>
+              <button
+                className="primary"
+                onClick={props.onSave}
+                disabled={!dirty || props.saving}
+              >
+                <Save size={13} />
+                {t('Save')}
+                <kbd>⌘S</kbd>
+              </button>
+            </div>
+          )}
+          <footer className="reader-footer">
+            <Lock size={11} />
+            <span className="path" title={skill.path}>
+              {skill.path}
+            </span>
+            <span className="access-label">
+              {doc?.editable ? t('Writable') : t('Read-only')}
+            </span>
+          </footer>
+        </section>
       </div>
-      {draft && (
-        <div className="edit-actions">
-          <span>
-            {props.saving
-              ? t('Saving…')
-              : dirty
-                ? t('Unsaved changes')
-                : t('No changes')}
-          </span>
-          <button onClick={props.onCancel} disabled={props.saving}>
-            {t('Done')}
-          </button>
-          <button
-            className="primary"
-            onClick={props.onSave}
-            disabled={!dirty || props.saving}
-          >
-            <Save size={13} />
-            {t('Save')}
-            <kbd>⌘S</kbd>
-          </button>
-        </div>
-      )}
-      <footer className="reader-footer">
-        <Lock size={11} />
-        <span className="path" title={skill.path}>
-          {skill.path}
-        </span>
-        <span className="access-label">
-          {doc?.editable ? t('Writable') : t('Read-only')}
-        </span>
-      </footer>
     </aside>
   )
 }

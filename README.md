@@ -14,10 +14,10 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 
 ## Features
 
-- Discover global, project, plugin and shared Skills across 83 Agent definitions, including folders on connected local drives. Known folders load first; the wider search shows live folder/source counts. Discovery reports inaccessible paths and scan limits.
+- Click Scan to discover global, project, plugin and shared Skills across 83 Agent definitions, including folders on connected local drives. Startup opens the saved catalog without a background scan. Manual scanning shows folder/source counts and can be canceled; inaccessible paths and scan limits are reported.
 - Agent tabs wrap into rows and show installed local applications or executables by default. Configuration folders alone do not count as an installation.
 - One list entry per Skill name, with overlapping platform logos and a platform count. Different contents remain available as versions and independent copies in the reader.
-- Full-width reading with a Back to Skills button and neutral navigation colors. Search, favorites, Markdown/resource reading, raw editing with revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records.
+- A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Search, favorites, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
 - English and Simplified Chinese interface, following the system language by default. Google, Google Cloud and AI translation support ten target languages.
 - AI uses the official OpenAI Go SDK with a configurable compatible endpoint, including local models. Keys stay in macOS Keychain. Translation only runs after a click and does not modify the original file.
 - Translation shows completed sections, elapsed time, a completion label and clear failure/retry controls. Cancel an in-flight translation, copy it with its target-language label or export it to a separate new file. A user-requested connection test sends only a fixed sample and bypasses cached results.

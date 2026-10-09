@@ -78,7 +78,7 @@ func (l *Library) Scan(ctx context.Context, progress ...func(ScanProgress)) (Cat
 	}
 	sort.SliceStable(state.catalog.Skills, func(i, j int) bool { return state.catalog.Skills[i].Name < state.catalog.Skills[j].Name })
 	if l.cache != nil {
-		data, err := json.Marshal(state.catalog)
+		data, err := json.Marshal(snapshotCatalog(state.catalog, state.refs))
 		if err == nil {
 			err = l.cache.Put("catalog", "current", data)
 		}
@@ -292,6 +292,14 @@ func (l *Library) openSkill(id string) (*os.File, Source, error) {
 		return nil, Source{}, err
 	}
 	if ref.linkedRoot != nil {
+		linked := *ref.linkedRoot
+		if linked.Path != source.Path || linked.ResolvedPath != source.ResolvedPath || linked.Identity != source.Identity {
+			_, inside := within(source.Path, linked.Path)
+			resolved, resolveErr := filepath.EvalSymlinks(linked.Path)
+			if !source.Automatic || linked.ID != source.ID || !inside || resolveErr != nil || resolved != linked.ResolvedPath {
+				return nil, Source{}, fmt.Errorf("Skill link changed; rescan the library")
+			}
+		}
 		source = *ref.linkedRoot
 		source.Writable = false
 	}
@@ -323,23 +331,51 @@ func fileLinks(file *os.File) (uint16, error) {
 func (l *Library) CachedCatalog() (Catalog, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	empty := Catalog{Skills: []Skill{}, Sources: l.prefs.Sources, NeedsScan: true}
+	if home, err := os.UserHomeDir(); err == nil {
+		empty.Agents = Agents(home)
+	}
 	if l.cache == nil {
-		return Catalog{}, nil
+		return empty, nil
 	}
 	data, err := l.cache.Get("catalog", "current")
 	if err != nil || len(data) == 0 {
-		return Catalog{}, err
+		return empty, err
 	}
-	var catalog Catalog
-	if err = json.Unmarshal(data, &catalog); err != nil {
-		return Catalog{}, err
+	var snapshot catalogSnapshot
+	if err = json.Unmarshal(data, &snapshot); err != nil {
+		return empty, err
 	}
+	catalog := snapshot.Catalog
+	catalog.Agents = empty.Agents
 	// A removed source must not reappear through cached metadata.
 	for _, source := range catalog.Sources {
 		if _, err = l.source(source.ID); err != nil {
-			return Catalog{}, nil
+			return empty, nil
 		}
 	}
+	refs := map[string]fileRef{}
+	for i, skill := range catalog.Skills {
+		cached, exists := snapshot.References[skill.ID]
+		if !exists {
+			catalog.NeedsScan = true
+			continue
+		}
+		source, sourceErr := l.source(cached.SourceID)
+		if sourceErr != nil {
+			return empty, nil
+		}
+		if cached.LinkedRoot != nil {
+			source = *cached.LinkedRoot
+		}
+		path := filepath.Join(source.ResolvedPath, cached.RelativeDir, cached.FileName)
+		if skill.Path != path || skill.ID != objectID(path) || cached.Identity == "" {
+			return empty, nil
+		}
+		refs[skill.ID] = fileRef{sourceID: cached.SourceID, relativeDir: cached.RelativeDir, identity: cached.Identity, linkedRoot: cached.LinkedRoot, fileName: cached.FileName}
+		catalog.Skills[i].Favorite = l.prefs.Favorites[skill.ID]
+	}
+	l.catalog, l.refs, l.discovery = catalog, refs, catalog.Discovery
 	return catalog, nil
 }
 

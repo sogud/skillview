@@ -41,6 +41,14 @@ A public GitHub API check reproduced rate limiting. The fallback through the pub
 
 The new dependency's initial `golang.org/x/net` v0.58.0 was flagged by the binary scan for five known HTTP/2 advisories, including [GO-2026-6610](https://pkg.go.dev/vuln/GO-2026-6610). It was upgraded to the listed fixed version v0.60.0 before packaging. Package checks and CI evidence apply to the exact reviewed source and ZIP.
 
+## Manual scanning and file tree (alpha.4)
+
+Focused cache tests cover reopening without traversal, reading current disk bytes, replaced folders, removed sources, current automatic-link targets and metadata-only cache migration. Redirect tests cover Google GET 302, AI POST 307 with unchanged body, bounded redirect loops and refusal to forward requests to another origin. Five frontend tests cover file-tree nesting/collapse and shared Skill grouping. TypeScript, production builds and focused vet checks passed.
+
+Native acceptance used an isolated synthetic Skill with two copies and nested references, scripts and assets. Fresh startup waited for Scan; restart opened the cached catalog without scanning. An externally added Skill stayed absent until Scan was clicked. Tree expansion, file selection, resource reading, copy selection with keyboard controls and unsaved-draft protection were observed; discarded fixture edits left original bytes unchanged. Settings language/provider menus opened inside the modal and retained the selected checkmark.
+
+A local AI fixture redirected with HTTP 307, received the same request body and showed translation progress followed by translated text and the completion label. The public Google fixed `Hello.` sample returned HTTP 429 on this Mac during this check. Same-origin 302 handling passed locally, but Google availability on the user's other computer remains unverified. No real Skill was sent to a provider.
+
 ## Remaining acceptance
 
 The ordinary app loaded a large real catalog with installed-Agent tabs; originals were not modified. This does not prove unrestricted access to every folder or execution of a Skill by an Agent. Permission failures and scan limits are reported.

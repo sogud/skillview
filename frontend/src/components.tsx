@@ -2,7 +2,27 @@ import { useLocale } from './locales'
 import { useEffect, useRef, type ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { X, ImageIcon, type LucideIcon } from 'lucide-react'
+import { X, ImageIcon, ChevronRight, type LucideIcon } from 'lucide-react'
+
+export function Disclosure({
+  label,
+  children,
+  className = '',
+}: {
+  label: ReactNode
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <details className={`disclosure ${className}`}>
+      <summary>
+        <ChevronRight size={13} />
+        <span>{label}</span>
+      </summary>
+      <div className="disclosure-body">{children}</div>
+    </details>
+  )
+}
 
 export function IconButton({
   icon: Icon,
@@ -64,14 +84,20 @@ export function Modal({
     >
       <div className="modal-head">
         <h2>{title}</h2>
-        <IconButton icon={X} label={t("Close dialog")} onClick={onClose} />
+        <IconButton icon={X} label={t('Close dialog')} onClick={onClose} />
       </div>
       {children}
     </dialog>
   )
 }
 
-export function Markdown({ text, onLink }: { text: string; onLink: (url: string) => void }) {
+export function Markdown({
+  text,
+  onLink,
+}: {
+  text: string
+  onLink: (url: string) => void
+}) {
   const { t } = useLocale()
   return (
     <div className="markdown">

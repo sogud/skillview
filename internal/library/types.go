@@ -49,6 +49,7 @@ type Catalog struct {
 	Sources   []Source        `json:"sources"`
 	Issues    []Issue         `json:"issues"`
 	ScannedAt string          `json:"scannedAt"`
+	NeedsScan bool            `json:"needsScan"`
 	Discovery DiscoveryReport `json:"discovery"`
 	Agents    []AgentInfo     `json:"agents"`
 }

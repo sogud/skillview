@@ -399,8 +399,8 @@ func (s *Service) TestConnection(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) request(ctx context.Context, endpoint, contentType string, body []byte, key string) ([]byte, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+func (s *Service) request(ctx context.Context, method, endpoint, contentType string, body []byte, key string) ([]byte, error) {
+	req, err := http.NewRequestWithContext(ctx, method, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("invalid translation endpoint")
 	}
@@ -416,6 +416,9 @@ func (s *Service) request(ctx context.Context, endpoint, contentType string, bod
 		return nil, errors.New(network.ErrorMessage(err))
 	}
 	defer response.Body.Close()
+	if response.StatusCode >= 300 && response.StatusCode < 400 {
+		return nil, fmt.Errorf("The translation service redirected the request. Check the service address or use Google Cloud or AI translation.")
+	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
 		return nil, fmt.Errorf("translation service returned HTTP %d", response.StatusCode)
 	}
@@ -483,7 +486,12 @@ func (s *Service) googleText(ctx context.Context, target, input string) (string,
 			end = len(runes)
 		}
 		values := url.Values{"client": {"gtx"}, "sl": {"auto"}, "tl": {target}, "dt": {"t"}, "q": {string(runes[start:end])}}
-		data, err := s.request(ctx, s.googleURL, "application/x-www-form-urlencoded", []byte(values.Encode()), "")
+		endpoint, err := url.Parse(s.googleURL)
+		if err != nil {
+			return "", fmt.Errorf("invalid translation endpoint")
+		}
+		endpoint.RawQuery = values.Encode()
+		data, err := s.request(ctx, http.MethodGet, endpoint.String(), "", nil, "")
 		if err != nil {
 			return "", err
 		}
@@ -530,7 +538,7 @@ func (s *Service) googleCloud(ctx context.Context, settings Settings, key string
 			end = len(texts)
 		}
 		body, _ := json.Marshal(map[string]any{"q": texts[start:end], "target": settings.TargetLanguage, "format": "text"})
-		data, err := s.request(ctx, u.String(), "application/json", body, "")
+		data, err := s.request(ctx, http.MethodPost, u.String(), "application/json", body, "")
 		if err != nil {
 			return nil, err
 		}
@@ -573,6 +581,9 @@ func (s *Service) ai(ctx context.Context, settings Settings, key string, texts [
 		}
 		var apiError *openai.Error
 		if errors.As(err, &apiError) {
+			if apiError.StatusCode >= 300 && apiError.StatusCode < 400 {
+				return nil, fmt.Errorf("The translation service redirected the request. Check the service address or use Google Cloud or AI translation.")
+			}
 			return nil, fmt.Errorf("translation service returned HTTP %d", apiError.StatusCode)
 		}
 		return nil, errors.New(network.ErrorMessage(err))

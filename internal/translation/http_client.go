@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"skillview/internal/network"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-retryablehttp"
@@ -16,7 +17,7 @@ func newHTTPClient() *http.Client {
 	client.RetryMax = 2
 	client.ErrorHandler = retryablehttp.PassthroughErrorHandler
 	client.HTTPClient.Timeout = 60 * time.Second
-	client.HTTPClient.CheckRedirect = refuseRedirect
+	client.HTTPClient.CheckRedirect = func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }
 	client.HTTPClient.Transport = network.Transport()
 	client.CheckRetry = func(ctx context.Context, response *http.Response, err error) (bool, error) {
 		if err := ctx.Err(); err != nil {
@@ -38,10 +39,18 @@ func newHTTPClient() *http.Client {
 	}
 	standard := client.StandardClient()
 	standard.Timeout = 60 * time.Second
-	standard.CheckRedirect = refuseRedirect
+	standard.CheckRedirect = translationRedirect
 	return standard
 }
 
-func refuseRedirect(*http.Request, []*http.Request) error {
-	return http.ErrUseLastResponse
+func translationRedirect(request *http.Request, previous []*http.Request) error {
+	if len(previous) == 0 || len(previous) > 3 {
+		return http.ErrUseLastResponse
+	}
+	first := previous[0]
+	if request.URL.User != nil || request.URL.Scheme != first.URL.Scheme || !strings.EqualFold(request.URL.Host, first.URL.Host) || request.Method != first.Method {
+		return http.ErrUseLastResponse
+	}
+	request.Header.Del("Referer")
+	return nil
 }

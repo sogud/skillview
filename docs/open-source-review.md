@@ -32,6 +32,14 @@ The system-proxy helper is the unmodified MIT-licensed `go-ieproxy` v0.0.12. Not
 
 No disclosure blocker was found for this change. Real provider accounts, PAC/SOCKS proxy configurations and published-version replacement retain the acceptance limits below.
 
+## Alpha.4 manual scanning and file tree review
+
+The selected 133 public files and complete four-commit standalone history passed Gitleaks before the new commit. Private-path, identity, internal-address, historical filename and commit-metadata checks found no disclosure blocker. Synthetic catalogs, local provider servers, logs, screenshots and the private update-signing key remain excluded. The only update key in source is the public verification key.
+
+The change introduces no runtime dependency. Regenerated notices omit the filesystem-watcher dependency that is no longer linked into the app. File-tree actions reuse the existing revision, permission and Trash checks. Cached references recheck current source access, directory identities and automatic-link targets before opening a file. Redirect tests confirm that translation content and credentials are not forwarded to another origin; same-origin AI redirects preserve the POST body.
+
+The MIT license, contribution/security documents, English README, Chinese interface coverage and pinned CI remain present. A separate code of conduct remains optional governance work. CI runtime scans and review of the exact downloadable ZIP must pass before this preview is published. This review does not accept paid translation accounts, Google availability on another computer, Apple notarization or the complete published-version upgrade flow.
+
 ## Coverage limits
 
 This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

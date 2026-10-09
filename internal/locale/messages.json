@@ -326,6 +326,19 @@
     "The translation service rejected the API key. Check Translation settings.": "翻译服务拒绝了 API key，请检查翻译设置。",
     "The translation service denied access. Check your network or choose Google Cloud or AI translation.": "翻译服务拒绝访问，请检查网络或改用 Google Cloud / AI 翻译。",
     "The translation service is rate limited. Wait and retry, or choose another provider.": "翻译服务请求过多，请稍后重试或切换服务。",
-    "Translation service returned HTTP {status}. Try again or choose another provider.": "翻译服务返回 HTTP {status}，请重试或切换翻译服务。"
+    "Translation service returned HTTP {status}. Try again or choose another provider.": "翻译服务返回 HTTP {status}，请重试或切换翻译服务。",
+    "Cancel scan": "取消扫描",
+    "Scan once to reopen your saved Skills.": "点击扫描一次，即可重新打开上次的技能。",
+    "Scan your Skills folders": "扫描技能目录",
+    "Scanning only starts when you click Scan folders.": "点击“扫描目录”后才开始扫描。",
+    "Scan folders": "扫描目录",
+    "Files": "文件",
+    "Skill files": "技能文件",
+    "Collapse folders": "折叠文件夹",
+    "Hide file tree": "隐藏文件树",
+    "Show file tree": "显示文件树",
+    "Skill copy": "技能副本",
+    "Linked entries": "链接入口",
+    "The translation service redirected the request. Check the service address or use Google Cloud or AI translation.": "翻译服务跳转到了其他地址或验证页面。请检查服务地址；Google 免费翻译不可用时，可切换到 Google Cloud 或 AI 翻译。"
   }
 }

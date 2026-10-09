@@ -16,6 +16,7 @@ export interface Catalog {
     "sources": Source[] | null;
     "issues": Issue[] | null;
     "scannedAt": string;
+    "needsScan": boolean;
     "discovery": DiscoveryReport;
     "agents": AgentInfo[] | null;
 }
