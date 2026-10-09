@@ -8,11 +8,13 @@ import (
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
+	"github.com/wailsapp/wails/v3/pkg/updater"
 	appservice "skillview/internal/app"
 	"skillview/internal/cache"
 	"skillview/internal/library"
 	"skillview/internal/locale"
 	"skillview/internal/translation"
+	"skillview/internal/updates"
 )
 
 //go:embed all:frontend/dist
@@ -21,9 +23,12 @@ var assets embed.FS
 func init() {
 	application.RegisterEvent[string]("skillview:command")
 	application.RegisterEvent[int64]("skillview:catalog")
+	application.RegisterEvent[updates.Status]("skillview:update")
 }
 
 func main() {
+	// Helpers must run before opening user settings, cache, or Skill sources.
+	updater.HandleHelperMode()
 	dataDir := os.Getenv("SKILLVIEW_DATA_DIR")
 	if dataDir == "" {
 		base, err := os.UserConfigDir()
@@ -52,6 +57,7 @@ func main() {
 	}
 	var app *application.App
 	var window *application.WebviewWindow
+	var updateManager *updates.Manager
 	var keys translation.KeyStore = translation.MacKeychain{}
 	searchRoots := library.DefaultSearchRoots(home)
 	if fixtureRoot != "" {
@@ -74,6 +80,7 @@ func main() {
 		menu := application.NewMenu()
 		appMenu := menu.AddSubmenu("SkillView")
 		appMenu.Add(locale.T(language, "Settings…")).SetAccelerator("CmdOrCtrl+,").OnClick(func(*application.Context) { app.Event.Emit("skillview:command", "settings") })
+		appMenu.Add(locale.T(language, "Check for Updates…")).OnClick(func(*application.Context) { app.Event.Emit("skillview:command", "updates") })
 		appMenu.AddSeparator()
 		for _, item := range []struct {
 			role  application.Role
@@ -101,7 +108,7 @@ func main() {
 		app.Menu.Set(menu)
 		window.SetTitle(locale.T(language, "Skills"))
 	}
-	service := appservice.New(lib, appservice.Native{Application: func() *application.App { return app }, Window: func() *application.WebviewWindow { return window }, DiscoveryRoots: searchRoots, UpdateLanguage: updateLanguage}, translator)
+	service := appservice.New(lib, appservice.Native{Application: func() *application.App { return app }, Window: func() *application.WebviewWindow { return window }, DiscoveryRoots: searchRoots, UpdateLanguage: updateLanguage, Updates: func() *updates.Manager { return updateManager }}, translator)
 	defer service.Close()
 	app = application.New(application.Options{
 		Name: "SkillView", Description: "Read, browse, and safely edit local Agent Skills.",
@@ -109,6 +116,15 @@ func main() {
 		Assets:     application.AssetOptions{Handler: application.AssetFileServerFS(assets)},
 		ShouldQuit: service.ShouldQuit,
 		Mac:        application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: true},
+	})
+	updateManager, err = updates.New(app.Updater, fixtureRoot != "", func(status updates.Status) { app.Event.Emit("skillview:update", status) })
+	if err != nil {
+		log.Fatal(err)
+	}
+	app.Event.On(updater.EventDownloadProgress, func(event *application.CustomEvent) {
+		if progress, ok := event.Data.(updater.Progress); ok {
+			updateManager.Progress(progress)
+		}
 	})
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name: "library", Title: "Skills", Width: 900, Height: 560, MinWidth: 760, MinHeight: 480,

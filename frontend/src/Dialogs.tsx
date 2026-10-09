@@ -10,6 +10,8 @@ import { AgentIcon } from './AgentIcon'
 export type SettingsTab = 'general' | 'sources' | 'agents' | 'translation'
 
 type SettingsProps = {
+  version: string
+  onUpdates: () => void
   tab: SettingsTab
   language: string
   onLanguage: (language: string) => void
@@ -182,7 +184,10 @@ export function Settings(props: SettingsProps) {
             <div className="about">
               <Folder size={25} strokeWidth={1.3} />
               <strong>SkillView</strong>
-              <span>{t('Version {version}', { version: '0.1.0' })}</span>
+              <span>{t('Version {version}', { version: props.version })}</span>
+              <button onClick={props.onUpdates}>
+                {t('Check for updates')}
+              </button>
               <p>
                 {t('Read, browse, and edit your local Skills.')}
                 <br />

@@ -10,9 +10,11 @@ import {
   Plus,
   RotateCw,
   X,
+  Download,
 } from 'lucide-react'
 import * as api from './api'
-import type { Catalog, Document, Resource, Skill } from './api'
+import type { Catalog, Document, Resource, Skill, UpdateInfo } from './api'
+import { UpdateDialog } from './UpdateDialog'
 import { IconButton, Modal } from './components'
 import {
   CreateDialog,
@@ -48,6 +50,8 @@ export default function App() {
   )
   const [theme, setTheme] = useState('system')
   const [settings, setSettings] = useState<SettingsTab | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateInfo | null>(null)
+  const [updatesOpen, setUpdatesOpen] = useState(false)
   const [resourceAction, setResourceAction] = useState<{
     kind: 'new' | 'rename'
     resource?: Resource
@@ -68,6 +72,17 @@ export default function App() {
   const currentState = useRef({ draft, saving, selected, document })
   currentState.current = { draft, saving, selected, document }
   const dirty = !!draft && draft.text !== draft.base.text
+
+  useEffect(() => {
+    const unsubscribe = Events.On('skillview:update', (event) =>
+      setUpdateStatus(event.data as UpdateInfo),
+    )
+    void api
+      .UpdateStatus()
+      .then(setUpdateStatus)
+      .catch(() => {})
+    return unsubscribe
+  }, [])
 
   const notify = useCallback((text: string, error = false, undo?: string) => {
     setLastTrash(undo ?? null)
@@ -188,6 +203,16 @@ export default function App() {
       return
     }
     action()
+  }
+
+  function checkUpdates() {
+    void api.CheckUpdates().then(setUpdateStatus).catch(fail)
+  }
+
+  function openUpdates() {
+    setSettings(null)
+    setUpdatesOpen(true)
+    if (!updateStatus?.latest) checkUpdates()
   }
 
   async function load(skill: Skill, path = 'SKILL.md', edit = false) {
@@ -329,6 +354,7 @@ export default function App() {
 
   const commands = useRef<(command: string) => void>(() => {})
   commands.current = (command) => {
+    if (command === 'updates') openUpdates()
     if (command === 'find') {
       window.document.documentElement.dataset.inputMode = 'keyboard'
       search.current?.focus()
@@ -397,6 +423,7 @@ export default function App() {
         if (
           event.key === 'Escape' &&
           !settings &&
+          !updatesOpen &&
           !creating &&
           !conflict &&
           !pendingAction &&
@@ -430,6 +457,24 @@ export default function App() {
             onClick={() => setSettings('sources')}
           />
           <div className="rail-spacer" />
+          {!!updateStatus?.latest && (
+            <button
+              className="update-badge"
+              title={t(
+                updateStatus.state === 'ready'
+                  ? 'Restart to update'
+                  : 'Update available',
+              )}
+              aria-label={t(
+                updateStatus.state === 'ready'
+                  ? 'Restart to update'
+                  : 'Update available',
+              )}
+              onClick={openUpdates}
+            >
+              <Download size={17} />
+            </button>
+          )}
           <IconButton
             icon={SettingsIcon}
             label={t('Settings')}
@@ -637,6 +682,8 @@ export default function App() {
       )}
       {settings && (
         <Settings
+          version={updateStatus?.version ?? '…'}
+          onUpdates={openUpdates}
           tab={settings}
           theme={theme}
           language={language}
@@ -664,6 +711,23 @@ export default function App() {
             void refresh(true).catch(fail)
           }}
           onClose={() => setSettings(null)}
+        />
+      )}
+      {updatesOpen && (
+        <UpdateDialog
+          status={updateStatus}
+          onCheck={checkUpdates}
+          onDownload={() => {
+            void api.DownloadUpdate().then(setUpdateStatus).catch(fail)
+          }}
+          onRestart={() => {
+            setUpdatesOpen(false)
+            request(() => {
+              void api.RestartUpdate().catch(fail)
+            })
+          }}
+          onLink={openLink}
+          onClose={() => setUpdatesOpen(false)}
         />
       )}
       {resourceAction && selected && (

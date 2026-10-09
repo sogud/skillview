@@ -15,6 +15,7 @@ import (
 	"skillview/internal/library"
 	"skillview/internal/locale"
 	"skillview/internal/translation"
+	"skillview/internal/updates"
 )
 
 type Native struct {
@@ -22,6 +23,7 @@ type Native struct {
 	Window         func() *application.WebviewWindow
 	DiscoveryRoots []string
 	UpdateLanguage func(string)
+	Updates        func() *updates.Manager
 }
 
 type Service struct {
@@ -216,6 +218,9 @@ func (s *Service) Ready() {
 		return
 	}
 	s.ready = true
+	if s.native.Updates != nil {
+		s.native.Updates().Start()
+	}
 	watcher, err := watch.New(func() { s.native.Application().Event.Emit("skillview:catalog", s.sequence.Add(1)) })
 	if err == nil {
 		s.watcher = watcher
@@ -231,6 +236,9 @@ func (s *Service) updateWatch() bool {
 	return !s.ready
 }
 func (s *Service) Close() {
+	if s.native.Updates != nil {
+		s.native.Updates().Close()
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.watcher != nil {
@@ -252,6 +260,30 @@ func (s *Service) Quit() {
 	s.allowQuit = true
 	s.mu.Unlock()
 	s.native.Application().Quit()
+}
+
+func (s *Service) UpdateStatus() updates.Status { return s.native.Updates().Status() }
+
+func (s *Service) CheckUpdates(ctx context.Context) updates.Status {
+	return s.native.Updates().Check(ctx)
+}
+
+func (s *Service) DownloadUpdate(ctx context.Context) updates.Status {
+	return s.native.Updates().Download(ctx)
+}
+
+// The frontend calls this only after the existing save/discard dialog resolves.
+func (s *Service) RestartUpdate(ctx context.Context) error {
+	s.mu.Lock()
+	s.allowQuit = true
+	s.mu.Unlock()
+	if err := s.native.Updates().Restart(ctx); err != nil {
+		s.mu.Lock()
+		s.allowQuit = false
+		s.mu.Unlock()
+		return err
+	}
+	return nil
 }
 
 func (s *Service) CreateResource(id, path, text string) (library.Document, error) {

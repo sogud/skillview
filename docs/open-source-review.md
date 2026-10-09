@@ -16,6 +16,14 @@ Gitleaks v8.30.1 scanned the selected source without finding credentials. Manual
 
 The application includes collected runtime dependency license texts plus notices for the Vercel Agent registry, LobeHub, Devicon and Simple Icons. The two MPL-2.0 HashiCorp libraries are unmodified; notices provide their exact upstream source URLs. Brand icons identify tools and do not imply affiliation. Magpie informed the visual direction; its implementation was not copied.
 
-## Remaining limits
+## Alpha.2 update review
+
+The updater change was reviewed before the second experimental release. Gitleaks and a separate path/key check covered the 115 selected public source files; local settings, update fixtures, builds and the private signing key were excluded. The only committed update key is the public verification key. Complete standalone Git history and commit metadata were checked again before pushing.
+
+The new runtime dependency `golang.org/x/mod` is pinned to v0.40.0 after two known-advisory findings; its BSD license is included in the regenerated notices. The final binary's vulnerability scan passed. The reviewed ZIP contains one app bundle and no private key, local settings or acceptance files. Its digest and Ed25519ph signature were verified against the pinned public key.
+
+No disclosure blocker was found. The release remains experimental: Apple signing/notarization and the complete published-version upgrade flow have the acceptance limits described in [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).
+
+## Coverage limits
 
 This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

@@ -8,7 +8,7 @@ The screenshot uses synthetic documents and isolated settings.
 
 ## Try the preview
 
-Download the Apple Silicon ZIP or DMG from [GitHub Releases](https://github.com/sogud/skillview/releases). This is an experimental preview, ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
+Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). This is an experimental preview, ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
 
 The bundle declares macOS 13 or newer, but the minimum OS has not been accepted on a real macOS 13 device. Intel builds are not provided. See [release readiness](RELEASE_READINESS.md) for the remaining checks.
 
@@ -22,6 +22,7 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 - AI uses the official OpenAI Go SDK with a configurable compatible endpoint, including local models. Keys stay in macOS Keychain. Translation only runs after a click and does not modify the original file.
 - Cancel an in-flight translation, copy it with its target-language label or export it to a separate new file. A user-requested connection test sends only a fixed sample and bypasses cached results.
 - Filesystem changes refresh the catalog. SQLite stores disposable catalog and translation caches; originals and editor drafts remain authoritative.
+- From alpha.2, check GitHub Releases at launch and every six hours. A purple sidebar icon opens release notes, signed download progress and restart controls. Unsaved edits use the existing save/discard prompt. Settings and the app menu also offer **Check for updates**.
 
 Automatic and linked sources are read-only. Choose an original folder in **Settings → Sources → Allow editing** to enable writes. A grouped entry does not synchronize or delete every copy: editing and Trash apply only to the selected original.
 
@@ -51,7 +52,7 @@ Focused checks:
 ```sh
 source script/toolchain.sh
 ensure_go
-go test -race ./internal/library ./internal/translation ./internal/cache ./internal/watch
+go test -race ./internal/library ./internal/translation ./internal/cache ./internal/watch ./internal/updates
 npm --prefix frontend ci
 npm --prefix frontend run build
 node --test frontend/src/skill-groups.test.mjs
@@ -60,6 +61,8 @@ node --test frontend/src/skill-groups.test.mjs
 Settings, recovery copies, derived caches and restore receipts live in `~/Library/Application Support/SkillView`. Clear cache does not remove originals, preferences, recovery copies or keys.
 
 Translation sends the selected document to the provider you choose. It runs only after a click. The optional no-key Google endpoint is unofficial and may be unavailable. API keys are kept in macOS Keychain; the configured provider may charge for requests. There is no Skill execution, cloud synchronization or telemetry.
+
+Update checks send the app version and platform to public GitHub release endpoints; they do not send Skill content or local paths. Downloads require a click. Alpha.1 needs one manual upgrade to a build with the updater. In-app installation requires a writable app bundle on the same volume as the macOS temporary directory; otherwise use the GitHub download link. See [updates and publishing](docs/updates.md).
 
 See [implementation](docs/architecture.md), [source research](docs/sources.md), [verification](docs/verification.md), [open-source review](docs/open-source-review.md) and [contributing](CONTRIBUTING.md). Report vulnerabilities through the [security policy](SECURITY.md).
 

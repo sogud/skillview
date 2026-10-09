@@ -14,6 +14,18 @@ APP_BUNDLE="${SKILLVIEW_APP_BUNDLE:-$PROJECT_DIR/bin/SkillView.app}"
 mkdir -p "$APP_BUNDLE/Contents/MacOS" "$APP_BUNDLE/Contents/Resources"
 go build -tags production -trimpath -buildvcs=false -ldflags='-w -s' -o "$APP_BUNDLE/Contents/MacOS/SkillView" .
 cp build/Info.plist "$APP_BUNDLE/Contents/Info.plist"
+python3 - "$APP_BUNDLE/Contents/Info.plist" <<'PY'
+import pathlib
+import plistlib
+import sys
+version = pathlib.Path('internal/updates/version.txt').read_text().strip()
+path = pathlib.Path(sys.argv[1])
+info = plistlib.loads(path.read_bytes())
+info['CFBundleShortVersionString'] = version.split('-')[0]
+info['CFBundleVersion'] = version.split('-')[0]
+info['SkillViewReleaseVersion'] = version
+path.write_bytes(plistlib.dumps(info))
+PY
 cp LICENSE "$APP_BUNDLE/Contents/Resources/License.txt"
 for LANGUAGE_DIR in build/*.lproj; do
   plutil -lint "$LANGUAGE_DIR/InfoPlist.strings"

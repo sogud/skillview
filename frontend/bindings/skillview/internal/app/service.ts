@@ -11,9 +11,16 @@ import * as library$0 from "../library/models.js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
 import * as translation$0 from "../translation/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as updates$0 from "../updates/models.js";
 
 export function CachedCatalog(): $CancellablePromise<library$0.Catalog> {
     return $Call.ByID(1877209423);
+}
+
+export function CheckUpdates(): $CancellablePromise<updates$0.Status> {
+    return $Call.ByID(3350684420);
 }
 
 export function ChooseResource(id: string): $CancellablePromise<string> {
@@ -46,6 +53,10 @@ export function CreateResource(id: string, path: string, text: string): $Cancell
 
 export function Discover(): $CancellablePromise<library$0.Catalog> {
     return $Call.ByID(2585372841);
+}
+
+export function DownloadUpdate(): $CancellablePromise<updates$0.Status> {
+    return $Call.ByID(1218483175);
 }
 
 export function ExportTranslation(id: string, path: string, result: translation$0.Result): $CancellablePromise<boolean> {
@@ -94,6 +105,13 @@ export function ResourceReferences(id: string, path: string): $CancellablePromis
 
 export function Resources(id: string): $CancellablePromise<library$0.Resource[] | null> {
     return $Call.ByID(2655643303, id);
+}
+
+/**
+ * The frontend calls this only after the existing save/discard dialog resolves.
+ */
+export function RestartUpdate(): $CancellablePromise<void> {
+    return $Call.ByID(2386701256);
 }
 
 export function Reveal(id: string, path: string): $CancellablePromise<void> {
@@ -158,4 +176,8 @@ export function TrashLink(id: string, sourceID: string, path: string, token: str
 
 export function UndoTrash(id: string): $CancellablePromise<void> {
     return $Call.ByID(3806781470, id);
+}
+
+export function UpdateStatus(): $CancellablePromise<updates$0.Status> {
+    return $Call.ByID(1912695305);
 }

@@ -1,4 +1,5 @@
 export * from '../bindings/skillview/internal/app/service'
+export type { Status as UpdateInfo } from '../bindings/skillview/internal/updates/models'
 export type {
   Catalog,
   AgentInfo,
