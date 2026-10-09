@@ -51,10 +51,6 @@ export function CreateResource(id: string, path: string, text: string): $Cancell
     return $Call.ByID(2127083482, id, path, text);
 }
 
-export function Discover(): $CancellablePromise<library$0.Catalog> {
-    return $Call.ByID(2585372841);
-}
-
 export function DownloadUpdate(): $CancellablePromise<updates$0.Status> {
     return $Call.ByID(1218483175);
 }
@@ -118,6 +114,10 @@ export function Reveal(id: string, path: string): $CancellablePromise<void> {
     return $Call.ByID(1969797355, id, path);
 }
 
+export function RevealUpdateLog(): $CancellablePromise<void> {
+    return $Call.ByID(1804564928);
+}
+
 export function Save(id: string, path: string, revision: string, text: string): $CancellablePromise<library$0.SaveResult> {
     return $Call.ByID(3911345459, id, path, revision, text);
 }
@@ -126,12 +126,8 @@ export function Scan(): $CancellablePromise<library$0.Catalog> {
     return $Call.ByID(413026995);
 }
 
-export function SetFavorite(id: string, value: boolean): $CancellablePromise<void> {
-    return $Call.ByID(1860047186, id, value);
-}
-
-export function SetFavorites(ids: string[] | null, value: boolean): $CancellablePromise<void> {
-    return $Call.ByID(2828334835, ids, value);
+export function SetAccentColor(color: string): $CancellablePromise<void> {
+    return $Call.ByID(3527685455, color);
 }
 
 export function SetLanguage(language: string): $CancellablePromise<void> {
@@ -176,6 +172,10 @@ export function TrashLink(id: string, sourceID: string, path: string, token: str
 
 export function UndoTrash(id: string): $CancellablePromise<void> {
     return $Call.ByID(3806781470, id);
+}
+
+export function UpdateDiagnostics(): $CancellablePromise<string> {
+    return $Call.ByID(1911156341);
 }
 
 export function UpdateStatus(): $CancellablePromise<updates$0.Status> {

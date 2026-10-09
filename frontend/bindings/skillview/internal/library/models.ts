@@ -61,7 +61,7 @@ export interface Occurrence {
 export interface Preferences {
     "recentTrash": TrashReceipt[] | null;
     "sources": Source[] | null;
-    "favorites": { [_ in string]?: boolean } | null;
+    "accentColor": string;
     "theme": string;
     "language": string;
     "excludedSources": { [_ in string]?: boolean } | null;
@@ -99,7 +99,6 @@ export interface Skill {
     "warnings": string[] | null;
     "occurrences": Occurrence[] | null;
     "tools": string[] | null;
-    "favorite": boolean;
     "editable": boolean;
 }
 

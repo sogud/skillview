@@ -8,16 +8,19 @@ import * as api from './api'
 import type { Source, Catalog, TranslationSettings } from './api'
 import { AgentIcon } from './AgentIcon'
 
-export type SettingsTab = 'general' | 'sources' | 'agents' | 'translation'
+export type SettingsTab = 'general' | 'folders' | 'agents' | 'translation'
 
 type SettingsProps = {
   version: string
   onUpdates: () => void
+  openDiagnostics: boolean
   tab: SettingsTab
   language: string
   onLanguage: (language: string) => void
   onTranslationSaved: () => void
   theme: string
+  accentColor: string
+  onAccentColor: (color: string) => void
   catalog: Catalog | null
   onTab: (tab: SettingsTab) => void
   onTheme: (theme: string) => void
@@ -31,6 +34,14 @@ export function Settings(props: SettingsProps) {
   const { t, error: message } = useLocale()
   const [recentTrash, setRecentTrash] = useState<api.TrashReceipt[]>([])
   const [cacheMessage, setCacheMessage] = useState('')
+  const [diagnostics, setDiagnostics] = useState<string | null>(null)
+  useEffect(() => {
+    if (props.openDiagnostics)
+      void api
+        .UpdateDiagnostics()
+        .then(setDiagnostics)
+        .catch((failure) => setError(message(failure)))
+  }, [props.openDiagnostics, message])
   useEffect(() => {
     let active = true
     void api
@@ -77,10 +88,10 @@ export function Settings(props: SettingsProps) {
         </button>
         <button
           role="tab"
-          aria-selected={props.tab === 'sources'}
-          onClick={() => props.onTab('sources')}
+          aria-selected={props.tab === 'folders'}
+          onClick={() => props.onTab('folders')}
         >
-          {t('Sources')}
+          {t('Folders')}
         </button>
         <button
           role="tab"
@@ -115,6 +126,45 @@ export function Settings(props: SettingsProps) {
                   {t(theme[0].toUpperCase() + theme.slice(1))}
                 </button>
               ))}
+            </div>
+            <h3>{t('Theme color')}</h3>
+            <div
+              className="accent-palette"
+              role="group"
+              aria-label={t('Theme color')}
+            >
+              {[
+                { color: '', label: 'Default color' },
+                { color: '#3671dc', label: 'Blue' },
+                { color: '#8753cb', label: 'Purple' },
+                { color: '#278368', label: 'Green' },
+                { color: '#bf6639', label: 'Orange' },
+                { color: '#c34d6a', label: 'Rose' },
+                { color: '#66717e', label: 'Slate' },
+              ].map(({ color, label }) => (
+                <button
+                  key={label}
+                  className="accent-swatch"
+                  aria-label={t(label)}
+                  aria-pressed={props.accentColor === color}
+                  title={t(label)}
+                  style={
+                    { '--swatch': color || '#3671dc' } as React.CSSProperties
+                  }
+                  onClick={() => props.onAccentColor(color)}
+                >
+                  {!color ? '↺' : ''}
+                </button>
+              ))}
+              <label className="custom-color">
+                {t('Custom color')}
+                <input
+                  type="color"
+                  aria-label={t('Custom color')}
+                  value={props.accentColor || '#3671dc'}
+                  onChange={(event) => props.onAccentColor(event.target.value)}
+                />
+              </label>
             </div>
             <label className="field language-field">
               {t('Interface language')}
@@ -182,6 +232,39 @@ export function Settings(props: SettingsProps) {
                     </div>
                   ))}
               </Disclosure>
+            )}
+            <button
+              onClick={() => {
+                void api
+                  .UpdateDiagnostics()
+                  .then(setDiagnostics)
+                  .catch((failure) => setError(message(failure)))
+              }}
+            >
+              {t('Update diagnostics')}
+            </button>
+            {diagnostics !== null && (
+              <div className="diagnostic-panel">
+                <p className="quiet-note">
+                  {t(
+                    'Saved locally. No Skills, credentials, or private paths are recorded.',
+                  )}
+                </p>
+                <textarea
+                  readOnly
+                  aria-label={t('Update log')}
+                  value={diagnostics}
+                />
+                <button
+                  onClick={() => {
+                    void api
+                      .RevealUpdateLog()
+                      .catch((failure) => setError(message(failure)))
+                  }}
+                >
+                  {t('Show log in Finder')}
+                </button>
+              </div>
             )}
             <div className="about">
               <Folder size={25} strokeWidth={1.3} />
@@ -254,9 +337,14 @@ export function Settings(props: SettingsProps) {
                 onClick={props.onRescan}
               />
             </div>
+            <p className="quiet-note">
+              {t('Only known Agent folders and folders you add are scanned.')}
+            </p>
             <div className="source-list">
               <Virtuoso
-                data={props.catalog?.sources ?? []}
+                data={(props.catalog?.sources ?? []).filter(
+                  (source) => !source.automatic,
+                )}
                 style={{ height: 235 }}
                 defaultItemHeight={90}
                 computeItemKey={(_, source) => source.id}

@@ -46,6 +46,8 @@ type releaseFixture struct {
 	missingManifest bool
 	malformed       bool
 	rateLimited     bool
+	cutoff          bool
+	downloadCount   int
 }
 
 func newReleaseFixture(t *testing.T) *releaseFixture {
@@ -114,6 +116,25 @@ func (f *releaseFixture) handle(w http.ResponseWriter, r *http.Request) {
 		}
 		_ = json.NewEncoder(w).Encode(map[string]any{"schemaVersion": 1, "version": version, "artifacts": []any{artifact}})
 	case r.URL.Path == "/download/v"+f.version+"/"+filename:
+		f.downloadCount++
+		if f.cutoff && f.downloadCount == 1 {
+			w.Header().Set("Content-Length", fmt.Sprint(len(f.download)))
+			_, _ = w.Write(f.download[:len(f.download)/2])
+			w.(http.Flusher).Flush()
+			conn, _, _ := w.(http.Hijacker).Hijack()
+			_ = conn.Close()
+			return
+		}
+		if f.cutoff {
+			if r.Header.Get("Range") != fmt.Sprintf("bytes=%d-", len(f.download)/2) {
+				w.WriteHeader(400)
+				return
+			}
+			w.Header().Set("Content-Range", fmt.Sprintf("bytes %d-%d/%d", len(f.download)/2, len(f.download)-1, len(f.download)))
+			w.WriteHeader(http.StatusPartialContent)
+			_, _ = w.Write(f.download[len(f.download)/2:])
+			return
+		}
 		_, _ = w.Write(f.download)
 	default:
 		http.NotFound(w, r)
@@ -151,13 +172,35 @@ func TestSignedUpdateDownloadsVerifiesAndExtractsBundle(t *testing.T) {
 	}
 }
 
+func TestResumedSignedUpdateStillVerifiesAndExtracts(t *testing.T) {
+	f := newReleaseFixture(t)
+	f.cutoff = true
+	u := fixtureUpdater(t, f, f.public)
+	if _, err := u.Check(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if err := u.DownloadAndInstall(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	path := u.DownloadedPath()
+	t.Cleanup(func() { _ = os.RemoveAll(filepath.Dir(path)) })
+	if _, err := os.Stat(filepath.Join(path, "Contents", "Resources", "fixture.txt")); err != nil {
+		t.Fatal(err)
+	}
+	if f.downloadCount != 2 || u.State() != updater.StateReady {
+		t.Fatal("resume was not verified", f.downloadCount, u.State())
+	}
+}
+
 func TestTamperedOrWrongKeyUpdateNeverBecomesReady(t *testing.T) {
-	for _, mode := range []string{"tampered", "wrong key"} {
+	for _, mode := range []string{"tampered", "resumed tampered", "wrong key"} {
 		t.Run(mode, func(t *testing.T) {
 			f := newReleaseFixture(t)
 			key := f.public
-			if mode == "tampered" {
-				f.download = []byte("tampered archive")
+			if mode == "tampered" || mode == "resumed tampered" {
+				f.cutoff = mode == "resumed tampered"
+				f.download = append([]byte(nil), f.zip...)
+				f.download[0] ^= 1
 			} else {
 				key, _, _ = ed25519.GenerateKey(rand.Reader)
 			}

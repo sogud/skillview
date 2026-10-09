@@ -154,7 +154,7 @@ func (s *scanState) walk(directory *os.File, source Source, entrySource Source, 
 			}
 		} else {
 			id := objectID(canonical)
-			skill := Skill{ID: id, ContentKey: skillContentKey(name, data), Name: name, Description: description, Path: canonical, Revision: digest(data), Warnings: warnings, Occurrences: []Occurrence{occurrence}, Tools: append([]string{}, entrySource.Tools...), Favorite: s.library.prefs.Favorites[id], Editable: source.Writable && !linked}
+			skill := Skill{ID: id, ContentKey: skillContentKey(name, data), Name: name, Description: description, Path: canonical, Revision: digest(data), Warnings: warnings, Occurrences: []Occurrence{occurrence}, Tools: append([]string{}, entrySource.Tools...), Editable: source.Writable && !linked}
 			s.positions[identity] = len(s.catalog.Skills)
 			s.catalog.Skills = append(s.catalog.Skills, skill)
 			ref := fileRef{sourceID: source.ID, relativeDir: relative, identity: identity}
@@ -355,7 +355,7 @@ func (l *Library) CachedCatalog() (Catalog, error) {
 		}
 	}
 	refs := map[string]fileRef{}
-	for i, skill := range catalog.Skills {
+	for _, skill := range catalog.Skills {
 		cached, exists := snapshot.References[skill.ID]
 		if !exists {
 			catalog.NeedsScan = true
@@ -373,7 +373,6 @@ func (l *Library) CachedCatalog() (Catalog, error) {
 			return empty, nil
 		}
 		refs[skill.ID] = fileRef{sourceID: cached.SourceID, relativeDir: cached.RelativeDir, identity: cached.Identity, linkedRoot: cached.LinkedRoot, fileName: cached.FileName}
-		catalog.Skills[i].Favorite = l.prefs.Favorites[skill.ID]
 	}
 	l.catalog, l.refs, l.discovery = catalog, refs, catalog.Discovery
 	return catalog, nil
@@ -430,7 +429,7 @@ func (s *scanState) scanFlat(directory *os.File, source, entrySource Source, rel
 		}
 		id := objectID(canonical)
 		s.positions["flat:"+fileID] = len(s.catalog.Skills)
-		s.catalog.Skills = append(s.catalog.Skills, Skill{ID: id, ContentKey: skillContentKey(name, data), Name: name, Description: description, Path: canonical, Revision: digest(data), Warnings: warnings, Occurrences: []Occurrence{occurrence}, Tools: append([]string{}, entrySource.Tools...), Favorite: s.library.prefs.Favorites[id]})
+		s.catalog.Skills = append(s.catalog.Skills, Skill{ID: id, ContentKey: skillContentKey(name, data), Name: name, Description: description, Path: canonical, Revision: digest(data), Warnings: warnings, Occurrences: []Occurrence{occurrence}, Tools: append([]string{}, entrySource.Tools...)})
 		ref := fileRef{sourceID: source.ID, relativeDir: relative, identity: identity, fileName: entry.Name()}
 		if linked {
 			source.Writable = false

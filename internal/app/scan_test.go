@@ -9,7 +9,7 @@ import (
 	"skillview/internal/library"
 )
 
-func TestStartupReadsKnownSkillsBeforeBroaderDiscovery(t *testing.T) {
+func TestManualScanReadsOnlyKnownAndExplicitFolders(t *testing.T) {
 	known := t.TempDir()
 	search := t.TempDir()
 	for _, root := range []string{known, search} {
@@ -25,7 +25,7 @@ func TestStartupReadsKnownSkillsBeforeBroaderDiscovery(t *testing.T) {
 	if _, err := l.AddSource(known, false); err != nil {
 		t.Fatal(err)
 	}
-	s := New(l, Native{DiscoveryRoots: []string{search}}, nil)
+	s := New(l, Native{KnownSources: func() []library.Source { return nil }}, nil)
 	catalog, err := s.Scan(context.Background())
 	if err != nil || len(catalog.Skills) != 1 || catalog.Discovery.Directories != 0 {
 		t.Fatalf("initial catalog: %d skills, %d discovery directories, %v", len(catalog.Skills), catalog.Discovery.Directories, err)

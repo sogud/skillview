@@ -40,6 +40,12 @@ The change introduces no runtime dependency. Regenerated notices omit the filesy
 
 The MIT license, contribution/security documents, English README, Chinese interface coverage and pinned CI remain present. A separate code of conduct remains optional governance work. CI runtime scans and review of the exact downloadable ZIP must pass before this preview is published. This review does not accept paid translation accounts, Google availability on another computer, Apple notarization or the complete published-version upgrade flow.
 
+## Alpha.5 scope
+
+This change introduces no dependency. Automatic scanning is restricted to registered Agent locations; previous broad automatic sources lose catalog membership without deleting their files. Explicit folders and write approvals remain. Favorites and source-navigation controls are removed. Theme colors are validated before persistence. Interrupted update requests append only an exact matching byte range and retain SHA-512/Ed25519ph verification over the entire archive. Update diagnostics store fixed stages, versions, byte counts and classified errors locally; SDK helper paths are not copied into the report.
+
+Synthetic tests, UI screenshots, local logs, update acceptance data and private signing credentials remain excluded from the public source and packages. Gitleaks scanned the selected 137 public source files and complete six-commit history without finding credentials. Manual checks found no private machine paths, personal commit email or sensitive historical filename. Review of the exact downloadable ZIP and fresh CI runtime scans remain required before publication. Apple notarization and acceptance on the user's other Mac remain outside this local review.
+
 ## Coverage limits
 
 This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

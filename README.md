@@ -14,17 +14,17 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 
 ## Features
 
-- Click Scan to discover global, project, plugin and shared Skills across 83 Agent definitions, including folders on connected local drives. Startup opens the saved catalog without a background scan. Manual scanning shows folder/source counts and can be canceled; inaccessible paths and scan limits are reported.
+- Click Scan to read known global skill/plugin directories across 83 Agent definitions, plus folders you explicitly add. Home and connected drives are not searched. Startup opens the saved catalog without a background scan. Manual scanning shows folder counts and can be canceled; inaccessible paths and scan limits are reported.
 - Agent tabs wrap into rows and show installed local applications or executables by default. Configuration folders alone do not count as an installation.
 - One list entry per Skill name, with overlapping platform logos and a platform count. Different contents remain available as versions and independent copies in the reader.
-- A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Search, favorites, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
-- English and Simplified Chinese interface, following the system language by default. Google, Google Cloud and AI translation support ten target languages.
+- A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Search, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
+- System/light/dark appearance and a configurable theme color. English and Simplified Chinese interface, following the system language by default. Google, Google Cloud and AI translation support ten target languages.
 - AI uses the official OpenAI Go SDK with a configurable compatible endpoint, including local models. Keys stay in macOS Keychain. Translation only runs after a click and does not modify the original file.
 - Translation shows completed sections, elapsed time, a completion label and clear failure/retry controls. Cancel an in-flight translation, copy it with its target-language label or export it to a separate new file. A user-requested connection test sends only a fixed sample and bypasses cached results.
-- Filesystem changes refresh the catalog. SQLite stores disposable catalog and translation caches; originals and editor drafts remain authoritative.
-- From alpha.2, check GitHub Releases at launch and every six hours. A purple sidebar icon opens release notes, signed download progress and restart controls. Unsaved edits use the existing save/discard prompt. Settings and the app menu also offer **Check for updates**.
+- External additions appear after a manual scan. SQLite stores disposable catalog and translation caches; originals and editor drafts remain authoritative.
+- From alpha.2, check GitHub Releases at launch and every six hours. A theme-colored sidebar icon opens release notes, signed download progress and restart controls. Unsaved edits use the existing save/discard prompt. Settings and the app menu also offer **Check for updates**.
 
-Automatic and linked sources are read-only. Choose an original folder in **Settings → Sources → Allow editing** to enable writes. A grouped entry does not synchronize or delete every copy: editing and Trash apply only to the selected original.
+Automatic and linked sources are read-only. Choose an original folder in **Settings → Folders → Allow editing** to enable writes. A grouped entry does not synchronize or delete every copy: editing and Trash apply only to the selected original.
 
 Selecting a link's containing folder for editing also allows moving that final link entry to Trash. Its target stays in place. Parent-directory links require selecting the actual containing directory; replaced links are refused. Resource links can be removed without reading their targets.
 

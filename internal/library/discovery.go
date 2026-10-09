@@ -1,10 +1,8 @@
 package library
 
 import (
-	"context"
 	_ "embed"
 	"encoding/json"
-	"golang.org/x/sys/unix"
 	"os"
 	"path/filepath"
 	"sort"
@@ -81,7 +79,7 @@ func DefaultSources(home string) []Source {
 				continue
 			}
 			scope := "global"
-			if strings.Contains(path, "/plugins/") || strings.Contains(path, "/extensions") {
+			if strings.Contains(path, "/plugins/") || strings.Contains(path, "/extensions") || strings.Contains(path, "/bundled-marketplace") {
 				scope = "plugin"
 			}
 			source, ok := automaticSource(path, location.Tool, scope, []string{location.Tool})
@@ -94,7 +92,7 @@ func DefaultSources(home string) []Source {
 	}
 	for i := range result {
 		if len(result[i].Tools) > 2 || filepath.Base(filepath.Dir(result[i].Path)) == ".agents" || strings.HasSuffix(result[i].Path, "/.config/agents/skills") {
-			result[i].Name = "Shared Skills"
+			result[i].Name = "Common Skills"
 			result[i].Tools = append(result[i].Tools, "Shared")
 		}
 	}
@@ -104,10 +102,14 @@ func DefaultSources(home string) []Source {
 
 func (l *Library) mergeAutomatic(candidates []Source) {
 	positions := map[string]int{}
+	known := map[string]bool{}
+	for _, candidate := range candidates {
+		known[candidate.ID] = true
+	}
 	kept := []Source{}
 	for _, source := range l.prefs.Sources {
 		// Old versions stored non-existent automatic candidates without approval.
-		if !source.Approved && !source.Writable {
+		if (!source.Approved && !source.Writable) || (source.Automatic && !source.Writable && !known[source.ID]) {
 			continue
 		}
 		positions[source.ID] = len(kept)
@@ -120,8 +122,8 @@ func (l *Library) mergeAutomatic(candidates []Source) {
 		}
 		if index, exists := positions[candidate.ID]; exists {
 			previous := l.prefs.Sources[index]
-			if previous.Writable && previous.Identity == candidate.Identity {
-				candidate.Writable = true
+			if !previous.Automatic && previous.Approved && previous.Identity == candidate.Identity {
+				candidate.Writable = previous.Writable
 				candidate.Automatic = false
 			}
 			l.prefs.Sources[index] = candidate
@@ -132,125 +134,17 @@ func (l *Library) mergeAutomatic(candidates []Source) {
 	}
 }
 
-// File-name discovery reads directory metadata only. Skill contents are read by
-// the normal bounded catalog scanner after a source has been discovered.
-func (l *Library) Discover(ctx context.Context, roots []string, progress ...func(ScanProgress)) error {
-	home, err := os.UserHomeDir()
-	if err != nil {
-		return err
-	}
-	return l.discover(ctx, roots, home, DefaultSources(home), progress...)
-}
-
-func (l *Library) discover(ctx context.Context, roots []string, home string, candidates []Source, progress ...func(ScanProgress)) error {
-	known := map[string]bool{}
-	for _, source := range candidates {
-		known[source.ResolvedPath] = true
-	}
-	projectPaths := map[string][]string{}
-	installed := map[string]bool{}
-	for _, agent := range Agents(home) {
-		installed[agent.Name] = agent.Installed
-	}
-	for _, location := range Locations() {
-		for _, path := range location.Project {
-			if _, exists := projectPaths[path]; !exists {
-				projectPaths[path] = []string{}
-			}
-			if path == ".agents/skills" && !installed[location.Tool] {
-				continue
-			}
-			projectPaths[path] = append(projectPaths[path], location.Tool)
-		}
-	}
-	report := DiscoveryReport{Roots: append([]string{}, roots...), Completed: true}
-	seen := map[string]bool{}
-	currentRoot := ""
-	var walk func(string, int)
-	walk = func(path string, depth int) {
-		if ctx.Err() != nil || report.Limited {
-			return
-		}
-		if depth > 64 || report.Directories >= 250000 {
-			report.Limited = true
-			report.Completed = false
-			return
-		}
-		// Roots are resolved once. Child symlinks are never walked, so resolving
-		// every ancestor again for every directory adds IO without finding more Skills.
-		resolved := path
-		if seen[resolved] {
-			return
-		}
-		seen[resolved] = true
-		report.Directories++
-		reportProgress(progress, ScanProgress{Phase: "discovering", Directories: report.Directories, SourcesTotal: len(candidates), Root: currentRoot})
-		if known[resolved] {
-			return
-		}
-		entries, err := os.ReadDir(resolved)
-		if err != nil {
-			if os.IsPermission(err) {
-				report.Denied++
-			}
-			return
-		}
-		entryNames := map[string]bool{}
-		for _, entry := range entries {
-			entryNames[entry.Name()] = true
-			if entry.Name() == "SKILL.md" && entry.Type().IsRegular() {
-				source, ok := automaticSource(path, filepath.Base(path), "local", []string{"Local"})
-				if ok {
-					candidates = append(candidates, source)
-					known[resolved] = true
-				}
-				return
-			}
-		}
-		for relative, tools := range projectPaths {
-			first := strings.SplitN(relative, "/", 2)[0]
-			if !entryNames[first] {
-				continue
-			}
-			candidatePath := filepath.Join(resolved, relative)
-			if source, ok := automaticSource(candidatePath, filepath.Base(resolved)+" · "+relative, "project", tools); ok {
-				if relative == ".agents/skills" || len(tools) > 2 {
-					source.Tools = append(source.Tools, "Shared")
-				}
-				if !known[source.ResolvedPath] {
-					candidates = append(candidates, source)
-					known[source.ResolvedPath] = true
-				}
-			}
-		}
-		for _, entry := range entries {
-			name := entry.Name()
-			if !entry.IsDir() || skipDiscoveryDirectory(name) {
-				continue
-			}
-			// Home's Library is scanned only through known Agent locations above.
-			if resolved == home && name == "Library" {
-				continue
-			}
-			walk(filepath.Join(resolved, name), depth+1)
-		}
-	}
-	for _, root := range roots {
-		resolved, err := filepath.EvalSymlinks(root)
-		if err != nil {
-			continue
-		}
-		currentRoot = filepath.Base(root)
-		walk(resolved, 0)
-	}
-	if err := ctx.Err(); err != nil {
-		return err
-	}
+// RefreshSources revisits only registry locations; it never walks Home or volumes.
+func (l *Library) RefreshSources(candidates []Source) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	previous := l.prefs.Sources
 	l.mergeAutomatic(candidates)
-	l.discovery = report
-	return l.persist()
+	if err := l.persist(); err != nil {
+		l.prefs.Sources = previous
+		return err
+	}
+	return nil
 }
 
 func skipDiscoveryDirectory(name string) bool {
@@ -259,29 +153,4 @@ func skipDiscoveryDirectory(name string) bool {
 		return true
 	}
 	return strings.HasSuffix(name, ".app") || strings.HasSuffix(name, ".photoslibrary") || strings.HasSuffix(name, ".backupbundle") || strings.HasSuffix(name, ".sparsebundle")
-}
-
-func DefaultSearchRoots(home string) []string {
-	roots := []string{home}
-	// External development volumes are searched where people commonly keep code.
-	// Root-level system/backup folders are not traversed.
-	volumes, _ := os.ReadDir("/Volumes")
-	var system unix.Statfs_t
-	_ = unix.Statfs("/", &system)
-	localVolumes := []string{}
-	for _, volume := range volumes {
-		volumePath := filepath.Join("/Volumes", volume.Name())
-		var stat unix.Statfs_t
-		if unix.Statfs(volumePath, &stat) != nil || stat.Flags&unix.MNT_LOCAL == 0 || stat.Fsid == system.Fsid {
-			continue
-		}
-		localVolumes = append(localVolumes, volumePath)
-		for _, name := range []string{"workspace", "projects", "Projects", "code", "Developer", "dev", "src"} {
-			path := filepath.Join("/Volumes", volume.Name(), name)
-			if info, err := os.Stat(path); err == nil && info.IsDir() {
-				roots = append(roots, path)
-			}
-		}
-	}
-	return append(roots, localVolumes...)
 }

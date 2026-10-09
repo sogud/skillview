@@ -20,7 +20,7 @@ import (
 type Native struct {
 	Application    func() *application.App
 	Window         func() *application.WebviewWindow
-	DiscoveryRoots []string
+	KnownSources   func() []library.Source
 	UpdateLanguage func(string)
 	Updates        func() *updates.Manager
 }
@@ -42,13 +42,8 @@ func New(l *library.Library, native Native, translator *translation.Service) *Se
 func (s *Service) Scan(ctx context.Context) (library.Catalog, error) {
 	s.discoveryMu.Lock()
 	defer s.discoveryMu.Unlock()
-	return s.library.Scan(ctx, s.scanReporter())
-}
-func (s *Service) Discover(ctx context.Context) (library.Catalog, error) {
-	s.discoveryMu.Lock()
-	defer s.discoveryMu.Unlock()
-	if len(s.native.DiscoveryRoots) > 0 {
-		if err := s.library.Discover(ctx, s.native.DiscoveryRoots, s.scanReporter()); err != nil {
+	if s.native.KnownSources != nil {
+		if err := s.library.RefreshSources(s.native.KnownSources()); err != nil {
 			return library.Catalog{}, err
 		}
 	}
@@ -166,13 +161,10 @@ func (s *Service) Save(id, path, revision, text string) (library.SaveResult, err
 func (s *Service) Create(sourceID, name, description string) (string, error) {
 	return s.library.Create(sourceID, name, description)
 }
-func (s *Service) SetFavorite(id string, value bool) error { return s.library.SetFavorite(id, value) }
-func (s *Service) SetFavorites(ids []string, value bool) error {
-	return s.library.SetFavorites(ids, value)
-}
-func (s *Service) Preferences() library.Preferences { return s.library.Settings() }
-func (s *Service) SetTheme(theme string) error      { return s.library.SetTheme(theme) }
-func (s *Service) RemoveSource(id string) error     { return s.library.RemoveSource(id) }
+func (s *Service) Preferences() library.Preferences  { return s.library.Settings() }
+func (s *Service) SetTheme(theme string) error       { return s.library.SetTheme(theme) }
+func (s *Service) SetAccentColor(color string) error { return s.library.SetAccentColor(color) }
+func (s *Service) RemoveSource(id string) error      { return s.library.RemoveSource(id) }
 
 func (s *Service) ChooseSource(writable bool) (bool, error) {
 	language := s.library.Settings().Language
@@ -241,6 +233,15 @@ func (s *Service) Quit() {
 }
 
 func (s *Service) UpdateStatus() updates.Status { return s.native.Updates().Status() }
+
+func (s *Service) UpdateDiagnostics() (string, error) { return s.native.Updates().Diagnostics() }
+func (s *Service) RevealUpdateLog() error {
+	path := s.native.Updates().LogPath()
+	if path == "" {
+		return fmt.Errorf("No update diagnostics are available.")
+	}
+	return exec.Command("/usr/bin/open", "-R", path).Run()
+}
 
 func (s *Service) CheckUpdates(ctx context.Context) updates.Status {
 	return s.native.Updates().Check(ctx)

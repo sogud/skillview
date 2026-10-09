@@ -305,7 +305,7 @@ export function Reader(props: ReaderProps) {
                         .map((tool) =>
                           t(
                             tool === 'Shared'
-                              ? 'Shared Skills'
+                              ? 'Common Skills'
                               : tool === 'Local'
                                 ? 'Local files'
                                 : tool,
@@ -582,9 +582,6 @@ export function Reader(props: ReaderProps) {
           )}
           <footer className="reader-footer">
             <Lock size={11} />
-            <span className="path" title={skill.path}>
-              {skill.path}
-            </span>
             <span className="access-label">
               {doc?.editable ? t('Writable') : t('Read-only')}
             </span>

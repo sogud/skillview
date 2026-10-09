@@ -33,7 +33,6 @@ type Skill struct {
 	Warnings    []string     `json:"warnings"`
 	Occurrences []Occurrence `json:"occurrences"`
 	Tools       []string     `json:"tools"`
-	Favorite    bool         `json:"favorite"`
 	Editable    bool         `json:"editable"`
 }
 
@@ -101,7 +100,7 @@ type TrashReceipt struct {
 type Preferences struct {
 	RecentTrash     []TrashReceipt  `json:"recentTrash"`
 	Sources         []Source        `json:"sources"`
-	Favorites       map[string]bool `json:"favorites"`
+	AccentColor     string          `json:"accentColor"`
 	Theme           string          `json:"theme"`
 	Language        string          `json:"language"`
 	ExcludedSources map[string]bool `json:"excludedSources"`

@@ -23,6 +23,7 @@ type releaseProvider struct {
 	feedURL     string
 	downloadURL string
 	prerelease  bool
+	log         func(string, string)
 }
 
 func newProvider(client *http.Client, baseURL string, prerelease bool) (*releaseProvider, error) {
@@ -66,6 +67,9 @@ func (p *releaseProvider) Name() string { return "skillview-github" }
 func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (result *updater.Release, failure error) {
 	defer func() {
 		if failure != nil {
+			if p.log != nil {
+				p.log("check_failure_detail", diagnosticReason(failure))
+			}
 			failure = errors.New(checkErrorMessage(failure))
 		}
 	}()
@@ -118,10 +122,5 @@ func (p *releaseProvider) Download(ctx context.Context, release *updater.Release
 	if !hasSignature(release) {
 		return errors.New("This release supports manual installation only.")
 	}
-	manifestURL, _ := release.Metadata["skillview.manifestURL"].(string)
-	manifest, err := endpoint.New(endpoint.Config{URL: manifestURL, HTTPClient: p.client})
-	if err != nil {
-		return err
-	}
-	return manifest.Download(ctx, release, dst, progress)
+	return p.download(ctx, release, dst, progress)
 }

@@ -3,8 +3,6 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Events } from '@wailsio/runtime'
 import {
   BookOpen,
-  Star,
-  Folder,
   Settings as SettingsIcon,
   Search,
   Plus,
@@ -39,7 +37,6 @@ export default function App() {
   const [verified, setVerified] = useState(false)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [query, setQuery] = useState('')
-  const [favoritesOnly, setFavoritesOnly] = useState(false)
   const [agentFilter, setAgentFilter] = useState('')
   const [translationVersion, setTranslationVersion] = useState(0)
   const [selected, setSelected] = useState<Skill | null>(null)
@@ -56,9 +53,11 @@ export default function App() {
     null,
   )
   const [theme, setTheme] = useState('system')
+  const [accentColor, setAccentColor] = useState('')
   const [settings, setSettings] = useState<SettingsTab | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateInfo | null>(null)
   const [updatesOpen, setUpdatesOpen] = useState(false)
+  const [diagnosticsOpen, setDiagnosticsOpen] = useState(false)
   const [resourceAction, setResourceAction] = useState<{
     kind: 'new' | 'rename'
     resource?: Resource
@@ -110,12 +109,12 @@ export default function App() {
   const failRef = useRef(fail)
   failRef.current = fail
 
-  const refresh = useCallback(async (discover = false) => {
+  const refresh = useCallback(async () => {
     if (scanPromise.current) return scanPromise.current
     setScanning(true)
     setScanProgress(null)
     scanCanceled.current = false
-    const promise = discover ? api.Discover() : api.Scan()
+    const promise = api.Scan()
     scanPromise.current = promise
     try {
       const next = await promise
@@ -145,6 +144,7 @@ export default function App() {
       .then((preferences) => {
         if (mounted.current) {
           setTheme(preferences.theme || 'system')
+          setAccentColor(preferences.accentColor || '')
           setLanguage(preferences.language || 'system')
         }
       })
@@ -168,6 +168,22 @@ export default function App() {
   useEffect(() => {
     window.document.documentElement.dataset.theme = theme
   }, [theme])
+  useEffect(() => {
+    const style = window.document.documentElement.style
+    if (!accentColor) {
+      style.removeProperty('--accent')
+      style.removeProperty('--accent-text')
+      return
+    }
+    style.setProperty('--accent', accentColor)
+    const red = parseInt(accentColor.slice(1, 3), 16)
+    const green = parseInt(accentColor.slice(3, 5), 16)
+    const blue = parseInt(accentColor.slice(5, 7), 16)
+    style.setProperty(
+      '--accent-text',
+      red * 0.299 + green * 0.587 + blue * 0.114 > 160 ? '#17191e' : '#ffffff',
+    )
+  }, [accentColor])
   useEffect(() => {
     if (!notice || notice.error) return
     const timer = window.setTimeout(
@@ -328,32 +344,6 @@ export default function App() {
     }
   }
 
-  async function favorite(group: SkillGroup) {
-    const value = !group.favorite
-    const ids = group.members.map((copy) => copy.id)
-    try {
-      await api.SetFavorites(ids, value)
-      setCatalog((previous) =>
-        previous
-          ? {
-              ...previous,
-              skills:
-                previous.skills?.map((item) =>
-                  ids.includes(item.id) ? { ...item, favorite: value } : item,
-                ) ?? [],
-            }
-          : previous,
-      )
-      setSelected((previous) =>
-        previous && ids.includes(previous.id)
-          ? { ...previous, favorite: value }
-          : previous,
-      )
-    } catch (error) {
-      fail(error)
-    }
-  }
-
   async function addSource(writable: boolean) {
     if (await api.ChooseSource(writable)) await refresh()
   }
@@ -362,7 +352,6 @@ export default function App() {
     const next = await refresh()
     const skill = next?.skills?.find((item) => item.id === id)
     setQuery('')
-    setFavoritesOnly(false)
     setAgentFilter('')
     setCreating(false)
     if (skill) await load(skill, 'SKILL.md', true)
@@ -382,7 +371,7 @@ export default function App() {
     if (command === 'settings') setSettings('general')
     if (command === 'new') request(() => setCreating(true))
     if (command === 'save') void save()
-    if (command === 'rescan') void refresh(true).catch(fail)
+    if (command === 'rescan') void refresh().catch(fail)
     if (command === 'quit')
       request(() => {
         void api.Quit().catch(fail)
@@ -400,7 +389,6 @@ export default function App() {
   const skills = useMemo(() => {
     const needle = query.trim().toLocaleLowerCase()
     return groups.filter((group) => {
-      if (favoritesOnly && !group.favorite) return false
       if (agentFilter && !group.tools.includes(agentFilter)) return false
       return (
         !needle ||
@@ -409,7 +397,7 @@ export default function App() {
           .includes(needle)
       )
     })
-  }, [groups, favoritesOnly, query, agentFilter])
+  }, [groups, query, agentFilter])
   const selectedGroup = selected
     ? groups.find((group) =>
         group.members.some((copy) => copy.id === selected.id),
@@ -461,30 +449,12 @@ export default function App() {
           <IconButton
             icon={BookOpen}
             label={t('All Skills')}
-            active={!favoritesOnly}
+            active={!selected}
             onClick={() =>
               request(() => {
                 leaveReader()
-                setFavoritesOnly(false)
               })
             }
-          />
-          <IconButton
-            icon={Star}
-            label={t('Favorite Skills')}
-            active={favoritesOnly}
-            onClick={() =>
-              request(() => {
-                leaveReader()
-                setFavoritesOnly(true)
-              })
-            }
-          />
-          <IconButton
-            icon={Folder}
-            label={t('Sources')}
-            active={settings === 'sources'}
-            onClick={() => setSettings('sources')}
           />
           <div className="rail-spacer" />
           {!!updateStatus?.latest && (
@@ -523,9 +493,7 @@ export default function App() {
                 <input
                   ref={search}
                   aria-label={t('Search Skills')}
-                  placeholder={
-                    favoritesOnly ? t('Search favorites') : t('Search Skills')
-                  }
+                  placeholder={t('Search Skills')}
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
                 />
@@ -535,7 +503,7 @@ export default function App() {
                 icon={RotateCw}
                 label={t('Rescan folders')}
                 onClick={() => {
-                  void refresh(true).catch(fail)
+                  void refresh().catch(fail)
                 }}
                 disabled={scanning}
               />
@@ -555,22 +523,13 @@ export default function App() {
             {scanning && (
               <div className="scan-status" role="status" aria-live="polite">
                 <div>
-                  <strong>
-                    {scanProgress?.phase === 'discovering'
-                      ? t('Finding more Skills…')
-                      : t('Reading Skills…')}
-                  </strong>
+                  <strong>{t('Reading Skills…')}</strong>
                   <span>
-                    {scanProgress?.phase === 'discovering'
-                      ? t('{count} folders checked · {sources} sources found', {
-                          count: scanProgress.directories,
-                          sources: scanProgress.sourcesTotal,
-                        })
-                      : t('{done} / {total} sources · {count} Skills found', {
-                          done: scanProgress?.sourcesDone ?? 0,
-                          total: scanProgress?.sourcesTotal ?? 0,
-                          count: scanProgress?.skills ?? 0,
-                        })}
+                    {t('{done} / {total} folders · {count} Skills found', {
+                      done: scanProgress?.sourcesDone ?? 0,
+                      total: scanProgress?.sourcesTotal ?? 0,
+                      count: scanProgress?.skills ?? 0,
+                    })}
                   </span>
                   <button
                     onClick={() => {
@@ -605,9 +564,6 @@ export default function App() {
               verified={verified}
               scanning={scanning}
               onOpen={openGroup}
-              onFavorite={(group) => {
-                void favorite(group)
-              }}
               empty={
                 <div className="empty-library">
                   <BookOpen size={30} strokeWidth={1.2} />
@@ -616,24 +572,18 @@ export default function App() {
                       ? t('Reading your Skills folders…')
                       : query
                         ? t('No Skills match your search')
-                        : favoritesOnly
-                          ? t('Your favorites will appear here')
-                          : t('Scan your Skills folders')}
+                        : t('Scan your Skills folders')}
                   </h2>
                   <p>
                     {query
                       ? t('Try a Skill name or a word from its description.')
-                      : favoritesOnly
-                        ? t('Use the star beside a Skill to save it here.')
-                        : t(
-                            'Scanning only starts when you click Scan folders.',
-                          )}
+                      : t('Scanning only starts when you click Scan folders.')}
                   </p>
-                  {!query && !favoritesOnly && !scanning && (
+                  {!query && !scanning && (
                     <button
                       className="primary"
                       onClick={() => {
-                        void refresh(true).catch(fail)
+                        void refresh().catch(fail)
                       }}
                     >
                       {t('Scan folders')}
@@ -648,11 +598,11 @@ export default function App() {
                   ? t('Scanning…')
                   : t('{count} Skills', { count: skills.length })}
               </span>
-              <button onClick={() => setSettings('sources')}>
-                {(catalog?.issues?.length ?? 0) > 0
-                  ? t('Some paths need attention')
-                  : t('Manage sources')}
-              </button>
+              {!!catalog?.issues?.length && (
+                <button onClick={() => setSettings('folders')}>
+                  {t('Some paths need attention')}
+                </button>
+              )}
             </footer>
           </section>
           {selected && (
@@ -766,8 +716,16 @@ export default function App() {
         <Settings
           version={updateStatus?.version ?? '…'}
           onUpdates={openUpdates}
+          openDiagnostics={diagnosticsOpen}
           tab={settings}
           theme={theme}
+          accentColor={accentColor}
+          onAccentColor={(value) => {
+            void api
+              .SetAccentColor(value)
+              .then(() => setAccentColor(value))
+              .catch(fail)
+          }}
           language={language}
           onLanguage={(value) => {
             void api
@@ -790,14 +748,22 @@ export default function App() {
             await refresh()
           }}
           onRescan={() => {
-            void refresh(true).catch(fail)
+            void refresh().catch(fail)
           }}
-          onClose={() => setSettings(null)}
+          onClose={() => {
+            setSettings(null)
+            setDiagnosticsOpen(false)
+          }}
         />
       )}
       {updatesOpen && (
         <UpdateDialog
           status={updateStatus}
+          onDiagnostics={() => {
+            setDiagnosticsOpen(true)
+            setUpdatesOpen(false)
+            setSettings('general')
+          }}
           onCheck={checkUpdates}
           onDownload={() => {
             void api.DownloadUpdate().then(setUpdateStatus).catch(fail)

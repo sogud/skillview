@@ -60,10 +60,10 @@ func main() {
 	var window *application.WebviewWindow
 	var updateManager *updates.Manager
 	var keys translation.KeyStore = translation.MacKeychain{}
-	searchRoots := library.DefaultSearchRoots(home)
+	var knownSources func() []library.Source = func() []library.Source { return library.DefaultSources(home) }
 	if fixtureRoot != "" {
 		keys = translation.NewMemoryKeys()
-		searchRoots = nil
+		knownSources = nil
 	}
 	translator, err := translation.New(dataDir, keys)
 	if err != nil {
@@ -94,7 +94,7 @@ func main() {
 		appMenu.AddRole(application.Quit)
 		appMenu.FindByRole(application.Quit).SetLabel(locale.T(language, "Quit SkillView"))
 		fileMenu := menu.AddSubmenu(locale.T(language, "File"))
-		for _, item := range []struct{ label, key, command string }{{"New Skill…", "CmdOrCtrl+n", "new"}, {"Save", "CmdOrCtrl+s", "save"}, {"Find", "CmdOrCtrl+f", "find"}, {"Find Skills on this Mac", "CmdOrCtrl+r", "rescan"}} {
+		for _, item := range []struct{ label, key, command string }{{"New Skill…", "CmdOrCtrl+n", "new"}, {"Save", "CmdOrCtrl+s", "save"}, {"Find", "CmdOrCtrl+f", "find"}, {"Scan Agent folders", "CmdOrCtrl+r", "rescan"}} {
 			command := item.command
 			fileMenu.Add(locale.T(language, item.label)).SetAccelerator(item.key).OnClick(func(*application.Context) { app.Event.Emit("skillview:command", command) })
 		}
@@ -109,7 +109,7 @@ func main() {
 		app.Menu.Set(menu)
 		window.SetTitle(locale.T(language, "Skills"))
 	}
-	service := appservice.New(lib, appservice.Native{Application: func() *application.App { return app }, Window: func() *application.WebviewWindow { return window }, DiscoveryRoots: searchRoots, UpdateLanguage: updateLanguage, Updates: func() *updates.Manager { return updateManager }}, translator)
+	service := appservice.New(lib, appservice.Native{Application: func() *application.App { return app }, Window: func() *application.WebviewWindow { return window }, KnownSources: knownSources, UpdateLanguage: updateLanguage, Updates: func() *updates.Manager { return updateManager }}, translator)
 	defer service.Close()
 	app = application.New(application.Options{
 		Name: "SkillView", Description: "Read, browse, and safely edit local Agent Skills.",
@@ -118,7 +118,7 @@ func main() {
 		ShouldQuit: service.ShouldQuit,
 		Mac:        application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: true},
 	})
-	updateManager, err = updates.New(app.Updater, fixtureRoot != "", func(status updates.Status) { app.Event.Emit("skillview:update", status) })
+	updateManager, err = updates.New(app.Updater, fixtureRoot != "", func(status updates.Status) { app.Event.Emit("skillview:update", status) }, dataDir)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -127,6 +127,8 @@ func main() {
 			updateManager.Progress(progress)
 		}
 	})
+	app.Event.On(updater.EventVerifying, func(*application.CustomEvent) { updateManager.Stage("verifying") })
+	app.Event.On(updater.EventInstalling, func(*application.CustomEvent) { updateManager.Stage("extracting") })
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name: "library", Title: "Skills", Width: 900, Height: 560, MinWidth: 760, MinHeight: 480,
 		Mac:              application.MacWindow{TitleBar: application.MacTitleBarHiddenInset, InvisibleTitleBarHeight: 38, Backdrop: application.MacBackdropNormal},

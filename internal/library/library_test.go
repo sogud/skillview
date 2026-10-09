@@ -367,7 +367,7 @@ func TestInvalidYAMLRemainsReadable(t *testing.T) {
 
 func TestPreferencesSurviveRestartAndRevocation(t *testing.T) {
 	l, _, _, id := setup(t)
-	if err := l.SetFavorite(id, true); err != nil {
+	if err := l.SetAccentColor("#8753cb"); err != nil {
 		t.Fatal(err)
 	}
 	if err := l.SetTheme("dark"); err != nil {
@@ -381,9 +381,13 @@ func TestPreferencesSurviveRestartAndRevocation(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(catalog.Skills) != 1 || !catalog.Skills[0].Favorite || restored.Settings().Theme != "dark" {
+	if len(catalog.Skills) != 1 || restored.Settings().AccentColor != "#8753cb" || restored.Settings().Theme != "dark" {
 		t.Fatal("preferences lost")
 	}
+	if err := restored.SetAccentColor("red; background: url(secret)"); err == nil || restored.Settings().AccentColor != "#8753cb" {
+		t.Fatal("invalid color changed preferences")
+	}
+
 	sourceID := catalog.Sources[0].ID
 	if err := restored.RemoveSource(sourceID); err != nil {
 		t.Fatal(err)

@@ -139,7 +139,7 @@ func TestCachedAutomaticLinkChecksCurrentTargetAndStaysReadOnly(t *testing.T) {
 		t.Fatal("linked fixture scan failed", err)
 	}
 	id := catalog.Skills[0].ID
-	restarted, _ := New(l.dataDir, nil)
+	restarted, _ := New(l.dataDir, []Source{source})
 	restarted.SetCache(store)
 	if _, err := restarted.CachedCatalog(); err != nil {
 		t.Fatal(err)

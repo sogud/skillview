@@ -55,3 +55,22 @@ func checkErrorMessage(err error) string {
 	}
 	return invalidReleaseMessage
 }
+
+func downloadErrorMessage(err error) string {
+	for _, message := range []string{interruptedMessage, resumeMessage} {
+		if strings.Contains(err.Error(), message) {
+			return message
+		}
+	}
+	switch diagnosticReason(err) {
+	case "timeout":
+		return "The update download timed out. Retry on a stable connection."
+	case "connection_closed", "connection_failed":
+		return interruptedMessage
+	case "permission_denied":
+		return "SkillView could not save the update. Check available disk space and folder permissions."
+	case "signature_invalid", "digest_invalid":
+		return "The update failed its security check. Retry the download; your current app is unchanged."
+	}
+	return "The update could not be downloaded or verified. Your current app is unchanged."
+}

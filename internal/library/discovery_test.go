@@ -8,36 +8,44 @@ import (
 	"testing"
 )
 
-func TestDiscoveryFindsProjectsCustomSkillsAndSkipsDependencies(t *testing.T) {
+func TestKnownSourcesExcludeArbitraryProjectsAndRetireOldAutomaticSources(t *testing.T) {
 	home := t.TempDir()
-	root := filepath.Join(home, "projects")
-	for _, path := range []string{"one/.cursor/skills/nested/sample", "two/.agents/skills/shared", "custom/deep/lesson", "node_modules/hidden"} {
-		dir := filepath.Join(root, path)
-		_ = os.MkdirAll(dir, 0755)
-		_ = os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(fixture), 0644)
-	}
-	l, _ := New(t.TempDir(), nil)
-	if err := l.discover(context.Background(), []string{root}, home, nil); err != nil {
-		t.Fatal(err)
-	}
-	c, err := l.Scan(context.Background())
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(c.Skills) != 3 {
-		t.Fatalf("discovered %d instead of 3", len(c.Skills))
-	}
-	shared := false
-	cursor := false
-	for _, s := range c.Skills {
-		if s.Editable || strings.Contains(s.Path, "node_modules") {
-			t.Fatal("automatic source writable or dependency scanned")
+	t.Setenv("CODEX_HOME", filepath.Join(home, ".codex"))
+	for _, path := range []string{".codex/skills/example", ".codex/.tmp/bundled-marketplace/plugins/sample/skills/bundled", "projects/arbitrary/lesson"} {
+		dir := filepath.Join(home, path)
+		if err := os.MkdirAll(dir, 0755); err != nil {
+			t.Fatal(err)
 		}
-		shared = shared || hasString(s.Tools, "Shared")
-		cursor = cursor || hasString(s.Tools, "Cursor")
+		if err := os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(fixture), 0644); err != nil {
+			t.Fatal(err)
+		}
 	}
-	if !shared || !cursor || !c.Discovery.Completed || c.Discovery.Directories == 0 {
-		t.Fatalf("missing provenance/report: %+v", c)
+	data := t.TempDir()
+	l, _ := New(data, nil)
+	old, _ := automaticSource(filepath.Join(home, "projects"), "Old discovered projects", "local", []string{"Local"})
+	l.prefs.Sources = []Source{old}
+	if err := l.persist(); err != nil {
+		t.Fatal(err)
+	}
+	l, _ = New(data, DefaultSources(home))
+	catalog, err := l.Scan(context.Background())
+	if err != nil || len(catalog.Skills) != 2 || len(catalog.Sources) != 2 {
+		t.Fatalf("known scan: skills=%d folders=%d %v", len(catalog.Skills), len(catalog.Sources), err)
+	}
+	for _, skill := range catalog.Skills {
+		if strings.Contains(skill.Path, "/projects/") || !hasString(skill.Tools, "Codex") {
+			t.Fatal("unrelated source scanned", skill.Tools)
+		}
+	}
+	if _, err := l.AddSource(filepath.Join(home, "projects"), false); err != nil {
+		t.Fatal(err)
+	}
+	if err := l.RefreshSources(DefaultSources(home)); err != nil {
+		t.Fatal(err)
+	}
+	catalog, err = l.Scan(context.Background())
+	if err != nil || len(catalog.Skills) != 3 {
+		t.Fatal("explicit directory was lost", err)
 	}
 }
 

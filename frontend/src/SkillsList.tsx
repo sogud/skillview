@@ -1,5 +1,5 @@
 import { useRef, type ReactNode } from 'react'
-import { FileText, Link, AlertCircle, Star } from 'lucide-react'
+import { FileText, Link, AlertCircle } from 'lucide-react'
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso'
 import type { AgentInfo } from './api'
 import { AgentIcon } from './AgentIcon'
@@ -13,7 +13,6 @@ type Props = {
   verified: boolean
   scanning: boolean
   onOpen: (group: SkillGroup) => void
-  onFavorite: (group: SkillGroup) => void
   empty: ReactNode
 }
 
@@ -92,7 +91,7 @@ export function SkillsList(props: Props) {
                   .map((name) =>
                     t(
                       name === 'Shared'
-                        ? 'Shared Skills'
+                        ? 'Common Skills'
                         : name === 'Local'
                           ? 'Local files'
                           : name,
@@ -171,21 +170,6 @@ export function SkillsList(props: Props) {
                   )}
                 </span>
               </button>
-              <button
-                className={`favorite${group.favorite ? ' saved' : ''}`}
-                aria-label={t(
-                  group.favorite ? 'Unfavorite {name}' : 'Favorite {name}',
-                  { name: group.name },
-                )}
-                aria-pressed={group.favorite}
-                disabled={!props.verified}
-                onClick={() => props.onFavorite(group)}
-              >
-                <Star
-                  size={13}
-                  fill={group.favorite ? 'currentColor' : 'none'}
-                />
-              </button>
             </div>
           )
         }}
@@ -215,7 +199,7 @@ export function AgentTabs({
     if (groups.some((group) => group.tools.includes(name)))
       tabs.push({
         name,
-        label: t(name === 'Shared' ? 'Shared Skills' : 'Local files'),
+        label: t(name === 'Shared' ? 'Common Skills' : 'Local files'),
         icon: '',
       })
   }

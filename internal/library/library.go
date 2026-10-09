@@ -8,7 +8,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"skillview/internal/cache"
+	"strings"
 	"sync"
 )
 
@@ -36,7 +38,7 @@ func New(dataDir string, candidates []Source) (*Library, error) {
 	if err := os.MkdirAll(dataDir, 0700); err != nil {
 		return nil, err
 	}
-	l := &Library{dataDir: dataDir, refs: map[string]fileRef{}, prefs: Preferences{Favorites: map[string]bool{}, Theme: "system", Language: "system"}}
+	l := &Library{dataDir: dataDir, refs: map[string]fileRef{}, prefs: Preferences{Theme: "system", Language: "system"}}
 	data, err := os.ReadFile(filepath.Join(dataDir, "preferences.json"))
 	if err == nil {
 		if err := json.Unmarshal(data, &l.prefs); err != nil {
@@ -44,9 +46,6 @@ func New(dataDir string, candidates []Source) (*Library, error) {
 		}
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return nil, err
-	}
-	if l.prefs.Favorites == nil {
-		l.prefs.Favorites = map[string]bool{}
 	}
 	if l.prefs.ExcludedSources == nil {
 		l.prefs.ExcludedSources = map[string]bool{}
@@ -149,32 +148,6 @@ func (l *Library) SetLanguage(language string) error {
 	return nil
 }
 
-func (l *Library) SetFavorite(id string, favorite bool) error {
-	return l.SetFavorites([]string{id}, favorite)
-}
-
-func (l *Library) SetFavorites(ids []string, favorite bool) error {
-	l.mu.Lock()
-	defer l.mu.Unlock()
-	previous := make(map[string]bool, len(ids))
-	for _, id := range ids {
-		if _, ok := l.refs[id]; !ok {
-			return fmt.Errorf("Skill no longer exists; rescan the library")
-		}
-		previous[id] = l.prefs.Favorites[id]
-	}
-	for _, id := range ids {
-		l.prefs.Favorites[id] = favorite
-	}
-	if err := l.persist(); err != nil {
-		for id, value := range previous {
-			l.prefs.Favorites[id] = value
-		}
-		return err
-	}
-	return nil
-}
-
 func (l *Library) Settings() Preferences {
 	l.mu.Lock()
 	defer l.mu.Unlock()
@@ -193,6 +166,21 @@ func (l *Library) SetTheme(theme string) error {
 	l.prefs.Theme = theme
 	if err := l.persist(); err != nil {
 		l.prefs.Theme = previous
+		return err
+	}
+	return nil
+}
+
+func (l *Library) SetAccentColor(color string) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if color != "" && !regexp.MustCompile(`^#[0-9a-fA-F]{6}$`).MatchString(color) {
+		return fmt.Errorf("invalid theme color")
+	}
+	previous := l.prefs.AccentColor
+	l.prefs.AccentColor = strings.ToLower(color)
+	if err := l.persist(); err != nil {
+		l.prefs.AccentColor = previous
 		return err
 	}
 	return nil

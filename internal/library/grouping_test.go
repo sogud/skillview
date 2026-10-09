@@ -9,7 +9,7 @@ import (
 )
 
 func TestContentGroupingKeepsIndependentCopiesAndChangedVersions(t *testing.T) {
-	l, _, _, first := setup(t)
+	l, _, _, _ := setup(t)
 	root := t.TempDir()
 	for name, text := range map[string]string{"same": strings.ReplaceAll(fixture, "\n", "\r\n"), "changed": fixture + "A different instruction.\n"} {
 		dir := filepath.Join(root, name)
@@ -28,21 +28,10 @@ func TestContentGroupingKeepsIndependentCopiesAndChangedVersions(t *testing.T) {
 		t.Fatal(catalog, err)
 	}
 	keys := map[string]int{}
-	ids := []string{}
 	for _, skill := range catalog.Skills {
 		keys[skill.ContentKey]++
-		ids = append(ids, skill.ID)
 	}
 	if len(keys) != 2 {
 		t.Fatal("different versions merged", keys)
-	}
-	if err := l.SetFavorites(ids, true); err != nil {
-		t.Fatal(err)
-	}
-	if err := l.SetFavorites([]string{first, "missing"}, false); err == nil {
-		t.Fatal("missing copy accepted")
-	}
-	if !l.Settings().Favorites[first] {
-		t.Fatal("failed group action partially changed favorites")
 	}
 }

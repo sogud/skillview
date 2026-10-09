@@ -8,44 +8,28 @@ import (
 	"testing"
 )
 
-func TestDiscoveryProgressHandlesOverlappingAndLinkedRoots(t *testing.T) {
+func TestKnownScanReportsReadingProgressWithoutBroadDiscovery(t *testing.T) {
 	root := t.TempDir()
-	skill := filepath.Join(root, "project", "custom", "sample")
-	if err := os.MkdirAll(skill, 0755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(filepath.Join(skill, "SKILL.md"), []byte(fixture), 0644); err != nil {
-		t.Fatal(err)
-	}
-	alias := filepath.Join(t.TempDir(), "alias")
-	if err := os.Symlink(root, alias); err != nil {
-		t.Fatal(err)
+	for _, name := range []string{"first", "second"} {
+		dir := filepath.Join(root, name)
+		_ = os.MkdirAll(dir, 0755)
+		_ = os.WriteFile(filepath.Join(dir, "SKILL.md"), []byte(fixture), 0644)
 	}
 	l, _ := New(t.TempDir(), nil)
-	last := 0
-	err := l.discover(context.Background(), []string{alias, root, filepath.Join(root, "project")}, root, nil, func(p ScanProgress) {
-		if p.Phase != "discovering" || p.Directories <= last || p.Root == "" {
-			t.Fatalf("progress: %+v", p)
-		}
-		last = p.Directories
-	})
-	if err != nil || last != 4 {
-		t.Fatalf("walk duplicated overlapping roots: %d %v", last, err)
-	}
+	_, _ = l.AddSource(root, false)
 	var progress ScanProgress
-	catalog, err := l.Scan(context.Background(), func(p ScanProgress) { progress = p })
-	if err != nil || len(catalog.Skills) != 1 || progress.Skills != 1 || progress.SourcesDone != progress.SourcesTotal {
+	catalog, err := l.Scan(context.Background(), func(p ScanProgress) {
+		if p.Phase != "reading" {
+			t.Fatal("unexpected discovery", p)
+		}
+		progress = p
+	})
+	if err != nil || len(catalog.Skills) != 2 || progress.Skills != 2 || progress.SourcesDone != 1 || progress.SourcesTotal != 1 {
 		t.Fatalf("reading progress: %+v %v", progress, err)
 	}
-}
-
-func TestCanceledDiscoveryDoesNotClaimCompletion(t *testing.T) {
-	root := t.TempDir()
-	_ = os.Mkdir(filepath.Join(root, "child"), 0755)
-	l, _ := New(t.TempDir(), nil)
 	ctx, cancel := context.WithCancel(context.Background())
-	err := l.discover(ctx, []string{root}, root, nil, func(ScanProgress) { cancel() })
-	if !errors.Is(err, context.Canceled) || l.discovery.Completed || len(l.Settings().Sources) != 0 {
-		t.Fatal("canceled discovery claimed completion", err)
+	cancel()
+	if _, err := l.Scan(ctx); !errors.Is(err, context.Canceled) {
+		t.Fatal("canceled scan continued", err)
 	}
 }

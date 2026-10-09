@@ -8,7 +8,7 @@ The [Vercel Skills Agent registry](https://github.com/vercel-labs/skills/blob/ma
 
 | Agent | Official reference | Locations covered |
 | --- | --- | --- |
-| Codex | [Skills](https://developers.openai.com/codex/skills) | `.agents/skills`, legacy `.codex/skills`, configured home and plugin caches |
+| Codex | [Skills](https://developers.openai.com/codex/skills) | `.agents/skills`, legacy `.codex/skills`, configured home, plugin caches and the older `$CODEX/.tmp/bundled-marketplace` plugin root |
 | Claude Code | [Skills](https://code.claude.com/docs/en/skills) | `.claude/skills`, project Skills, installed plugin caches |
 | Cursor | [Skills](https://prod.cursor.com/docs/skills) | `.cursor/skills`, project and user roots |
 | GitHub Copilot | [Skills](https://docs.github.com/en/copilot/how-tos/copilot-on-github/customize-copilot/customize-cloud-agent/add-skills) | `.github/skills` and shared/project paths |
@@ -18,7 +18,7 @@ The [Vercel Skills Agent registry](https://github.com/vercel-labs/skills/blob/ma
 | Cline | [Skills](https://docs.cline.bot/customization/skills) | `.cline/skills` and project paths |
 | Windsurf / Devin | [Skills](https://docs.devin.ai/desktop/cascade/skills) | `.windsurf/skills`, `.devin/skills`, project and system paths |
 
-Configuration and installation are separate: the app checks installed desktop apps and executables without launching Agents. Shared Skills are shown as shared files without claiming every Agent has executed them.
+Configuration and installation are separate: the app checks installed desktop apps and executables without launching Agents. Common Skills are shown as common files without claiming every Agent has executed them.
 
 ## Icons and UI
 

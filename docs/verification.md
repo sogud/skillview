@@ -49,6 +49,12 @@ Native acceptance used an isolated synthetic Skill with two copies and nested re
 
 A local AI fixture redirected with HTTP 307, received the same request body and showed translation progress followed by translated text and the completion label. The public Google fixed `Hello.` sample returned HTTP 429 on this Mac during this check. Same-origin 302 handling passed locally, but Google availability on the user's other computer remains unverified. No real Skill was sent to a provider.
 
+## Known Agent scans, appearance and diagnostics (alpha.5)
+
+Focused race-enabled checks cover retiring old automatic sources outside the registry, keeping explicitly added folders, discovering Codex's legacy bundled-plugin root, folder-reading progress and theme-color persistence/validation. The updater tests reproduce a connection closed halfway and a download that outlives the short release-check timeout. They verify resumed bytes through Wails's original full-archive signature and extraction path, reject ignored/wrong ranges and tampered resumed archives, and stop retries on cancellation. Diagnostics tests confirm persistence, rotation, private permissions and exclusion of credential-bearing URLs and local paths.
+
+An isolated native preview showed only library and Settings navigation, manual scanning, the theme-color palette and readable update diagnostics. The selected color survived a real app restart, which reopened the cached catalog without scanning. An unreachable loopback update service produced localized retry controls and a persisted, classified connection failure in the diagnostics view. No real Skill contents were transmitted.
+
 ## Remaining acceptance
 
 The ordinary app loaded a large real catalog with installed-Agent tabs; originals were not modified. This does not prove unrestricted access to every folder or execution of a Skill by an Agent. Permission failures and scan limits are reported.

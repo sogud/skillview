@@ -6,7 +6,6 @@ export type SkillGroup = {
   description: string
   members: Skill[]
   tools: string[]
-  favorite: boolean
   versions: string[]
 }
 
@@ -23,7 +22,6 @@ export function groupSkills(skills: Skill[]): SkillGroup[] {
         description: skill.description,
         members: [],
         tools: [],
-        favorite: false,
         versions: [],
       }
       byName.set(key, group)
@@ -34,7 +32,6 @@ export function groupSkills(skills: Skill[]): SkillGroup[] {
       group.description = skill.description
     const version = skill.contentKey || skill.revision || skill.id
     if (!group.versions.includes(version)) group.versions.push(version)
-    group.favorite ||= skill.favorite
     for (const tool of skill.tools ?? []) {
       if (!group.tools.includes(tool)) group.tools.push(tool)
     }

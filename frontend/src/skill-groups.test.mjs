@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import test from 'node:test'
 import { groupSkills, selectCopy, platformNames } from './skill-groups.ts'
 
-const copy = (id, contentKey, tools, editable = false) => ({ id, contentKey, name: 'sample', description: 'A sample', tools, editable, favorite: false })
+const copy = (id, contentKey, tools, editable = false) => ({ id, contentKey, name: 'sample', description: 'A sample', tools, editable })
 
 test('one description combines matching copies and unique platform membership', () => {
   const groups = groupSkills([copy('a', 'same', ['Codex']), copy('b', 'same', ['Claude Code', 'Codex']), copy('c', 'same', ['Local'])])

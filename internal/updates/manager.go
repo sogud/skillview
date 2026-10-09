@@ -4,11 +4,13 @@ import (
 	"context"
 	_ "embed"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
 	"skillview/internal/network"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -37,17 +39,19 @@ type Status struct {
 }
 
 type Manager struct {
-	updater *updater.Updater
-	mu      sync.Mutex
-	op      sync.Mutex
-	status  Status
-	notify  func(Status)
-	fixture bool
-	cancel  context.CancelFunc
-	done    chan struct{}
+	updater    *updater.Updater
+	mu         sync.Mutex
+	op         sync.Mutex
+	status     Status
+	notify     func(Status)
+	fixture    bool
+	cancel     context.CancelFunc
+	done       chan struct{}
+	log        *diagnosticLog
+	logPercent int64
 }
 
-func New(u *updater.Updater, fixture bool, notify func(Status)) (*Manager, error) {
+func New(u *updater.Updater, fixture bool, notify func(Status), dataDir ...string) (*Manager, error) {
 	baseURL := ""
 	// Native acceptance may use an isolated loopback release fixture. Ordinary
 	// launches always use GitHub; environment variables cannot change its feed.
@@ -67,7 +71,17 @@ func New(u *updater.Updater, fixture bool, notify func(Status)) (*Manager, error
 	if err := u.Init(updater.Config{CurrentVersion: Version(), Providers: []updater.Provider{provider}, PublicKey: publicKey, Window: updater.WindowNone}); err != nil {
 		return nil, err
 	}
-	return &Manager{updater: u, fixture: fixture, notify: notify, status: Status{Version: Version(), State: "idle"}}, nil
+	m := &Manager{updater: u, fixture: fixture, notify: notify, status: Status{Version: Version(), State: "idle"}}
+	if len(dataDir) > 0 {
+		m.log, err = newDiagnosticLog(dataDir[0])
+		if err != nil {
+			return nil, errors.New("The update log folder could not be created.")
+		}
+		provider.log = m.log.write
+		m.collectHelperLog()
+		m.log.write("app_started", "version="+Version())
+	}
+	return m, nil
 }
 
 func (m *Manager) Status() Status {
@@ -96,9 +110,11 @@ func (m *Manager) Check(ctx context.Context) Status {
 		return status
 	}
 	status.State, status.Message = "checking", ""
+	m.log.write("check_started", "version="+Version())
 	m.publish(status)
 	release, err := m.updater.Check(ctx)
 	if err != nil {
+		m.log.write("check_failed", diagnosticReason(err))
 		status.State, status.Message = "error", checkErrorMessage(err)
 	} else if release == nil {
 		status = Status{Version: Version(), State: "up-to-date"}
@@ -110,6 +126,7 @@ func (m *Manager) Check(ctx context.Context) Status {
 			status.Message = "This release supports manual installation only."
 		}
 		status.CanInstall = status.Message == ""
+		m.log.write("check_available", fmt.Sprintf("version=%s can_install=%t", status.Latest, status.CanInstall))
 	}
 	return m.publish(status)
 }
@@ -124,19 +141,26 @@ func (m *Manager) Download(ctx context.Context) Status {
 		return status
 	}
 	status.State, status.Message, status.Written, status.Total = "downloading", "", 0, 0
+	m.mu.Lock()
+	m.logPercent = -1
+	m.mu.Unlock()
+	m.log.write("download_started", "version="+status.Latest)
 	m.publish(status)
 	if err := m.updater.DownloadAndInstall(ctx); err != nil {
 		status = m.Status()
-		status.State, status.Message = "error", "The update could not be downloaded or verified. Your current app is unchanged."
+		m.log.write("download_failed", diagnosticReason(err))
+		status.State, status.Message = "error", downloadErrorMessage(err)
 		return m.publish(status)
 	}
 	if err := validateBundle(m.updater.DownloadedPath(), status.Latest); err != nil {
+		m.log.write("bundle_failed", diagnosticReason(err))
 		status = m.Status()
 		status.State, status.Message = "error", err.Error()
 		return m.publish(status)
 	}
 	status = m.Status()
 	status.State = "ready"
+	m.log.write("update_ready", "version="+status.Latest)
 	return m.publish(status)
 }
 
@@ -148,11 +172,29 @@ func (m *Manager) Progress(progress updater.Progress) {
 		return
 	}
 	status.Written, status.Total = progress.Written, progress.Total
+	logProgress := false
+	if progress.Total > 0 && progress.Written*10/progress.Total > m.logPercent {
+		m.logPercent = progress.Written * 10 / progress.Total
+		logProgress = true
+	}
 	m.status = status
 	m.mu.Unlock()
+	if logProgress {
+		m.log.write("download_progress", fmt.Sprintf("bytes=%d total=%d", progress.Written, progress.Total))
+	}
 	if m.notify != nil {
 		m.notify(status)
 	}
+}
+
+func (m *Manager) Stage(stage string) {
+	status := m.Status()
+	if status.State != "downloading" && status.State != "verifying" {
+		return
+	}
+	status.State = stage
+	m.log.write("update_stage", stage)
+	m.publish(status)
 }
 
 func (m *Manager) Restart(ctx context.Context) error {
@@ -164,12 +206,22 @@ func (m *Manager) Restart(ctx context.Context) error {
 		return errors.New("Download the update before restarting.")
 	}
 	if reason := installReason(m.fixture); reason != "" {
+		m.log.write("restart_blocked", "installation_location_or_permissions")
 		return errors.New(reason)
 	}
 	if err := validateBundle(m.updater.DownloadedPath(), m.Status().Latest); err != nil {
+		m.log.write("restart_bundle_failed", diagnosticReason(err))
 		return err
 	}
-	return m.updater.Restart(ctx)
+	m.log.write("restart_requested", "version="+m.Status().Latest)
+	if m.log != nil {
+		_ = os.WriteFile(filepath.Join(filepath.Dir(m.log.path), "pending-helper"), []byte(strconv.Itoa(os.Getpid())), 0600)
+	}
+	if err := m.updater.Restart(ctx); err != nil {
+		m.log.write("restart_failed", diagnosticReason(err))
+		return errors.New("The update could not restart. Open update diagnostics for details.")
+	}
+	return nil
 }
 
 // Background checks never download, install, open a window, or discard a draft.

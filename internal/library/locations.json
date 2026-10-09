@@ -1201,7 +1201,8 @@
   {
     "tool": "Codex",
     "global": [
-      "$CODEX/plugins/cache"
+      "$CODEX/plugins/cache",
+      "$CODEX/.tmp/bundled-marketplace"
     ],
     "project": [],
     "detect": [],
