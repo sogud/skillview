@@ -25,6 +25,8 @@ import (
 
 type testHost struct{}
 
+const fixtureCurrentVersion = "0.1.0-alpha.3"
+
 func (testHost) Emit(string, ...any) bool         { return true }
 func (testHost) OnEvent(string, func(any)) func() { return func() {} }
 func (testHost) OpenWindow(updater.WindowOptions) updater.WindowHandle {
@@ -125,7 +127,7 @@ func fixtureUpdater(t *testing.T, f *releaseFixture, key ed25519.PublicKey) *upd
 		t.Fatal(err)
 	}
 	u := updater.New(testHost{})
-	if err := u.Init(updater.Config{CurrentVersion: Version(), Platform: "darwin", Arch: "arm64", Providers: []updater.Provider{provider}, PublicKey: key, Window: updater.WindowNone}); err != nil {
+	if err := u.Init(updater.Config{CurrentVersion: fixtureCurrentVersion, Platform: "darwin", Arch: "arm64", Providers: []updater.Provider{provider}, PublicKey: key, Window: updater.WindowNone}); err != nil {
 		t.Fatal(err)
 	}
 	return u
@@ -198,7 +200,7 @@ func TestMissingManifestIsManualOnlyAndUnsignedManifestIsRejected(t *testing.T) 
 }
 
 func TestVersionOrderingAndArchitectureSelection(t *testing.T) {
-	for _, version := range []string{Version(), "0.1.0-alpha.1"} {
+	for _, version := range []string{fixtureCurrentVersion, "0.1.0-alpha.1"} {
 		f := newReleaseFixture(t)
 		f.version = version
 		u := fixtureUpdater(t, f, f.public)
@@ -235,7 +237,7 @@ func TestManualReleaseCannotDownloadThroughProvider(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	release, err := p.Check(context.Background(), updater.CheckRequest{CurrentVersion: Version(), Platform: "darwin", Arch: "arm64"})
+	release, err := p.Check(context.Background(), updater.CheckRequest{CurrentVersion: fixtureCurrentVersion, Platform: "darwin", Arch: "arm64"})
 	if err != nil {
 		t.Fatal(err)
 	}

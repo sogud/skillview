@@ -47,7 +47,7 @@ func TestFeedHonorsStableChannelAndVersionOrdering(t *testing.T) {
 	f := newReleaseFixture(t)
 	f.rateLimited = true
 	p, _ := newProvider(f.server.Client(), f.server.URL, false)
-	req := updater.CheckRequest{CurrentVersion: Version(), Platform: "darwin", Arch: "arm64"}
+	req := updater.CheckRequest{CurrentVersion: fixtureCurrentVersion, Platform: "darwin", Arch: "arm64"}
 	if release, err := p.Check(context.Background(), req); err != nil || release != nil {
 		t.Fatal("stable app offered prerelease", release, err)
 	}
