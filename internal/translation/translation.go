@@ -273,8 +273,8 @@ func markdownSpans(input []byte) []span {
 }
 
 func (s *Service) Translate(ctx context.Context, body, revision string, progress ...func(Progress)) (Result, error) {
-	if len(body) > 128*1024 {
-		return Result{}, fmt.Errorf("translate a document smaller than 128 KiB")
+	if len(body) > 1024*1024 {
+		return Result{}, fmt.Errorf("translate a document smaller than 1 MiB")
 	}
 	s.mu.Lock()
 	settings := s.settings
@@ -308,10 +308,17 @@ func (s *Service) Translate(ctx context.Context, body, revision string, progress
 	input := []byte(body)
 	parts := markdownSpans(input)
 	texts := []string{}
-	for _, part := range parts {
-		texts = append(texts, strings.TrimSpace(string(input[part.start:part.end])))
+	textCounts := make([]int, len(parts))
+	for i, part := range parts {
+		text := strings.TrimSpace(string(input[part.start:part.end]))
+		chunks := []string{text}
+		if settings.Provider == "youdao" {
+			chunks = splitYoudaoText(text)
+		}
+		textCounts[i] = len(chunks)
+		texts = append(texts, chunks...)
 	}
-	if len(texts) > 512 {
+	if len(texts) > 4096 {
 		return Result{}, fmt.Errorf("this document has too many translation sections; choose a smaller resource")
 	}
 	var translated []string
@@ -327,11 +334,14 @@ func (s *Service) Translate(ctx context.Context, body, revision string, progress
 		return Result{}, err
 	}
 	output := body
+	sectionEnd := len(translated)
 	for i := len(parts) - 1; i >= 0; i-- {
 		original := string(input[parts[i].start:parts[i].end])
 		leading := original[:len(original)-len(strings.TrimLeft(original, " \t\r\n"))]
 		trailing := original[len(strings.TrimRight(original, " \t\r\n")):]
-		value := strings.TrimSpace(translated[i])
+		sectionStart := sectionEnd - textCounts[i]
+		value := strings.TrimSpace(strings.Join(translated[sectionStart:sectionEnd], " "))
+		sectionEnd = sectionStart
 		value = strings.NewReplacer("\\", "\\\\", "*", "\\*", "_", "\\_", "[", "\\[", "]", "\\]", "`", "\\`", "|", "\\|", "<", "\\<", ">", "\\>", "\r\n", " ", "\n", " ", "\r", " ").Replace(value)
 		output = output[:parts[i].start] + leading + value + trailing + output[parts[i].end:]
 	}
@@ -474,7 +484,7 @@ func (s *Service) requestUsing(ctx context.Context, client *http.Client, method,
 }
 
 func (s *Service) google(ctx context.Context, settings Settings, texts []string, done func(int)) ([]string, error) {
-	return translateWebBatches(texts, func(input string) (string, error) {
+	return translateWebBatches(texts, 3000, func(input string) (string, error) {
 		return s.googleText(ctx, settings.TargetLanguage, input)
 	}, done)
 }

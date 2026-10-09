@@ -63,6 +63,12 @@ The production translation service successfully translated a fixed synthetic two
 
 A browser fixture rendered the actual React components with isolated API responses. It showed no left navigation rail, Settings and update controls at the top right, and exactly four translation choices: Google, Youdao, self-hosted LibreTranslate and AI. Selecting Youdao showed no key field; saving and connection-test completion labels were observed with mock responses. The final TypeScript/frontend and native production builds passed. Native window clicks were not checked for this version.
 
+## Folder settings and long paragraphs (alpha.7)
+
+Focused race-enabled translation/app checks cover sentence boundaries, Unicode/emoji limits, large documents above the previous 128 KiB cap, the 1 MiB maximum, per-chunk progress and failure/cancellation without partial results. A 2,320-character paragraph produced three bounded requests and progress from 0/3 through 3/3 while preserving adjacent inline code. Fixed synthetic samples of 900, 1,500, 3,000 and 6,000 characters translated successfully through the public Youdao service; the user's exact red error was not reproduced.
+
+A browser fixture showed the additional-folder explanation, a 26 px Add button and no empty list occupying space. Adding read-only/editable folders passed the selected permission to the mock picker; removing a mock folder restored the empty state. These browser checks do not verify the native macOS folder picker. No real folders or Skills were modified or sent to a service.
+
 ## Remaining acceptance
 
 The ordinary app loaded a large real catalog with installed-Agent tabs; originals were not modified. This does not prove unrestricted access to every folder or execution of a Skill by an Agent. Permission failures and scan limits are reported.

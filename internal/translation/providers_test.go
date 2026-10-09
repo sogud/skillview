@@ -171,7 +171,7 @@ func TestGoogleCombinesSpansAndSpacesBatches(t *testing.T) {
 }
 
 func TestLostBatchBoundariesAreRejected(t *testing.T) {
-	output, err := translateWebBatches([]string{"Heading", "Text"}, func(string) (string, error) { return "merged translation", nil }, func(int) {})
+	output, err := translateWebBatches([]string{"Heading", "Text"}, 3000, func(string) (string, error) { return "merged translation", nil }, func(int) {})
 	if err == nil || output != nil {
 		t.Fatal("Lost line boundaries accepted", output, err)
 	}

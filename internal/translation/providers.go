@@ -71,18 +71,18 @@ func (s *Service) googleRequest(ctx context.Context, endpoint string) ([]byte, e
 
 // Keep newline boundaries while combining small Markdown spans into one web
 // request. A response must retain every line before it can replace any spans.
-func translateWebBatches(texts []string, translate func(string) (string, error), done func(int)) ([]string, error) {
+func translateWebBatches(texts []string, limit int, translate func(string) (string, error), done func(int)) ([]string, error) {
 	output := []string{}
 	for start := 0; start < len(texts); {
 		end := start + 1
-		size := len([]rune(texts[start]))
+		size := utf16Length(texts[start])
 		if !strings.ContainsAny(texts[start], "\r\n") {
 			for end < len(texts) && end-start < 24 {
 				if strings.ContainsAny(texts[end], "\r\n") {
 					break
 				}
-				length := len([]rune(texts[end])) + 1
-				if size+length > 3000 {
+				length := utf16Length(texts[end]) + 1
+				if size+length > limit {
 					break
 				}
 				size += length
@@ -106,6 +106,17 @@ func translateWebBatches(texts []string, translate func(string) (string, error),
 		start = end
 	}
 	return output, nil
+}
+
+func utf16Length(text string) int {
+	units := 0
+	for _, value := range text {
+		units++
+		if value > 0xffff {
+			units++
+		}
+	}
+	return units
 }
 
 func (s *Service) libreTranslate(ctx context.Context, settings Settings, key string, texts []string, done func(int)) ([]string, error) {

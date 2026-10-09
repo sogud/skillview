@@ -828,7 +828,6 @@ dialog::backdrop {
   margin: 0;
 }
 .source-list {
-  height: 235px;
   margin: 10px 0;
 }
 .source-list .source {
@@ -847,15 +846,40 @@ dialog::backdrop {
 }
 .source-heading strong {
   flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .source-policy {
   color: var(--secondary);
   font-size: 10px;
   white-space: nowrap;
 }
-.source-heading .icon-button {
-  width: 22px;
-  height: 22px;
+.folder-remove {
+  color: var(--secondary);
+  padding: 3px 6px;
+  font-size: 11px;
+}
+.folder-empty {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 0 12px;
+  color: var(--secondary);
+  font-size: 11px;
+}
+.modal-body .folder-settings > .quiet-note {
+  margin: 8px 0;
+}
+.folder-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 26px;
+  padding: 4px 8px;
+  font-size: 11px;
+  background: var(--inset);
 }
 .source p {
   margin: 4px 0;
@@ -900,10 +924,10 @@ dialog::backdrop {
 }
 .add-source {
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 12px;
-  padding-top: 8px;
+  padding-top: 4px;
 }
 .checkbox {
   display: flex;

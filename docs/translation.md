@@ -24,8 +24,9 @@ translation format. SkillView does not install models or start a server.
 ## HTTP 429
 
 HTTP 429 means the selected service rejected the request because of a rate
-limit. Google and Youdao requests combine up to 24 Markdown fragments (at most 3,000
-characters) while preserving line boundaries. Free web requests are serialized,
+limit. Requests combine up to 24 Markdown fragments while preserving line
+boundaries. Google batches use at most 3,000 web characters; Youdao uses a
+conservative 1,000-character limit per batch. Free web requests are serialized,
 spaced by at least 300 ms, and paused for one minute after a 429 response. This reduces bursts but cannot
 remove a provider's IP limits. The HTTP client retries at most twice when the
 server explicitly gives a valid `Retry-After` delay of at most ten seconds.
@@ -33,6 +34,16 @@ Canceled, timed-out or otherwise failed requests are not retried automatically.
 
 Wait, or choose another configured service. The connection test helps check
 that service before translating a document.
+
+## Long documents
+
+SkillView accepts documents up to 1 MiB and at most 4,096 translation chunks.
+Youdao splits long paragraphs at sentence or word boundaries, falling back to
+whole Unicode code points when necessary. Emoji count like the web client's
+characters. Each completed chunk updates progress; all translated chunks are
+reassembled within the original Markdown structure. A canceled or failed chunk
+does not produce or cache a partial document. Code and link destinations remain
+unchanged. Larger documents should be opened as smaller resources.
 
 ## Implementation references
 

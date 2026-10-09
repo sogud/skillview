@@ -297,7 +297,7 @@
     "Scan progress": "扫描进度",
     "{count} folders checked · {sources} sources found": "已检查 {count} 个目录 · 已发现 {sources} 个来源",
     "{done} / {total} sources · {count} Skills found": "已读取 {done} / {total} 个来源 · 已找到 {count} 个技能",
-    "Translating {done} / {total} sections": "正在翻译 {done} / {total} 段",
+    "Translating {done} / {total} sections": "正在翻译 {done} / {total} 个片段",
     "Preparing translation…": "正在准备翻译…",
     "{seconds}s elapsed": "已用时 {seconds} 秒",
     "Translation progress": "翻译进度",
@@ -372,6 +372,14 @@
     "Youdao returned an empty translation": "有道未返回翻译内容。",
     "The translation service redirected the request. Check the service address or use Youdao or AI translation.": "翻译服务重定向了请求，请检查服务地址，或改用有道、AI 翻译。",
     "The translation service denied access. Check your network or choose Youdao or AI translation.": "翻译服务拒绝访问，请检查网络或切换有道、AI 翻译。",
-    "Google returned an unreadable response; use Youdao or AI translation": "无法读取 Google 的翻译响应，请改用有道或 AI 翻译。"
+    "Google returned an unreadable response; use Youdao or AI translation": "无法读取 Google 的翻译响应，请改用有道或 AI 翻译。",
+    "Additional folders": "额外文件夹",
+    "Known Agent folders are found automatically. Add a folder here only if it is missing.": "Agent 默认目录会自动识别。只有遗漏的技能文件夹才需要在这里添加。",
+    "No additional folders": "尚未添加额外文件夹",
+    "Add folder…": "添加文件夹…",
+    "Remove": "移除",
+    "Allow editing": "允许编辑",
+    "Added folders are read-only unless you allow editing.": "添加的文件夹默认为只读，勾选后才允许编辑。",
+    "translate a document smaller than 1 MiB": "请选择小于 1 MiB 的文档进行翻译。长文会自动分块，并保留原文件。"
   }
 }

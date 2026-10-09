@@ -12,6 +12,8 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"unicode/utf16"
+	"unicode/utf8"
 )
 
 func encryptYoudaoFixture(t *testing.T, plain []byte, session youdaoSession) []byte {
@@ -131,5 +133,99 @@ func TestYoudaoDecryptRejectsInvalidCiphertextAndPadding(t *testing.T) {
 		if _, err := decodeYoudao(data, session); err == nil {
 			t.Fatal("Invalid ciphertext accepted")
 		}
+	}
+}
+
+func TestYoudaoLongTextSplitsWithoutLosingCharacters(t *testing.T) {
+	for _, text := range []string{
+		strings.Repeat("Read this sentence carefully. ", 6000),
+		strings.Repeat("这是一段很长的说明。", 300),
+		strings.Repeat("🙂", 1300),
+		strings.Repeat("x", 2500),
+	} {
+		chunks := splitYoudaoText(text)
+		if len(chunks) < 2 {
+			t.Fatal("Long text was not split")
+		}
+		for _, chunk := range chunks {
+			if !utf8.ValidString(chunk) || len(utf16.Encode([]rune(chunk))) > 1000 {
+				t.Fatal("Chunk is invalid or exceeds the web text limit")
+			}
+		}
+		withoutSpaces := func(value string) string {
+			return strings.Join(strings.Fields(value), "")
+		}
+		if withoutSpaces(strings.Join(chunks, "")) != withoutSpaces(text) {
+			t.Fatal("Text was lost while splitting")
+		}
+	}
+	chunks := splitYoudaoText(strings.Repeat("a", 800) + ". " + strings.Repeat("b", 500))
+	if !strings.HasSuffix(chunks[0], ".") || strings.HasPrefix(chunks[1], "a") {
+		t.Fatal("Available sentence boundary was ignored")
+	}
+}
+
+func TestYoudaoLongParagraphProgressFailureAndCancellation(t *testing.T) {
+	for _, scenario := range []string{"success", "failure", "cancel"} {
+		t.Run(scenario, func(t *testing.T) {
+			session := youdaoSession{Secret: "fixture-session", Key: "fixture-aes", IV: "fixture-iv"}
+			requests := 0
+			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				if r.URL.Path == "/home" {
+					return
+				}
+				if r.URL.Path == "/webtranslate/key" {
+					_ = json.NewEncoder(w).Encode(map[string]any{"code": 0, "data": session})
+					return
+				}
+				_ = r.ParseForm()
+				requests++
+				input := r.Form.Get("i")
+				if len(utf16.Encode([]rune(input))) > 1000 || strings.Contains(input, "KEEP_CODE") {
+					t.Error("Oversized or protected content was sent")
+				}
+				response := map[string]any{"code": 0, "translateResult": [][]map[string]string{{{"tgt": "translated"}}}}
+				if scenario == "failure" && requests == 2 {
+					response = map[string]any{"code": 50}
+				}
+				plain, _ := json.Marshal(response)
+				_, _ = w.Write(encryptYoudaoFixture(t, plain, session))
+			}))
+			defer server.Close()
+			s, _ := New(t.TempDir(), NewMemoryKeys())
+			s.youdaoURL = server.URL
+			_ = s.Update(Settings{Provider: "youdao", TargetLanguage: "en"}, "", "", false, false)
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+			body := strings.Repeat("Read this sentence carefully. ", 80) + "`KEEP_CODE`\n"
+			var progress []Progress
+			result, err := s.Translate(ctx, body, "long-paragraph", func(p Progress) {
+				progress = append(progress, p)
+				if scenario == "cancel" && p.Completed == 1 {
+					cancel()
+				}
+			})
+			if scenario == "success" {
+				last := progress[len(progress)-1]
+				if err != nil || requests != 3 || result.Sections != 3 || last.Completed != 3 || last.Total != 3 || !strings.Contains(result.Text, "translated translated translated `KEEP_CODE`") {
+					t.Fatal("Long paragraph did not complete with chunk progress", result, err, progress, requests)
+				}
+			} else if err == nil || result.Text != "" || len(s.cache) != 0 {
+				t.Fatal("Partial failed/canceled translation was accepted", result, err)
+			}
+		})
+	}
+}
+
+func TestDocumentSizeLimitAllowsLargeProtectedContent(t *testing.T) {
+	s, _ := New(t.TempDir(), NewMemoryKeys())
+	body := "```text\n" + strings.Repeat("x", 150*1024) + "\n```\n"
+	result, err := s.Translate(context.Background(), body, "large-code")
+	if err != nil || result.Text != body || result.Sections != 0 {
+		t.Fatal("Document above the old limit was rejected or protected code changed", err)
+	}
+	result, err = s.Translate(context.Background(), strings.Repeat("x", 1024*1024+1), "too-large")
+	if err == nil || result.Text != "" {
+		t.Fatal("Unbounded document accepted")
 	}
 }

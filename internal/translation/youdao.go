@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -22,6 +23,51 @@ type youdaoSession struct {
 	Key     string    `json:"aesKey"`
 	IV      string    `json:"aesIv"`
 	Expires time.Time `json:"-"`
+}
+
+const youdaoTextLimit = 1000
+
+// Count like the web client's JavaScript strings. Prefer sentence or word
+// boundaries, and never cut a Unicode code point in half.
+func splitYoudaoText(text string) []string {
+	runes := []rune(text)
+	var chunks []string
+	for start := 0; start < len(runes); {
+		end, units := start, 0
+		sentence, word := 0, 0
+		for end < len(runes) {
+			size := 1
+			if runes[end] > 0xffff {
+				size = 2
+			}
+			if units+size > youdaoTextLimit {
+				break
+			}
+			units += size
+			end++
+			if units >= youdaoTextLimit/2 {
+				if strings.ContainsRune(".!?。！？;；\n", runes[end-1]) {
+					sentence = end
+				}
+				if unicode.IsSpace(runes[end-1]) {
+					word = end
+				}
+			}
+		}
+		if end < len(runes) {
+			if sentence > start {
+				end = sentence
+			} else if word > start {
+				end = word
+			}
+		}
+		chunk := strings.TrimSpace(string(runes[start:end]))
+		if chunk != "" {
+			chunks = append(chunks, chunk)
+		}
+		start = end
+	}
+	return chunks
 }
 
 // These are the public web client's protocol fields, not account credentials.
@@ -116,53 +162,44 @@ func (s *Service) youdao(ctx context.Context, settings Settings, texts []string,
 	} else if target == "zh-TW" {
 		target = "zh-CHT"
 	}
-	return translateWebBatches(texts, func(input string) (string, error) {
-		runes := []rune(input)
-		var output strings.Builder
-		for start := 0; start < len(runes); start += 3000 {
-			end := start + 3000
-			if end > len(runes) {
-				end = len(runes)
-			}
-			parameters := youdaoParameters("webfanyi", session.Secret)
-			parameters.Set("i", string(runes[start:end]))
-			parameters.Set("from", "auto")
-			parameters.Set("to", target)
-			parameters.Set("dictResult", "false")
-			data, err := s.webRequest(ctx, "youdao", http.MethodPost, s.youdaoURL+"/webtranslate", "application/x-www-form-urlencoded", []byte(parameters.Encode()), youdaoHeaders())
-			if err != nil {
-				return "", err
-			}
-			plain, err := decodeYoudao(data, session)
-			if err != nil {
-				return "", err
-			}
-			var response struct {
-				Code         *int `json:"code"`
-				Translations [][]struct {
-					Text string `json:"tgt"`
-				} `json:"translateResult"`
-			}
-			if json.Unmarshal(plain, &response) != nil || response.Code == nil {
-				return "", fmt.Errorf("Youdao returned an unreadable response")
-			}
-			if *response.Code != 0 {
-				s.youdaoMu.Lock()
-				s.youdaoSession.Expires = time.Time{}
-				s.youdaoMu.Unlock()
-				return "", fmt.Errorf("Youdao's free service rejected the translation (code %d). Try again later or choose another provider.", *response.Code)
-			}
-			var value strings.Builder
-			for _, group := range response.Translations {
-				for _, item := range group {
-					value.WriteString(item.Text)
-				}
-			}
-			if strings.TrimSpace(value.String()) == "" {
-				return "", fmt.Errorf("Youdao returned an empty translation")
-			}
-			output.WriteString(value.String())
+	return translateWebBatches(texts, youdaoTextLimit, func(input string) (string, error) {
+		parameters := youdaoParameters("webfanyi", session.Secret)
+		parameters.Set("i", input)
+		parameters.Set("from", "auto")
+		parameters.Set("to", target)
+		parameters.Set("dictResult", "false")
+		data, err := s.webRequest(ctx, "youdao", http.MethodPost, s.youdaoURL+"/webtranslate", "application/x-www-form-urlencoded", []byte(parameters.Encode()), youdaoHeaders())
+		if err != nil {
+			return "", err
 		}
-		return output.String(), nil
+		plain, err := decodeYoudao(data, session)
+		if err != nil {
+			return "", err
+		}
+		var response struct {
+			Code         *int `json:"code"`
+			Translations [][]struct {
+				Text string `json:"tgt"`
+			} `json:"translateResult"`
+		}
+		if json.Unmarshal(plain, &response) != nil || response.Code == nil {
+			return "", fmt.Errorf("Youdao returned an unreadable response")
+		}
+		if *response.Code != 0 {
+			s.youdaoMu.Lock()
+			s.youdaoSession.Expires = time.Time{}
+			s.youdaoMu.Unlock()
+			return "", fmt.Errorf("Youdao's free service rejected the translation (code %d). Try again later or choose another provider.", *response.Code)
+		}
+		var value strings.Builder
+		for _, group := range response.Translations {
+			for _, item := range group {
+				value.WriteString(item.Text)
+			}
+		}
+		if strings.TrimSpace(value.String()) == "" {
+			return "", fmt.Errorf("Youdao returned an empty translation")
+		}
+		return value.String(), nil
 	}, done)
 }

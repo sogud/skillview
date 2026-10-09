@@ -1,8 +1,8 @@
 import { useLocale } from './locales'
 import { Virtuoso } from 'react-virtuoso'
 import { useEffect, useRef, useState } from 'react'
-import { FolderPlus, RotateCw, Link, Folder, X } from 'lucide-react'
-import { IconButton, Modal, Disclosure } from './components'
+import { FolderPlus, Link, Folder } from 'lucide-react'
+import { Modal, Disclosure } from './components'
 import { Select } from './Select'
 import * as api from './api'
 import type { Source, Catalog, TranslationSettings } from './api'
@@ -57,6 +57,9 @@ export function Settings(props: SettingsProps) {
   const [showAll, setShowAll] = useState(false)
   const agents = (props.catalog?.agents ?? []).filter(
     (agent) => showAll || agent.installed,
+  )
+  const extraFolders = (props.catalog?.sources ?? []).filter(
+    (source) => !source.automatic,
   )
   const [writable, setWritable] = useState(false)
   const [adding, setAdding] = useState(false)
@@ -328,73 +331,76 @@ export function Settings(props: SettingsProps) {
             </div>
           </>
         ) : (
-          <>
+          <div className="folder-settings">
             <div className="section-heading">
-              <h3>{t('Skills folders')}</h3>
-              <IconButton
-                icon={RotateCw}
-                label={t('Rescan folders')}
-                onClick={props.onRescan}
-              />
+              <h3>{t('Additional folders')}</h3>
             </div>
             <p className="quiet-note">
-              {t('Only known Agent folders and folders you add are scanned.')}
+              {t(
+                'Known Agent folders are found automatically. Add a folder here only if it is missing.',
+              )}
             </p>
-            <div className="source-list">
-              <Virtuoso
-                data={(props.catalog?.sources ?? []).filter(
-                  (source) => !source.automatic,
-                )}
-                style={{ height: 235 }}
-                defaultItemHeight={90}
-                computeItemKey={(_, source) => source.id}
-                itemContent={(_, source) => (
-                  <div className="source" key={source.id}>
-                    <div className="source-heading">
-                      <Folder size={15} />
-                      <strong>{t(source.name)}</strong>
-                      <span className="source-policy">
-                        {source.writable
-                          ? t('Editing allowed')
-                          : t('Read-only')}
-                      </span>
-                      <IconButton
-                        icon={X}
-                        label={t('Remove {name} from SkillView', {
-                          name: source.name,
-                        })}
-                        onClick={() => {
-                          void props
-                            .onRemove(source.id)
-                            .catch((failure) => setError(message(failure)))
-                        }}
-                      />
-                    </div>
-                    <p className="path" title={source.path}>
-                      {source.path}
-                    </p>
-                    <p
-                      className={`source-status ${source.status === 'ready' ? '' : 'attention'}`}
-                    >
-                      {source.status === 'ready'
-                        ? t('Found for {tools}', {
-                            tools: (source.tools ?? []).join(', '),
-                          })
-                        : message(source.message)}
-                    </p>
-                    {source.resolvedPath &&
-                      source.resolvedPath !== source.path && (
-                        <p className="link-target">
-                          <Link size={12} />
-                          <span title={source.resolvedPath}>
-                            {source.resolvedPath}
-                          </span>
+            {extraFolders.length > 0 ? (
+              <div
+                className="source-list"
+                style={{ height: Math.min(235, extraFolders.length * 66) }}
+              >
+                <Virtuoso
+                  data={extraFolders}
+                  style={{ height: '100%' }}
+                  defaultItemHeight={66}
+                  computeItemKey={(_, source) => source.id}
+                  itemContent={(_, source) => (
+                    <div className="source" key={source.id}>
+                      <div className="source-heading">
+                        <Folder size={15} />
+                        <strong title={source.name}>{t(source.name)}</strong>
+                        <span className="source-policy">
+                          {source.writable
+                            ? t('Editing allowed')
+                            : t('Read-only')}
+                        </span>
+                        <button
+                          className="folder-remove"
+                          aria-label={t('Remove {name} from SkillView', {
+                            name: source.name,
+                          })}
+                          onClick={() => {
+                            void props
+                              .onRemove(source.id)
+                              .catch((failure) => setError(message(failure)))
+                          }}
+                        >
+                          {t('Remove')}
+                        </button>
+                      </div>
+                      <p className="path" title={source.path}>
+                        {source.path}
+                      </p>
+                      {source.status !== 'ready' && (
+                        <p className="source-status attention">
+                          {message(source.message)}
                         </p>
                       )}
-                  </div>
-                )}
-              />
-            </div>
+                      {source.resolvedPath &&
+                        source.resolvedPath !== source.path && (
+                          <p className="link-target">
+                            <Link size={12} />
+                            <span title={source.resolvedPath}>
+                              {source.resolvedPath}
+                            </span>
+                          </p>
+                        )}
+                    </div>
+                  )}
+                />
+              </div>
+            ) : (
+              <div className="folder-empty">
+                <Folder size={18} />
+                <span>{t('No additional folders')}</span>
+              </div>
+            )}
             {(props.catalog?.issues?.length ?? 0) > 0 && (
               <Disclosure
                 className="scan-issues"
@@ -440,36 +446,43 @@ export function Settings(props: SettingsProps) {
               </p>
             )}
             <div className="add-source">
-              <label className="checkbox">
-                <input
-                  type="checkbox"
-                  checked={writable}
-                  onChange={(event) => setWritable(event.target.checked)}
-                />
-                {t('Allow editing in the folder I select')}
-              </label>
               <button
-                className="primary"
+                className="folder-add"
                 disabled={adding}
                 onClick={() => {
                   void add()
                 }}
               >
-                <FolderPlus size={14} />
-                {adding ? t('Choosing folder…') : t('Add Skills folder')}
+                <FolderPlus size={13} />
+                {adding ? t('Choosing folder…') : t('Add folder…')}
               </button>
+              <label className="checkbox">
+                <input
+                  type="checkbox"
+                  checked={writable}
+                  disabled={adding}
+                  aria-label={t('Allow editing in the folder I select')}
+                  onChange={(event) => setWritable(event.target.checked)}
+                />
+                {t('Allow editing')}
+              </label>
             </div>
+            <p className="quiet-note">
+              {t('Added folders are read-only unless you allow editing.')}
+            </p>
             {error && (
               <p className="form-error" role="alert">
                 {error}
               </p>
             )}
-            <p className="quiet-note">
-              {t(
-                'Removing a source only removes it from this list. Its files stay in place.',
-              )}
-            </p>
-          </>
+            {extraFolders.length > 0 && (
+              <p className="quiet-note">
+                {t(
+                  'Removing a source only removes it from this list. Its files stay in place.',
+                )}
+              </p>
+            )}
+          </div>
         )}
       </div>
     </Modal>
