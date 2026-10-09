@@ -8,6 +8,7 @@ Reviewed on 2026-10-09 for the first experimental preview. This review covers th
 - **Private-workspace assumptions:** replaced parent-only build instructions and workflow paths with standalone commands and CI. Local Codex configuration, generated files, secrets and acceptance artifacts are ignored.
 - **Internal acceptance material:** public documentation describes synthetic checks and their limits without publishing personal catalogs, machine paths, private screenshots, session records or recovery data.
 - **Dependency advisory:** the pinned Goldmark version is v1.7.17, fixing the earlier known renderer advisory. Runtime Go and npm scans are repeated by preview CI.
+- **Go runtime advisories:** the first cloud binary scan flagged twelve standard-library advisories in Go 1.27.1. The build now pins [Go 1.27.2](https://go.dev/doc/devel/release#go1.27.0), the upstream security fix, and upgrades older local bootstrap installations before compiling.
 
 ## Scope and evidence
 

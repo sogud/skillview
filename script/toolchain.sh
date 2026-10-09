@@ -12,16 +12,21 @@ export CGO_CFLAGS="-mmacosx-version-min=13.0 ${CGO_CFLAGS:-}"
 export CGO_LDFLAGS="-mmacosx-version-min=13.0 ${CGO_LDFLAGS:-}"
 
 ensure_go() {
-  if command -v go >/dev/null 2>&1; then return; fi
+  if command -v go >/dev/null 2>&1 && [[ "$(go env GOVERSION)" == "go1.27.2" ]]; then return; fi
   if [[ "$(uname -s)-$(uname -m)" != "Darwin-arm64" ]]; then
-    echo "Install Go 1.25 or newer for this platform before building SkillView." >&2
+    echo "Install Go 1.27.2 for this platform before building SkillView." >&2
     return 1
   fi
   mkdir -p "$TOOLS_DIR"
-  local archive="$TOOLS_DIR/go1.27.1.darwin-arm64.tar.gz"
-  curl --fail --location --retry 2 https://go.dev/dl/go1.27.1.darwin-arm64.tar.gz -o "$archive"
-  echo "ee215d57e0ec269c60cc9ceca68e6bda321ba9ee5afe24f4b0988703c2d87d12  $archive" | shasum -a 256 -c -
-  tar -xzf "$archive" -C "$TOOLS_DIR"
+  local archive="$TOOLS_DIR/go1.27.2.darwin-arm64.tar.gz"
+  curl --fail --location --retry 2 https://go.dev/dl/go1.27.2.darwin-arm64.tar.gz -o "$archive"
+  echo "76812b213b1b2302c978d28fa52fa92d541704b9e7d9d5db8002c50e4018c4c5  $archive" | shasum -a 256 -c -
+  local staging
+  staging=$(mktemp -d "$TOOLS_DIR/go-install.XXXXXX")
+  tar -xzf "$archive" -C "$staging"
+  # Extract into a fresh directory; mixing Go releases can break the toolchain.
+  if [[ -d "$TOOLS_DIR/go" ]]; then mv "$TOOLS_DIR/go" "$staging/previous-go"; fi
+  mv "$staging/go" "$TOOLS_DIR/go"
 }
 
 ensure_wails() {

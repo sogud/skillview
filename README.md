@@ -29,7 +29,7 @@ Selecting a link's containing folder for editing also allows moving that final l
 
 ## Run and build
 
-Requires an Apple Silicon Mac, Node/npm and Xcode Command Line Tools (`xcode-select --install`). CI uses Node 24.16.0 and Go 1.27.1. The bootstrap downloads Go 1.27.1 when missing and checks its official SHA-256. Wails v3.0.0-beta.27 and dependency versions are pinned.
+Requires an Apple Silicon Mac, Node/npm and Xcode Command Line Tools (`xcode-select --install`). CI uses Node 24.16.0 and Go 1.27.2. The bootstrap installs the pinned Go 1.27.2 when needed and checks its official SHA-256. Wails v3.0.0-beta.27 and dependency versions are pinned.
 
 ```sh
 git clone https://github.com/sogud/skillview.git
