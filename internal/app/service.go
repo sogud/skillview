@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"sync/atomic"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"skillview/internal/library"
@@ -32,7 +33,6 @@ type Service struct {
 	mu          sync.Mutex
 	ready       bool
 	allowQuit   bool
-	discovered  bool
 	discoveryMu sync.Mutex
 	translator  *translation.Service
 	watcher     *watch.Coordinator
@@ -45,15 +45,8 @@ func New(l *library.Library, native Native, translator *translation.Service) *Se
 
 func (s *Service) Scan(ctx context.Context) (library.Catalog, error) {
 	s.discoveryMu.Lock()
-	if !s.discovered && len(s.native.DiscoveryRoots) > 0 {
-		if err := s.library.Discover(ctx, s.native.DiscoveryRoots); err != nil {
-			s.discoveryMu.Unlock()
-			return library.Catalog{}, err
-		}
-		s.discovered = true
-	}
-	s.discoveryMu.Unlock()
-	catalog, err := s.library.Scan(ctx)
+	defer s.discoveryMu.Unlock()
+	catalog, err := s.library.Scan(ctx, s.scanReporter())
 	if err == nil {
 		if !s.updateWatch() {
 			catalog.Issues = append(catalog.Issues, library.Issue{Message: "Folder watching is unavailable for some paths; refresh to check them."})
@@ -65,18 +58,32 @@ func (s *Service) Discover(ctx context.Context) (library.Catalog, error) {
 	s.discoveryMu.Lock()
 	defer s.discoveryMu.Unlock()
 	if len(s.native.DiscoveryRoots) > 0 {
-		if err := s.library.Discover(ctx, s.native.DiscoveryRoots); err != nil {
+		if err := s.library.Discover(ctx, s.native.DiscoveryRoots, s.scanReporter()); err != nil {
 			return library.Catalog{}, err
 		}
 	}
-	s.discovered = true
-	catalog, err := s.library.Scan(ctx)
+	catalog, err := s.library.Scan(ctx, s.scanReporter())
 	if err == nil {
 		if !s.updateWatch() {
 			catalog.Issues = append(catalog.Issues, library.Issue{Message: "Folder watching is unavailable for some paths; refresh to check them."})
 		}
 	}
 	return catalog, err
+}
+
+func (s *Service) scanReporter() func(library.ScanProgress) {
+	last := time.Time{}
+	phase := ""
+	return func(progress library.ScanProgress) {
+		finished := progress.Phase == "reading" && progress.SourcesTotal > 0 && progress.SourcesDone == progress.SourcesTotal
+		if progress.Phase == phase && time.Since(last) < 100*time.Millisecond && !finished {
+			return
+		}
+		last, phase = time.Now(), progress.Phase
+		if s.native.Application != nil {
+			s.native.Application().Event.Emit("skillview:scan", progress)
+		}
+	}
 }
 func (s *Service) SystemLanguage() string { return locale.SystemLanguage() }
 func (s *Service) SetLanguage(language string) error {
@@ -95,7 +102,7 @@ func (s *Service) TestTranslationConnection(ctx context.Context) error {
 func (s *Service) SetTranslationSettings(settings translation.Settings, aiKey, googleKey string, clearAI, clearGoogle bool) error {
 	return s.translator.Update(settings, aiKey, googleKey, clearAI, clearGoogle)
 }
-func (s *Service) Translate(ctx context.Context, id, path, revision string) (translation.Result, error) {
+func (s *Service) Translate(ctx context.Context, id, path, revision, requestID string) (translation.Result, error) {
 	doc, err := s.library.Read(id, path)
 	if err != nil {
 		return translation.Result{}, err
@@ -106,7 +113,12 @@ func (s *Service) Translate(ctx context.Context, id, path, revision string) (tra
 	if doc.Kind != "markdown" && doc.Kind != "text" {
 		return translation.Result{}, fmt.Errorf("only text documents can be translated")
 	}
-	result, err := s.translator.Translate(ctx, doc.Body, revision)
+	result, err := s.translator.Translate(ctx, doc.Body, revision, func(progress translation.Progress) {
+		progress.RequestID = requestID
+		if s.native.Application != nil {
+			s.native.Application().Event.Emit("skillview:translation", progress)
+		}
+	})
 	if err != nil {
 		return translation.Result{}, err
 	}

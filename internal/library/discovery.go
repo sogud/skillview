@@ -134,15 +134,15 @@ func (l *Library) mergeAutomatic(candidates []Source) {
 
 // File-name discovery reads directory metadata only. Skill contents are read by
 // the normal bounded catalog scanner after a source has been discovered.
-func (l *Library) Discover(ctx context.Context, roots []string) error {
+func (l *Library) Discover(ctx context.Context, roots []string, progress ...func(ScanProgress)) error {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return err
 	}
-	return l.discover(ctx, roots, home, DefaultSources(home))
+	return l.discover(ctx, roots, home, DefaultSources(home), progress...)
 }
 
-func (l *Library) discover(ctx context.Context, roots []string, home string, candidates []Source) error {
+func (l *Library) discover(ctx context.Context, roots []string, home string, candidates []Source, progress ...func(ScanProgress)) error {
 	known := map[string]bool{}
 	for _, source := range candidates {
 		known[source.ResolvedPath] = true
@@ -165,6 +165,7 @@ func (l *Library) discover(ctx context.Context, roots []string, home string, can
 	}
 	report := DiscoveryReport{Roots: append([]string{}, roots...), Completed: true}
 	seen := map[string]bool{}
+	currentRoot := ""
 	var walk func(string, int)
 	walk = func(path string, depth int) {
 		if ctx.Err() != nil || report.Limited {
@@ -175,15 +176,15 @@ func (l *Library) discover(ctx context.Context, roots []string, home string, can
 			report.Completed = false
 			return
 		}
-		resolved, err := filepath.EvalSymlinks(path)
-		if err != nil {
-			return
-		}
+		// Roots are resolved once. Child symlinks are never walked, so resolving
+		// every ancestor again for every directory adds IO without finding more Skills.
+		resolved := path
 		if seen[resolved] {
 			return
 		}
 		seen[resolved] = true
 		report.Directories++
+		reportProgress(progress, ScanProgress{Phase: "discovering", Directories: report.Directories, SourcesTotal: len(candidates), Root: currentRoot})
 		if known[resolved] {
 			return
 		}
@@ -235,7 +236,12 @@ func (l *Library) discover(ctx context.Context, roots []string, home string, can
 		}
 	}
 	for _, root := range roots {
-		walk(root, 0)
+		resolved, err := filepath.EvalSymlinks(root)
+		if err != nil {
+			continue
+		}
+		currentRoot = filepath.Base(root)
+		walk(resolved, 0)
 	}
 	if err := ctx.Err(); err != nil {
 		return err

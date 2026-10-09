@@ -1,16 +1,19 @@
 module skillview
 
-go 1.25.0
+go 1.26.0
 
 require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/keybase/go-keychain v0.0.1
+	github.com/mattn/go-ieproxy v0.0.12
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/openai/openai-go/v3 v3.74.0
 	github.com/wailsapp/wails/v3 v3.0.0-beta.27
 	github.com/yuin/goldmark v1.7.17
-	golang.org/x/sys v0.47.0
+	golang.org/x/mod v0.41.0
+	golang.org/x/net v0.60.0
+	golang.org/x/sys v0.48.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -26,5 +29,5 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
-	golang.org/x/mod v0.40.0 // indirect
+	golang.org/x/text v0.42.0 // indirect
 )

@@ -3,6 +3,7 @@ package translation
 import (
 	"context"
 	"net/http"
+	"skillview/internal/network"
 	"strconv"
 	"time"
 
@@ -16,6 +17,7 @@ func newHTTPClient() *http.Client {
 	client.ErrorHandler = retryablehttp.PassthroughErrorHandler
 	client.HTTPClient.Timeout = 60 * time.Second
 	client.HTTPClient.CheckRedirect = refuseRedirect
+	client.HTTPClient.Transport = network.Transport()
 	client.CheckRetry = func(ctx context.Context, response *http.Response, err error) (bool, error) {
 		if err := ctx.Err(); err != nil {
 			return false, err

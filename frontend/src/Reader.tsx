@@ -21,6 +21,7 @@ import {
   Download,
 } from 'lucide-react'
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { Events } from '@wailsio/runtime'
 import { IconButton, Markdown } from './components'
 import * as api from './api'
 import type {
@@ -29,6 +30,7 @@ import type {
   Resource,
   TranslationResult,
   Occurrence,
+  TranslationProgress,
 } from './api'
 
 const Editor = lazy(() => import('./Editor'))
@@ -74,16 +76,39 @@ export function Reader(props: ReaderProps) {
   const [translation, setTranslation] = useState<TranslationResult | null>(null)
   const [translated, setTranslated] = useState(false)
   const [translating, setTranslating] = useState(false)
+  const [progress, setProgress] = useState<TranslationProgress | null>(null)
+  const [elapsed, setElapsed] = useState(0)
   const [translationError, setTranslationError] = useState('')
   const [translationNotice, setTranslationNotice] = useState('')
   const [exporting, setExporting] = useState(false)
   const [copiesOpen, setCopiesOpen] = useState(false)
   const pending = useRef<ReturnType<typeof api.Translate> | null>(null)
   const sequence = useRef(0)
+  const requestID = useRef('')
+  useEffect(
+    () =>
+      Events.On('skillview:translation', (event) => {
+        const next = event.data as TranslationProgress
+        if (requestID.current && next.requestId === requestID.current)
+          setProgress(next)
+      }),
+    [],
+  )
+  useEffect(() => {
+    if (!translating) return
+    const start = Date.now()
+    const timer = window.setInterval(
+      () => setElapsed(Math.floor((Date.now() - start) / 1000)),
+      1000,
+    )
+    return () => window.clearInterval(timer)
+  }, [translating])
   useEffect(() => {
     sequence.current++
     pending.current?.cancel()
     pending.current = null
+    requestID.current = ''
+    setProgress(null)
     setTranslation(null)
     setTranslated(false)
     setTranslating(false)
@@ -112,6 +137,9 @@ export function Reader(props: ReaderProps) {
     }
     const current = ++sequence.current
     setTranslating(true)
+    setElapsed(0)
+    setProgress(null)
+    setTranslationNotice('')
     setTranslationError('')
     try {
       const settings = await api.GetTranslationSettings()
@@ -123,7 +151,13 @@ export function Reader(props: ReaderProps) {
         props.onConfigureTranslation()
         return
       }
-      const request = api.Translate(doc.skillId, doc.path, doc.revision)
+      requestID.current = `${doc.skillId}:${current}:${Date.now()}`
+      const request = api.Translate(
+        doc.skillId,
+        doc.path,
+        doc.revision,
+        requestID.current,
+      )
       pending.current = request
       const result = await request
       if (current === sequence.current) {
@@ -137,6 +171,7 @@ export function Reader(props: ReaderProps) {
       if (current === sequence.current) {
         setTranslating(false)
         pending.current = null
+        requestID.current = ''
       }
     }
   }
@@ -144,8 +179,10 @@ export function Reader(props: ReaderProps) {
     sequence.current++
     pending.current?.cancel()
     pending.current = null
+    requestID.current = ''
     setTranslating(false)
     setTranslationError('')
+    setTranslationNotice(t('Translation canceled'))
   }
   async function exportTranslation() {
     if (!doc || !translation || exporting) return
@@ -174,6 +211,14 @@ export function Reader(props: ReaderProps) {
   return (
     <aside className="reader" aria-label={`${skill.name} ${t('reader')}`}>
       <header className="reader-head">
+        <button
+          className="reader-back"
+          onClick={props.onClose}
+          disabled={props.saving}
+        >
+          <ArrowLeft size={15} />
+          {t('Back to Skills')}
+        </button>
         <span className="filename" title={doc?.path}>
           {doc?.path ?? 'SKILL.md'}
           {dirty && (
@@ -184,21 +229,26 @@ export function Reader(props: ReaderProps) {
         </span>
         <div className="reader-tools">
           {canTranslate && (
-            <IconButton
-              icon={translating ? X : Languages}
-              label={t(
-                translating
-                  ? 'Cancel translation'
-                  : translated
-                    ? 'Show original'
-                    : 'Translate document',
-              )}
-              active={translated}
+            <button
+              className="reader-translate"
+              aria-pressed={translated}
+              title={t('Translation does not change the original file.')}
               onClick={() => {
                 if (translating) cancelTranslation()
                 else void translate()
               }}
-            />
+            >
+              {translating ? <X size={14} /> : <Languages size={15} />}
+              {t(
+                translating
+                  ? 'Cancel translation'
+                  : translated
+                    ? 'Show original'
+                    : translation
+                      ? 'Show translation'
+                      : 'Translate document',
+              )}
+            </button>
           )}
           {doc &&
             props.tab === 'document' &&
@@ -235,12 +285,6 @@ export function Reader(props: ReaderProps) {
             icon={Folder}
             label={t('Show in Finder')}
             onClick={props.onReveal}
-          />
-          <IconButton
-            icon={X}
-            label={t('Close reader')}
-            onClick={props.onClose}
-            disabled={props.saving}
           />
         </div>
       </header>
@@ -333,9 +377,43 @@ export function Reader(props: ReaderProps) {
           )}
         </details>
       )}
+      {translating && (
+        <div className="translation-progress" role="status" aria-live="polite">
+          <span>
+            {progress
+              ? t('Translating {done} / {total} sections', {
+                  done: progress.completed,
+                  total: progress.total,
+                })
+              : t('Preparing translation…')}
+            {' · '}
+            {t('{seconds}s elapsed', { seconds: elapsed })}
+            {progress
+              ? ` · ${progress.provider === 'ai' ? 'AI' : 'Google'} → ${progress.targetLanguage}`
+              : ''}
+          </span>
+          <progress
+            aria-label={t('Translation progress')}
+            value={
+              progress && progress.total > 0 ? progress.completed : undefined
+            }
+            max={progress?.total || 1}
+          />
+          {progress && progress.completed === progress.total && (
+            <span>{t('Checking the complete translation…')}</span>
+          )}
+        </div>
+      )}
       {translationError && (
         <p className="translation-error" role="alert">
           {translationError}{' '}
+          <button
+            onClick={() => {
+              void translate()
+            }}
+          >
+            {t('Try again')}
+          </button>
           {!translated && (
             <button onClick={props.onConfigureTranslation}>
               {t('Configure translation')}
@@ -348,6 +426,12 @@ export function Reader(props: ReaderProps) {
           className="translation-note"
           title={t('Translation does not change the original file.')}
         >
+          <strong>
+            {translation.sections === 0
+              ? t('No prose to translate')
+              : t('Translation complete')}
+          </strong>
+          {' · '}
           {translation.provider === 'ai' ? 'AI' : 'Google'} →{' '}
           {translation.targetLanguage}
           {translation.cached ? ` · ${t('Cached translation')}` : ''}

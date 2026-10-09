@@ -8,6 +8,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"skillview/internal/network"
 	"strings"
 	"sync"
 	"time"
@@ -59,7 +60,7 @@ func New(u *updater.Updater, fixture bool, notify func(Status)) (*Manager, error
 			baseURL = raw
 		}
 	}
-	provider, err := newProvider(&http.Client{Timeout: 45 * time.Second}, baseURL, strings.Contains(Version(), "-"))
+	provider, err := newProvider(&http.Client{Timeout: 30 * time.Second, Transport: network.Transport()}, baseURL, strings.Contains(Version(), "-"))
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +99,7 @@ func (m *Manager) Check(ctx context.Context) Status {
 	m.publish(status)
 	release, err := m.updater.Check(ctx)
 	if err != nil {
-		status.State, status.Message = "error", "Could not check for updates. Try again or open GitHub Releases."
+		status.State, status.Message = "error", checkErrorMessage(err)
 	} else if release == nil {
 		status = Status{Version: Version(), State: "up-to-date"}
 	} else {

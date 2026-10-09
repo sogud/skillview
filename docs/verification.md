@@ -31,6 +31,16 @@ Native observations used an isolated local release API: the purple sidebar badge
 
 The newly used `golang.org/x/mod` dependency was upgraded to v0.40.0 after the binary scan identified [GO-2026-6180](https://pkg.go.dev/vuln/GO-2026-6180) and [GO-2026-6179](https://pkg.go.dev/vuln/GO-2026-6179). The corrected alpha.2 binary passed the known-vulnerability scan. See [update publishing](updates.md) for the signing and installation requirements.
 
+## Feedback fixes (alpha.3)
+
+Startup tests confirm that known Skills are readable before the wider search starts. Discovery/reading progress tests cover real counters, overlapping and linked roots and cancellation without a false completion. Native observations used 80 synthetic Skills and 3,000 empty fixture directories; installed-Agent tabs wrapped into rows, reading occupied the main area, Back to Skills restored the list and navigation backgrounds were neutral.
+
+A local OpenAI-compatible fixture showed completed-section progress, elapsed time, the translated document with a persistent completion label, cancellation returning to the original and localized HTTP 503 feedback with retry/configuration controls. AI batch tests reject incomplete and partially failed documents without caching them. No real Skill was sent to a translation provider. The public Google endpoint translated the fixed `Hello.` connection sample successfully on this Mac; availability on another computer remains unverified.
+
+A public GitHub API check reproduced rate limiting. The fallback through the public Atom release feed then returned the correct up-to-date state. Fixture tests verify that the fallback still rejects unsigned manifests and tampered ZIPs, preserves stable/preview channel filtering and never offers an older version. Static macOS HTTP/HTTPS proxy support uses [go-ieproxy](https://github.com/mattn/go-ieproxy); loopback models are tested to bypass proxies. PAC and SOCKS-only configurations are not evaluated.
+
+The new dependency's initial `golang.org/x/net` v0.58.0 was flagged by the binary scan for five known HTTP/2 advisories, including [GO-2026-6610](https://pkg.go.dev/vuln/GO-2026-6610). It was upgraded to the listed fixed version v0.60.0 before packaging. Package checks and CI evidence apply to the exact reviewed source and ZIP.
+
 ## Remaining acceptance
 
 The ordinary app loaded a large real catalog with installed-Agent tabs; originals were not modified. This does not prove unrestricted access to every folder or execution of a Skill by an Agent. Permission failures and scan limits are reported.

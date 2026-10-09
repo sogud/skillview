@@ -15,6 +15,7 @@ import (
 	"os"
 	"path/filepath"
 	"skillview/internal/cache"
+	"skillview/internal/network"
 	"sort"
 	"strings"
 	"sync"
@@ -42,6 +43,7 @@ type Result struct {
 	TargetLanguage string `json:"targetLanguage"`
 	Revision       string `json:"revision"`
 	Cached         bool   `json:"cached"`
+	Sections       int    `json:"sections"`
 }
 
 type KeyStore interface {
@@ -236,7 +238,7 @@ func markdownSpans(input []byte) []span {
 	return merged
 }
 
-func (s *Service) Translate(ctx context.Context, body, revision string) (Result, error) {
+func (s *Service) Translate(ctx context.Context, body, revision string, progress ...func(Progress)) (Result, error) {
 	if len(body) > 128*1024 {
 		return Result{}, fmt.Errorf("translate a document smaller than 128 KiB")
 	}
@@ -255,7 +257,7 @@ func (s *Service) Translate(ctx context.Context, body, revision string) (Result,
 		s.mu.Unlock()
 		return Result{}, err
 	}
-	hash := sha256.Sum256([]byte(body + revision + settings.Provider + settings.TargetLanguage + settings.BaseURL + settings.Model + "segmenter-v2-prompt-v1"))
+	hash := sha256.Sum256([]byte(body + revision + settings.Provider + settings.TargetLanguage + settings.BaseURL + settings.Model + "segmenter-v3-prompt-v1"))
 	cacheKey := hex.EncodeToString(hash[:])
 	if cached, ok := s.cache[cacheKey]; ok {
 		cached.Cached = true
@@ -286,7 +288,7 @@ func (s *Service) Translate(ctx context.Context, body, revision string) (Result,
 	if len(texts) == 0 {
 		translated = []string{}
 	} else {
-		translated, err = s.translateTexts(ctx, settings, key, texts)
+		translated, err = s.translateTexts(ctx, settings, key, texts, progress...)
 	}
 	if err != nil {
 		return Result{}, err
@@ -303,7 +305,7 @@ func (s *Service) Translate(ctx context.Context, body, revision string) (Result,
 		value = strings.NewReplacer("\\", "\\\\", "*", "\\*", "_", "\\_", "[", "\\[", "]", "\\]", "`", "\\`", "|", "\\|", "<", "\\<", ">", "\\>", "\r\n", " ", "\n", " ", "\r", " ").Replace(value)
 		output = output[:parts[i].start] + leading + value + trailing + output[parts[i].end:]
 	}
-	result := Result{Text: output, Provider: settings.Provider, TargetLanguage: settings.TargetLanguage, Revision: revision}
+	result := Result{Text: output, Provider: settings.Provider, TargetLanguage: settings.TargetLanguage, Revision: revision, Sections: len(texts)}
 	if err := ctx.Err(); err != nil {
 		return Result{}, err
 	}
@@ -321,16 +323,40 @@ func (s *Service) Translate(ctx context.Context, body, revision string) (Result,
 	return result, nil
 }
 
-func (s *Service) translateTexts(ctx context.Context, settings Settings, key string, texts []string) ([]string, error) {
+func (s *Service) translateTexts(ctx context.Context, settings Settings, key string, texts []string, progress ...func(Progress)) ([]string, error) {
 	var values []string
 	var err error
+	done := translationReporter(settings, len(texts), progress)
+	done(0)
 	switch settings.Provider {
 	case "ai":
-		values, err = s.ai(ctx, settings, key, texts)
+		// Smaller requests avoid making a large Skill wait on one model response.
+		for start := 0; start < len(texts); {
+			end, characters := start, 0
+			for end < len(texts) && end-start < 24 {
+				size := len([]rune(texts[end]))
+				if end > start && characters+size > 12000 {
+					break
+				}
+				characters += size
+				end++
+			}
+			var batch []string
+			batch, err = s.ai(ctx, settings, key, texts[start:end])
+			if err != nil {
+				break
+			}
+			if err = validateTranslations(batch, end-start); err != nil {
+				break
+			}
+			values = append(values, batch...)
+			done(end - start)
+			start = end
+		}
 	case "google-cloud":
-		values, err = s.googleCloud(ctx, settings, key, texts)
+		values, err = s.googleCloud(ctx, settings, key, texts, done)
 	default:
-		values, err = s.google(ctx, settings, texts)
+		values, err = s.google(ctx, settings, texts, done)
 	}
 	if err != nil {
 		return nil, err
@@ -338,15 +364,19 @@ func (s *Service) translateTexts(ctx context.Context, settings Settings, key str
 	if err := ctx.Err(); err != nil {
 		return nil, err
 	}
-	if len(values) != len(texts) {
-		return nil, fmt.Errorf("translation returned an incomplete document; try again")
+	return values, validateTranslations(values, len(texts))
+}
+
+func validateTranslations(values []string, count int) error {
+	if len(values) != count {
+		return fmt.Errorf("translation returned an incomplete document; try again")
 	}
 	for _, value := range values {
 		if strings.TrimSpace(value) == "" {
-			return nil, fmt.Errorf("translation returned an incomplete document; try again")
+			return fmt.Errorf("translation returned an incomplete document; try again")
 		}
 	}
-	return values, nil
+	return nil
 }
 
 // A user-requested connection test translates only a fixed sample. It bypasses
@@ -383,7 +413,7 @@ func (s *Service) request(ctx context.Context, endpoint, contentType string, bod
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
 		}
-		return nil, fmt.Errorf("translation service could not be reached; check your connection and settings")
+		return nil, errors.New(network.ErrorMessage(err))
 	}
 	defer response.Body.Close()
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
@@ -399,7 +429,7 @@ func (s *Service) request(ctx context.Context, endpoint, contentType string, bod
 	return data, nil
 }
 
-func (s *Service) google(ctx context.Context, settings Settings, texts []string) ([]string, error) {
+func (s *Service) google(ctx context.Context, settings Settings, texts []string, done func(int)) ([]string, error) {
 	results := make([]string, len(texts))
 	groupCtx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -423,6 +453,7 @@ func (s *Service) google(ctx context.Context, settings Settings, texts []string)
 					return
 				}
 				results[index] = value
+				done(1)
 			}
 		}()
 	}
@@ -481,7 +512,7 @@ func (s *Service) googleText(ctx context.Context, target, input string) (string,
 	return result.String(), nil
 }
 
-func (s *Service) googleCloud(ctx context.Context, settings Settings, key string, texts []string) ([]string, error) {
+func (s *Service) googleCloud(ctx context.Context, settings Settings, key string, texts []string, done func(int)) ([]string, error) {
 	if key == "" {
 		return nil, fmt.Errorf("add a Google Cloud API key in Translation settings")
 	}
@@ -516,6 +547,10 @@ func (s *Service) googleCloud(ctx context.Context, settings Settings, key string
 		for _, item := range response.Data.Translations {
 			output = append(output, html.UnescapeString(item.Text))
 		}
+		if len(response.Data.Translations) != end-start {
+			return nil, fmt.Errorf("translation returned an incomplete document; try again")
+		}
+		done(end - start)
 	}
 	return output, nil
 }
@@ -540,7 +575,7 @@ func (s *Service) ai(ctx context.Context, settings Settings, key string, texts [
 		if errors.As(err, &apiError) {
 			return nil, fmt.Errorf("translation service returned HTTP %d", apiError.StatusCode)
 		}
-		return nil, fmt.Errorf("AI translation service could not be reached; check your settings")
+		return nil, errors.New(network.ErrorMessage(err))
 	}
 	if len(response.Choices) == 0 {
 		return nil, fmt.Errorf("AI returned an unreadable response")

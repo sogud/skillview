@@ -24,6 +24,8 @@ func init() {
 	application.RegisterEvent[string]("skillview:command")
 	application.RegisterEvent[int64]("skillview:catalog")
 	application.RegisterEvent[updates.Status]("skillview:update")
+	application.RegisterEvent[library.ScanProgress]("skillview:scan")
+	application.RegisterEvent[translation.Progress]("skillview:translation")
 }
 
 func main() {

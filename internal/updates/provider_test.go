@@ -10,6 +10,7 @@ import (
 	"crypto/sha512"
 	"encoding/base64"
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -42,6 +43,7 @@ type releaseFixture struct {
 	unsigned        bool
 	missingManifest bool
 	malformed       bool
+	rateLimited     bool
 }
 
 func newReleaseFixture(t *testing.T) *releaseFixture {
@@ -60,7 +62,7 @@ func newReleaseFixture(t *testing.T) *releaseFixture {
 	if err := writer.Close(); err != nil {
 		t.Fatal(err)
 	}
-	f := &releaseFixture{public: public, private: private, version: "0.1.0-alpha.3", zip: buf.Bytes()}
+	f := &releaseFixture{public: public, private: private, version: "0.1.0-alpha.4", zip: buf.Bytes()}
 	f.download = f.zip
 	f.server = httptest.NewServer(http.HandlerFunc(f.handle))
 	t.Cleanup(f.server.Close)
@@ -72,6 +74,11 @@ func (f *releaseFixture) handle(w http.ResponseWriter, r *http.Request) {
 	assetURL := f.server.URL + "/download/v" + f.version + "/" + filename
 	switch {
 	case strings.HasPrefix(r.URL.Path, "/repos/sogud/skillview/releases"):
+		if f.rateLimited {
+			w.Header().Set("X-RateLimit-Remaining", "0")
+			w.WriteHeader(403)
+			return
+		}
 		release := map[string]any{"tag_name": "v" + f.version, "html_url": "https://github.com/sogud/skillview/releases/tag/v" + f.version,
 			"body": "Fixture release notes", "prerelease": true, "assets": []any{
 				map[string]any{"name": filename, "browser_download_url": assetURL, "size": len(f.zip)},
@@ -82,6 +89,8 @@ func (f *releaseFixture) handle(w http.ResponseWriter, r *http.Request) {
 		} else {
 			_ = json.NewEncoder(w).Encode([]any{release})
 		}
+	case r.URL.Path == "/releases.atom":
+		_, _ = fmt.Fprintf(w, `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="%s/releases/tag/v%s"/></entry></feed>`, f.server.URL, f.version)
 	case strings.HasSuffix(r.URL.Path, "/manifest.json"):
 		if f.missingManifest {
 			http.NotFound(w, r)
@@ -170,7 +179,7 @@ func TestMissingManifestIsManualOnlyAndUnsignedManifestIsRejected(t *testing.T) 
 			f := newReleaseFixture(t)
 			f.missingManifest, f.unsigned, f.malformed = mode == "missing", mode == "unsigned", mode == "malformed"
 			if mode == "version mismatch" {
-				f.manifestVersion = "0.1.0-alpha.4"
+				f.manifestVersion = "0.1.0-alpha.5"
 			}
 			u := fixtureUpdater(t, f, f.public)
 			release, err := u.Check(context.Background())

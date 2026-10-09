@@ -17,16 +17,35 @@ import (
 // GitHub selects the release; its signed Wails manifest authenticates the ZIP.
 // Checksums alone never authorize installation.
 type releaseProvider struct {
-	github *github.Provider
-	client *http.Client
+	github      *github.Provider
+	client      *http.Client
+	releasesURL string
+	feedURL     string
+	downloadURL string
+	prerelease  bool
 }
 
 func newProvider(client *http.Client, baseURL string, prerelease bool) (*releaseProvider, error) {
+	copy := *client
+	transport := client.Transport
+	if transport == nil {
+		transport = http.DefaultTransport
+	}
+	copy.Transport = statusTransport{transport}
+	client = &copy
 	p, err := github.New(github.Config{
 		Repository: "sogud/skillview", Prerelease: prerelease,
 		HTTPClient: client, BaseURL: baseURL, AssetMatcher: matchZIP,
 	})
-	return &releaseProvider{github: p, client: client}, err
+	releasesURL := "https://github.com/sogud/skillview/releases"
+	downloadURL := releasesURL + "/download"
+	feedURL := releasesURL + ".atom"
+	if baseURL != "" {
+		releasesURL = strings.TrimRight(baseURL, "/") + "/releases"
+		feedURL = releasesURL + ".atom"
+		downloadURL = strings.TrimRight(baseURL, "/") + "/download"
+	}
+	return &releaseProvider{github: p, client: client, releasesURL: releasesURL, feedURL: feedURL, downloadURL: downloadURL, prerelease: prerelease}, err
 }
 
 func matchZIP(req updater.CheckRequest, assets []github.ReleaseAsset) int {
@@ -44,8 +63,21 @@ func matchZIP(req updater.CheckRequest, assets []github.ReleaseAsset) int {
 
 func (p *releaseProvider) Name() string { return "skillview-github" }
 
-func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (*updater.Release, error) {
+func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (result *updater.Release, failure error) {
+	defer func() {
+		if failure != nil {
+			failure = errors.New(checkErrorMessage(failure))
+		}
+	}()
 	release, err := p.github.Check(ctx, req)
+	if err != nil && ctx.Err() == nil {
+		// The public Atom feed does not consume GitHub API quota. It chooses a
+		// tag only; the same signed-manifest validation below still applies.
+		fallback, fallbackErr := p.checkFeed(ctx, req)
+		if fallbackErr == nil {
+			release, err = fallback, nil
+		}
+	}
 	if err != nil || release == nil {
 		return release, err
 	}
@@ -68,7 +100,9 @@ func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (
 		signed.Metadata["endpoint.artifact.url"] != assetURL || !hasSignature(signed) {
 		return nil, errors.New("The update could not be verified. Download it from GitHub instead.")
 	}
-	signed.Notes = release.Notes
+	if release.Notes != "" {
+		signed.Notes = release.Notes
+	}
 	signed.Metadata["github.release.htmlURL"] = release.Metadata["github.release.htmlURL"]
 	signed.Metadata["skillview.manifestURL"] = manifestURL
 	return signed, nil

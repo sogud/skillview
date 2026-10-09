@@ -7,6 +7,12 @@ import type { Events } from "@wailsio/runtime";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore: Unused imports
+import type * as library$0 from "../../../../../skillview/internal/library/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import type * as translation$0 from "../../../../../skillview/internal/translation/models.js";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
 import type * as updates$0 from "../../../../../skillview/internal/updates/models.js";
 
 declare module "@wailsio/runtime" {
@@ -14,6 +20,8 @@ declare module "@wailsio/runtime" {
         interface CustomEvents {
             "skillview:catalog": number;
             "skillview:command": string;
+            "skillview:scan": library$0.ScanProgress;
+            "skillview:translation": translation$0.Progress;
             "skillview:update": updates$0.Status;
         }
     }

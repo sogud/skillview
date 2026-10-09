@@ -24,6 +24,14 @@ The new runtime dependency `golang.org/x/mod` is pinned to v0.40.0 after two kno
 
 No disclosure blocker was found. The release remains experimental: Apple signing/notarization and the complete published-version upgrade flow have the acceptance limits described in [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).
 
+## Alpha.3 feedback review
+
+The selected 126 public source files and complete three-commit standalone history passed Gitleaks before the feedback fix commit. Manual identity/path checks found no private machine paths or personal accounts in the new files. Upstream authors' required license contacts remain in dependency notices. User-provided screenshots, native acceptance screenshots, catalogs, temporary provider servers, logs and signing credentials remain excluded.
+
+The system-proxy helper is the unmodified MIT-licensed `go-ieproxy` v0.0.12. Notices cover it and its transitive dependencies. The binary scan flagged five known HTTP/2 advisories in its initial `golang.org/x/net` v0.58.0 dependency; the dependency was upgraded to v0.60.0 and the rebuilt binary passed. The frontend runtime audit also passed. The updater's feed fallback retains the pinned public key and signed-ZIP verification; tests reject unsigned and tampered fallback downloads.
+
+No disclosure blocker was found for this change. Real provider accounts, PAC/SOCKS proxy configurations and published-version replacement retain the acceptance limits below.
+
 ## Coverage limits
 
 This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

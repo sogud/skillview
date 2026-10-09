@@ -14,13 +14,13 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 
 ## Features
 
-- Discover global, project, plugin and shared Skills across 83 Agent definitions, including folders on connected local drives. Discovery reports inaccessible paths and scan limits.
-- Agent tabs show installed local applications or executables by default. Configuration folders alone do not count as an installation.
+- Discover global, project, plugin and shared Skills across 83 Agent definitions, including folders on connected local drives. Known folders load first; the wider search shows live folder/source counts. Discovery reports inaccessible paths and scan limits.
+- Agent tabs wrap into rows and show installed local applications or executables by default. Configuration folders alone do not count as an installation.
 - One list entry per Skill name, with overlapping platform logos and a platform count. Different contents remain available as versions and independent copies in the reader.
-- Search, favorites, Markdown/resource reading, raw editing with revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records.
+- Full-width reading with a Back to Skills button and neutral navigation colors. Search, favorites, Markdown/resource reading, raw editing with revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records.
 - English and Simplified Chinese interface, following the system language by default. Google, Google Cloud and AI translation support ten target languages.
 - AI uses the official OpenAI Go SDK with a configurable compatible endpoint, including local models. Keys stay in macOS Keychain. Translation only runs after a click and does not modify the original file.
-- Cancel an in-flight translation, copy it with its target-language label or export it to a separate new file. A user-requested connection test sends only a fixed sample and bypasses cached results.
+- Translation shows completed sections, elapsed time, a completion label and clear failure/retry controls. Cancel an in-flight translation, copy it with its target-language label or export it to a separate new file. A user-requested connection test sends only a fixed sample and bypasses cached results.
 - Filesystem changes refresh the catalog. SQLite stores disposable catalog and translation caches; originals and editor drafts remain authoritative.
 - From alpha.2, check GitHub Releases at launch and every six hours. A purple sidebar icon opens release notes, signed download progress and restart controls. Unsaved edits use the existing save/discard prompt. Settings and the app menu also offer **Check for updates**.
 

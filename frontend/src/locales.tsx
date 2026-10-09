@@ -51,12 +51,25 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       const text = (
         failure instanceof Error ? failure.message : String(failure)
       ).replace(/^Error:\s*/, '')
-      if (
-        /^translation service returned HTTP \d+$/.test(text) &&
-        resolved === 'zh-CN'
-      ) {
-        return `翻译服务返回 HTTP ${text.match(/\d+$/)?.[0]}，请检查服务与密钥。`
+      const status = text.match(
+        /^translation service returned HTTP (\d+)$/,
+      )?.[1]
+      const hints: Record<string, string> = {
+        '400':
+          'The translation service rejected the request. Check the selected model and provider settings.',
+        '401':
+          'The translation service rejected the API key. Check Translation settings.',
+        '403':
+          'The translation service denied access. Check your network or choose Google Cloud or AI translation.',
+        '429':
+          'The translation service is rate limited. Wait and retry, or choose another provider.',
       }
+      if (status && hints[status]) return `HTTP ${status} · ${t(hints[status])}`
+      if (status)
+        return t(
+          'Translation service returned HTTP {status}. Try again or choose another provider.',
+          { status },
+        )
       return t(text)
     },
     [resolved, t],

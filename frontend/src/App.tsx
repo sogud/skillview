@@ -13,7 +13,14 @@ import {
   Download,
 } from 'lucide-react'
 import * as api from './api'
-import type { Catalog, Document, Resource, Skill, UpdateInfo } from './api'
+import type {
+  Catalog,
+  Document,
+  Resource,
+  Skill,
+  UpdateInfo,
+  ScanProgress,
+} from './api'
 import { UpdateDialog } from './UpdateDialog'
 import { IconButton, Modal } from './components'
 import {
@@ -43,6 +50,7 @@ export default function App() {
   const [tab, setTab] = useState<'document' | 'resources'>('document')
   const [loading, setLoading] = useState(false)
   const [scanning, setScanning] = useState(false)
+  const [scanProgress, setScanProgress] = useState<ScanProgress | null>(null)
   const [saving, setSaving] = useState(false)
   const [readError, setReadError] = useState('')
   const [notice, setNotice] = useState<{ text: string; error: boolean } | null>(
@@ -74,6 +82,12 @@ export default function App() {
   const dirty = !!draft && draft.text !== draft.base.text
 
   useEffect(() => {
+    return Events.On('skillview:scan', (event) =>
+      setScanProgress(event.data as ScanProgress),
+    )
+  }, [])
+
+  useEffect(() => {
     const unsubscribe = Events.On('skillview:update', (event) =>
       setUpdateStatus(event.data as UpdateInfo),
     )
@@ -93,9 +107,13 @@ export default function App() {
     [notify, message],
   )
 
+  const failRef = useRef(fail)
+  failRef.current = fail
+
   const refresh = useCallback(async (discover = false) => {
     if (scanPromise.current) return scanPromise.current
     setScanning(true)
+    setScanProgress(null)
     const promise = discover ? api.Discover() : api.Scan()
     scanPromise.current = promise
     try {
@@ -127,7 +145,7 @@ export default function App() {
           setLanguage(preferences.language || 'system')
         }
       })
-      .catch(fail)
+      .catch((failure) => failRef.current(failure))
     void api
       .CachedCatalog()
       .then((cached) => {
@@ -135,13 +153,16 @@ export default function App() {
           setCatalog((previous) => previous ?? cached)
       })
       .catch(() => {})
-    void refresh().catch(fail)
-    void api.Ready().catch(fail)
+    // Known sources become readable before the broader file-name search.
+    void refresh()
+      .then(() => (mounted.current ? refresh(true) : undefined))
+      .catch((failure) => failRef.current(failure))
+    void api.Ready().catch((failure) => failRef.current(failure))
     return () => {
       mounted.current = false
       readSequence.current++
     }
-  }, [fail, refresh])
+  }, [refresh, setLanguage])
 
   useEffect(() => {
     window.document.documentElement.dataset.theme = theme
@@ -250,13 +271,14 @@ export default function App() {
       })
   }
   function closeReader() {
-    request(() => {
-      readSequence.current++
-      setSelected(null)
-      setDocument(null)
-      setDraft(null)
-      setConflict(null)
-    })
+    request(leaveReader)
+  }
+  function leaveReader() {
+    readSequence.current++
+    setSelected(null)
+    setDocument(null)
+    setDraft(null)
+    setConflict(null)
   }
 
   async function save() {
@@ -357,7 +379,10 @@ export default function App() {
     if (command === 'updates') openUpdates()
     if (command === 'find') {
       window.document.documentElement.dataset.inputMode = 'keyboard'
-      search.current?.focus()
+      request(() => {
+        leaveReader()
+        requestAnimationFrame(() => search.current?.focus())
+      })
     }
     if (command === 'settings') setSettings('general')
     if (command === 'new') request(() => setCreating(true))
@@ -442,13 +467,23 @@ export default function App() {
             icon={BookOpen}
             label={t('All Skills')}
             active={!favoritesOnly}
-            onClick={() => setFavoritesOnly(false)}
+            onClick={() =>
+              request(() => {
+                leaveReader()
+                setFavoritesOnly(false)
+              })
+            }
           />
           <IconButton
             icon={Star}
             label={t('Favorite Skills')}
             active={favoritesOnly}
-            onClick={() => setFavoritesOnly(true)}
+            onClick={() =>
+              request(() => {
+                leaveReader()
+                setFavoritesOnly(true)
+              })
+            }
           />
           <IconButton
             icon={Folder}
@@ -482,7 +517,11 @@ export default function App() {
           />
         </nav>
         <main className={`workspace${selected ? ' expanded' : ''}`}>
-          <section className="library" aria-label={t('Skills library')}>
+          <section
+            className="library"
+            hidden={!!selected}
+            aria-label={t('Skills library')}
+          >
             <div className="library-toolbar">
               <div className="search">
                 <Search size={14} />
@@ -518,6 +557,39 @@ export default function App() {
               value={agentFilter}
               onChange={changeAgent}
             />
+            {scanning && (
+              <div className="scan-status" role="status" aria-live="polite">
+                <div>
+                  <strong>
+                    {scanProgress?.phase === 'discovering'
+                      ? t('Finding more Skills…')
+                      : t('Reading Skills…')}
+                  </strong>
+                  <span>
+                    {scanProgress?.phase === 'discovering'
+                      ? t('{count} folders checked · {sources} sources found', {
+                          count: scanProgress.directories,
+                          sources: scanProgress.sourcesTotal,
+                        })
+                      : t('{done} / {total} sources · {count} Skills found', {
+                          done: scanProgress?.sourcesDone ?? 0,
+                          total: scanProgress?.sourcesTotal ?? 0,
+                          count: scanProgress?.skills ?? 0,
+                        })}
+                  </span>
+                </div>
+                <progress
+                  aria-label={t('Scan progress')}
+                  value={
+                    scanProgress?.phase === 'reading' &&
+                    scanProgress.sourcesTotal > 0
+                      ? scanProgress.sourcesDone
+                      : undefined
+                  }
+                  max={scanProgress?.sourcesTotal || 1}
+                />
+              </div>
+            )}
             <SkillsList
               groups={skills}
               agents={catalog?.agents ?? []}

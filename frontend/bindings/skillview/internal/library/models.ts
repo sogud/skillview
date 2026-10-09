@@ -79,6 +79,15 @@ export interface SaveResult {
     "recoveryPath": string;
 }
 
+export interface ScanProgress {
+    "phase": string;
+    "directories": number;
+    "skills": number;
+    "sourcesDone": number;
+    "sourcesTotal": number;
+    "root": string;
+}
+
 export interface Skill {
     "id": string;
     "contentKey": string;

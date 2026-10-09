@@ -25,14 +25,18 @@ type scanState struct {
 	positions   map[string]int
 	directories int
 	context     context.Context
+	progress    []func(ScanProgress)
+	sourcesDone int
 }
 
-func (l *Library) Scan(ctx context.Context) (Catalog, error) {
+func (l *Library) Scan(ctx context.Context, progress ...func(ScanProgress)) (Catalog, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.watchPaths = map[string]bool{}
 	state := scanState{library: l, catalog: Catalog{Skills: []Skill{}, Sources: []Source{}, Issues: []Issue{}, ScannedAt: time.Now().UTC().Format(time.RFC3339)}, refs: map[string]fileRef{}, positions: map[string]int{}, context: ctx}
 	state.catalog.Discovery = l.discovery
+	state.progress = progress
+	state.report()
 	if home, err := os.UserHomeDir(); err == nil {
 		state.catalog.Agents = Agents(home)
 	}
@@ -56,6 +60,8 @@ func (l *Library) Scan(ctx context.Context) (Catalog, error) {
 				}
 			}
 			state.catalog.Sources = append(state.catalog.Sources, source)
+			state.sourcesDone++
+			state.report()
 			continue
 		}
 		source.Status = "ready"
@@ -64,6 +70,8 @@ func (l *Library) Scan(ctx context.Context) (Catalog, error) {
 		rootLinked := sourceContainsUserLink(source.Path)
 		state.walk(root, source, source, "", source.Path, rootLinked, map[string]bool{}, 0)
 		root.Close()
+		state.sourcesDone++
+		state.report()
 	}
 	if err := ctx.Err(); err != nil {
 		return Catalog{}, err
@@ -83,6 +91,11 @@ func (l *Library) Scan(ctx context.Context) (Catalog, error) {
 	return state.catalog, nil
 }
 
+func (s *scanState) report() {
+	reportProgress(s.progress, ScanProgress{Phase: "reading", Directories: s.directories,
+		Skills: len(s.catalog.Skills), SourcesDone: s.sourcesDone, SourcesTotal: len(s.library.prefs.Sources)})
+}
+
 func (s *scanState) issue(sourceID, path, target, message string) {
 	s.catalog.Issues = append(s.catalog.Issues, Issue{SourceID: sourceID, Path: path, Target: target, Message: message})
 }
@@ -92,6 +105,7 @@ func (s *scanState) walk(directory *os.File, source Source, entrySource Source, 
 		return
 	}
 	s.directories++
+	s.report()
 	if depth > 64 || s.directories > 20000 {
 		s.issue(source.ID, entryPath, "", "Directory scan limit reached; choose a smaller Skills folder.")
 		return

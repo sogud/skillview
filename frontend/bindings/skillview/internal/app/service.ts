@@ -158,8 +158,8 @@ export function TestTranslationConnection(): $CancellablePromise<void> {
     return $Call.ByID(1334985757);
 }
 
-export function Translate(id: string, path: string, revision: string): $CancellablePromise<translation$0.Result> {
-    return $Call.ByID(4180337236, id, path, revision);
+export function Translate(id: string, path: string, revision: string, requestID: string): $CancellablePromise<translation$0.Result> {
+    return $Call.ByID(4180337236, id, path, revision, requestID);
 }
 
 export function TranslationSettings(): $CancellablePromise<translation$0.Settings> {

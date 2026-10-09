@@ -1,16 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
-import {
-  FileText,
-  Link,
-  AlertCircle,
-  Star,
-  ChevronLeft,
-  ChevronRight,
-} from 'lucide-react'
+import { useRef, type ReactNode } from 'react'
+import { FileText, Link, AlertCircle, Star } from 'lucide-react'
 import { Virtuoso, type VirtuosoHandle } from 'react-virtuoso'
 import type { AgentInfo } from './api'
 import { AgentIcon } from './AgentIcon'
-import { IconButton } from './components'
 import { useLocale } from './locales'
 import { platformNames, type SkillGroup } from './skill-groups'
 
@@ -50,7 +42,10 @@ export function SkillsList(props: Props) {
           : index
     const group = props.groups[next]
     if (!group) return
-    props.onOpen(group)
+    if (event.key === 'Enter' || event.key === ' ') {
+      props.onOpen(group)
+      return
+    }
     pendingFocus.current = group.id
     list.current?.scrollToIndex({ index: next, align: 'center' })
     requestAnimationFrame(focusPending)
@@ -211,18 +206,6 @@ export function AgentTabs({
   onChange: (agent: string) => void
 }) {
   const { t } = useLocale()
-  const scroll = useRef<HTMLDivElement>(null)
-  const [overflow, setOverflow] = useState(false)
-  useEffect(() => {
-    const element = scroll.current
-    if (!element) return
-    const measure = () =>
-      setOverflow(element.scrollWidth > element.clientWidth + 1)
-    const observer = new ResizeObserver(measure)
-    observer.observe(element)
-    measure()
-    return () => observer.disconnect()
-  }, [agents, groups, t])
   const tabs = [{ name: '', label: t('All'), icon: '' }]
   for (const agent of agents) {
     if (agent.installed)
@@ -237,77 +220,50 @@ export function AgentTabs({
       })
   }
   return (
-    <div className="agent-tabs-shell">
-      {overflow && (
-        <IconButton
-          icon={ChevronLeft}
-          label={t('Scroll Agent tabs left')}
-          onClick={() =>
-            scroll.current?.scrollBy({ left: -220, behavior: 'smooth' })
-          }
-        />
-      )}
-      <div
-        ref={scroll}
-        className="agent-tabs"
-        role="tablist"
-        aria-label={t('Agents')}
-      >
-        {tabs.map((agent, index) => (
-          <button
-            key={agent.name}
-            role="tab"
-            aria-selected={value === agent.name}
-            aria-controls="skills-panel"
-            tabIndex={value === agent.name ? 0 : -1}
-            onClick={() => onChange(agent.name)}
-            onKeyDown={(event) => {
-              if (
-                !['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)
+    <div className="agent-tabs" role="tablist" aria-label={t('Agents')}>
+      {tabs.map((agent, index) => (
+        <button
+          key={agent.name}
+          role="tab"
+          aria-selected={value === agent.name}
+          aria-controls="skills-panel"
+          tabIndex={value === agent.name ? 0 : -1}
+          onClick={() => onChange(agent.name)}
+          onKeyDown={(event) => {
+            if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key))
+              return
+            event.preventDefault()
+            const next =
+              event.key === 'Home'
+                ? 0
+                : event.key === 'End'
+                  ? tabs.length - 1
+                  : (index +
+                      (event.key === 'ArrowRight' ? 1 : -1) +
+                      tabs.length) %
+                    tabs.length
+            onChange(tabs[next].name)
+            const buttons =
+              event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
+                '[role="tab"]',
               )
-                return
-              event.preventDefault()
-              const next =
-                event.key === 'Home'
-                  ? 0
-                  : event.key === 'End'
-                    ? tabs.length - 1
-                    : (index +
-                        (event.key === 'ArrowRight' ? 1 : -1) +
-                        tabs.length) %
-                      tabs.length
-              onChange(tabs[next].name)
-              const buttons =
-                event.currentTarget.parentElement?.querySelectorAll<HTMLButtonElement>(
-                  '[role="tab"]',
-                )
-              buttons?.[next].focus()
-              buttons?.[next].scrollIntoView({
-                block: 'nearest',
-                inline: 'nearest',
-              })
-            }}
-          >
-            {agent.name && <AgentIcon name={agent.name} icon={agent.icon} />}
-            {agent.label}
-            <span>
-              {agent.name
-                ? groups.filter((group) => group.tools.includes(agent.name))
-                    .length
-                : groups.length}
-            </span>
-          </button>
-        ))}
-      </div>
-      {overflow && (
-        <IconButton
-          icon={ChevronRight}
-          label={t('Scroll Agent tabs right')}
-          onClick={() =>
-            scroll.current?.scrollBy({ left: 220, behavior: 'smooth' })
-          }
-        />
-      )}
+            buttons?.[next].focus()
+            buttons?.[next].scrollIntoView({
+              block: 'nearest',
+              inline: 'nearest',
+            })
+          }}
+        >
+          {agent.name && <AgentIcon name={agent.name} icon={agent.icon} />}
+          {agent.label}
+          <span>
+            {agent.name
+              ? groups.filter((group) => group.tools.includes(agent.name))
+                  .length
+              : groups.length}
+          </span>
+        </button>
+      ))}
     </div>
   )
 }
