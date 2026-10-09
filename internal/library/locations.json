@@ -1,0 +1,1501 @@
+[
+  {
+    "tool": "AiderDesk",
+    "global": [
+      "~/.aider-desk/skills"
+    ],
+    "project": [
+      ".aider-desk/skills"
+    ],
+    "detect": [
+      "~/.aider-desk"
+    ],
+    "apps": [
+      "AiderDesk.app"
+    ],
+    "bins": []
+  },
+  {
+    "tool": "Amp",
+    "global": [
+      "$CONFIG/agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "amp"
+    ]
+  },
+  {
+    "tool": "Antigravity",
+    "global": [
+      "~/.gemini/antigravity/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.gemini/antigravity"
+    ],
+    "apps": [
+      "Antigravity.app"
+    ],
+    "bins": []
+  },
+  {
+    "tool": "Antigravity CLI",
+    "global": [
+      "~/.gemini/antigravity-cli/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.gemini/antigravity-cli"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "AstrBot",
+    "global": [
+      "~/.astrbot/data/skills"
+    ],
+    "project": [
+      "data/skills"
+    ],
+    "detect": [
+      "~/.astrbot"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Autohand Code CLI",
+    "global": [
+      "$AUTOHAND/skills"
+    ],
+    "project": [
+      ".autohand/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Augment",
+    "global": [
+      "~/.augment/skills"
+    ],
+    "project": [
+      ".augment/skills"
+    ],
+    "detect": [
+      "~/.augment"
+    ],
+    "apps": [],
+    "bins": [
+      "auggie"
+    ]
+  },
+  {
+    "tool": "IBM Bob",
+    "global": [
+      "~/.bob/skills"
+    ],
+    "project": [
+      ".bob/skills"
+    ],
+    "detect": [
+      "~/.bob"
+    ],
+    "apps": [
+      "Bob.app"
+    ],
+    "bins": []
+  },
+  {
+    "tool": "Claude Code",
+    "global": [
+      "$CLAUDE/skills"
+    ],
+    "project": [
+      ".claude/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "Claude.app",
+      "Claude Code.app"
+    ],
+    "bins": [
+      "claude"
+    ]
+  },
+  {
+    "tool": "OpenClaw",
+    "global": [
+      "~/.openclaw/skills",
+      "~/.clawdbot/skills",
+      "~/.moltbot/skills"
+    ],
+    "project": [
+      "skills"
+    ],
+    "detect": [
+      "~/.openclaw",
+      "~/.clawdbot",
+      "~/.moltbot"
+    ],
+    "apps": [],
+    "bins": [
+      "openclaw"
+    ]
+  },
+  {
+    "tool": "Cline",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.cline"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "CodeArts Agent",
+    "global": [
+      "~/.codeartsdoer/skills"
+    ],
+    "project": [
+      ".codeartsdoer/skills"
+    ],
+    "detect": [
+      "~/.codeartsdoer"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "CodeBuddy",
+    "global": [
+      "~/.codebuddy/skills"
+    ],
+    "project": [
+      ".codebuddy/skills"
+    ],
+    "detect": [
+      "~/.codebuddy"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Codemaker",
+    "global": [
+      "~/.codemaker/skills"
+    ],
+    "project": [
+      ".codemaker/skills"
+    ],
+    "detect": [
+      "~/.codemaker"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Code Studio",
+    "global": [
+      "~/.codestudio/skills"
+    ],
+    "project": [
+      ".codestudio/skills"
+    ],
+    "detect": [
+      "~/.codestudio"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Codex",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "Codex.app"
+    ],
+    "bins": [
+      "codex"
+    ]
+  },
+  {
+    "tool": "Command Code",
+    "global": [
+      "~/.commandcode/skills"
+    ],
+    "project": [
+      ".commandcode/skills"
+    ],
+    "detect": [
+      "~/.commandcode"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Continue",
+    "global": [
+      "~/.continue/skills"
+    ],
+    "project": [
+      ".continue/skills"
+    ],
+    "detect": [
+      "~/.continue"
+    ],
+    "apps": [],
+    "bins": [
+      "cn"
+    ]
+  },
+  {
+    "tool": "Cortex Code",
+    "global": [
+      "~/.snowflake/cortex/skills"
+    ],
+    "project": [
+      ".cortex/skills"
+    ],
+    "detect": [
+      "~/.snowflake/cortex"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Crush",
+    "global": [
+      "~/.config/crush/skills"
+    ],
+    "project": [
+      ".crush/skills"
+    ],
+    "detect": [
+      "~/.config/crush"
+    ],
+    "apps": [],
+    "bins": [
+      "crush"
+    ]
+  },
+  {
+    "tool": "Cursor",
+    "global": [
+      "~/.cursor/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.cursor"
+    ],
+    "apps": [
+      "Cursor.app"
+    ],
+    "bins": [
+      "cursor",
+      "cursor-agent",
+      "agent"
+    ]
+  },
+  {
+    "tool": "Deep Agents",
+    "global": [
+      "~/.deepagents/agent/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.deepagents"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Devin for Terminal",
+    "global": [
+      "$CONFIG/devin/skills"
+    ],
+    "project": [
+      ".devin/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "devin"
+    ]
+  },
+  {
+    "tool": "Dexto",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.dexto"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Droid",
+    "global": [
+      "~/.factory/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.factory"
+    ],
+    "apps": [],
+    "bins": [
+      "droid"
+    ]
+  },
+  {
+    "tool": "Eve",
+    "global": [],
+    "project": [
+      "agent/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Firebender",
+    "global": [
+      "~/.firebender/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.firebender"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "ForgeCode",
+    "global": [
+      "~/.forge/skills"
+    ],
+    "project": [
+      ".forge/skills"
+    ],
+    "detect": [
+      "~/.forge"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "fx",
+    "global": [
+      "~/.fx/skills"
+    ],
+    "project": [
+      ".fx/skills"
+    ],
+    "detect": [
+      "~/.fx"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Gemini CLI",
+    "global": [
+      "~/.gemini/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.gemini"
+    ],
+    "apps": [],
+    "bins": [
+      "gemini"
+    ]
+  },
+  {
+    "tool": "GitHub Copilot",
+    "global": [
+      "~/.copilot/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.copilot"
+    ],
+    "apps": [],
+    "bins": [
+      "copilot"
+    ]
+  },
+  {
+    "tool": "Goose",
+    "global": [
+      "$CONFIG/goose/skills"
+    ],
+    "project": [
+      ".goose/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "goose"
+    ]
+  },
+  {
+    "tool": "Grok Build",
+    "global": [
+      "$GROK/skills"
+    ],
+    "project": [
+      ".grok/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "grok"
+    ]
+  },
+  {
+    "tool": "Hermes Agent",
+    "global": [
+      "$HERMES/skills"
+    ],
+    "project": [
+      ".hermes/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "hermes"
+    ]
+  },
+  {
+    "tool": "inference.sh",
+    "global": [
+      "~/.inferencesh/skills"
+    ],
+    "project": [
+      ".inferencesh/skills"
+    ],
+    "detect": [
+      "~/.inferencesh"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Jazz",
+    "global": [
+      "~/.jazz/skills"
+    ],
+    "project": [
+      ".jazz/skills"
+    ],
+    "detect": [
+      "~/.jazz"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Junie",
+    "global": [
+      "~/.junie/skills"
+    ],
+    "project": [
+      ".junie/skills"
+    ],
+    "detect": [
+      "~/.junie"
+    ],
+    "apps": [],
+    "bins": [
+      "junie"
+    ]
+  },
+  {
+    "tool": "iFlow CLI",
+    "global": [
+      "~/.iflow/skills"
+    ],
+    "project": [
+      ".iflow/skills"
+    ],
+    "detect": [
+      "~/.iflow"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Kilo Code",
+    "global": [
+      "~/.kilo/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.kilo",
+      "~/.kilocode"
+    ],
+    "apps": [],
+    "bins": [
+      "kilo"
+    ]
+  },
+  {
+    "tool": "Kimchi",
+    "global": [
+      "~/.config/kimchi/harness/skills"
+    ],
+    "project": [
+      ".kimchi/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Kimi Code CLI",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.kimi-code",
+      "~/.kimi"
+    ],
+    "apps": [],
+    "bins": [
+      "kimi"
+    ]
+  },
+  {
+    "tool": "Kiro CLI",
+    "global": [
+      "~/.kiro/skills"
+    ],
+    "project": [
+      ".kiro/skills"
+    ],
+    "detect": [
+      "~/.kiro"
+    ],
+    "apps": [
+      "Kiro.app"
+    ],
+    "bins": [
+      "kiro-cli",
+      "q"
+    ]
+  },
+  {
+    "tool": "Kode",
+    "global": [
+      "~/.kode/skills"
+    ],
+    "project": [
+      ".kode/skills"
+    ],
+    "detect": [
+      "~/.kode"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Lingma",
+    "global": [
+      "~/.lingma/skills"
+    ],
+    "project": [
+      ".lingma/skills"
+    ],
+    "detect": [
+      "~/.lingma"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Loaf",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.loaf"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "MCPJam",
+    "global": [
+      "~/.mcpjam/skills"
+    ],
+    "project": [
+      ".mcpjam/skills"
+    ],
+    "detect": [
+      "~/.mcpjam"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "MiniMax Code",
+    "global": [
+      "~/.minimax/skills"
+    ],
+    "project": [
+      ".minimax/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "minimax"
+    ]
+  },
+  {
+    "tool": "Mistral Vibe",
+    "global": [
+      "$VIBE/skills"
+    ],
+    "project": [
+      ".vibe/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "vibe"
+    ]
+  },
+  {
+    "tool": "Moxby",
+    "global": [
+      "~/.moxby/skills"
+    ],
+    "project": [
+      ".moxby/skills"
+    ],
+    "detect": [
+      "~/.moxby"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Mux",
+    "global": [
+      "~/.mux/skills"
+    ],
+    "project": [
+      ".mux/skills"
+    ],
+    "detect": [
+      "~/.mux"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "OpenCode",
+    "global": [
+      "$CONFIG/opencode/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "opencode"
+    ]
+  },
+  {
+    "tool": "OpenHands",
+    "global": [
+      "~/.openhands/skills"
+    ],
+    "project": [
+      ".openhands/skills"
+    ],
+    "detect": [
+      "~/.openhands"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Ona",
+    "global": [
+      "~/.ona/skills"
+    ],
+    "project": [
+      ".ona/skills"
+    ],
+    "detect": [
+      "~/.ona"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Pi",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.pi/agent"
+    ],
+    "apps": [],
+    "bins": [
+      "pi"
+    ]
+  },
+  {
+    "tool": "Posit Assistant",
+    "global": [
+      "~/.posit/assistant/skills"
+    ],
+    "project": [
+      ".posit/assistant/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Qoder",
+    "global": [
+      "~/.qoder/skills"
+    ],
+    "project": [
+      ".qoder/skills"
+    ],
+    "detect": [
+      "~/.qoder"
+    ],
+    "apps": [
+      "Qoder.app"
+    ],
+    "bins": [
+      "qodercli"
+    ]
+  },
+  {
+    "tool": "Qoder CN",
+    "global": [
+      "~/.qoder-cn/skills"
+    ],
+    "project": [
+      ".qoder/skills"
+    ],
+    "detect": [
+      "~/.qoder-cn"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Qwen Code",
+    "global": [
+      "~/.qwen/skills"
+    ],
+    "project": [
+      ".qwen/skills"
+    ],
+    "detect": [
+      "~/.qwen"
+    ],
+    "apps": [],
+    "bins": [
+      "qwen"
+    ]
+  },
+  {
+    "tool": "Replit",
+    "global": [
+      "$CONFIG/agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Reasonix",
+    "global": [
+      "~/.reasonix/skills"
+    ],
+    "project": [
+      ".reasonix/skills"
+    ],
+    "detect": [
+      "~/.reasonix"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Rovo Dev",
+    "global": [
+      "~/.rovodev/skills"
+    ],
+    "project": [
+      ".rovodev/skills"
+    ],
+    "detect": [
+      "~/.rovodev"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Roo Code",
+    "global": [
+      "~/.roo/skills"
+    ],
+    "project": [
+      ".roo/skills"
+    ],
+    "detect": [
+      "~/.roo"
+    ],
+    "apps": [],
+    "bins": [
+      "roo"
+    ]
+  },
+  {
+    "tool": "Sarvam Code",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Tabnine CLI",
+    "global": [
+      "~/.tabnine/agent/skills"
+    ],
+    "project": [
+      ".tabnine/agent/skills"
+    ],
+    "detect": [
+      "~/.tabnine"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Terramind",
+    "global": [
+      "~/.terramind/skills"
+    ],
+    "project": [
+      ".terramind/skills"
+    ],
+    "detect": [
+      "~/.terramind"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Tinycloud",
+    "global": [
+      "~/.tinycloud/skills"
+    ],
+    "project": [
+      ".tinycloud/skills"
+    ],
+    "detect": [
+      "~/.tinycloud"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Trae",
+    "global": [
+      "~/.trae/skills"
+    ],
+    "project": [
+      ".trae/skills"
+    ],
+    "detect": [
+      "~/.trae"
+    ],
+    "apps": [
+      "Trae.app"
+    ],
+    "bins": [
+      "trae"
+    ]
+  },
+  {
+    "tool": "Trae CN",
+    "global": [
+      "~/.trae-cn/skills"
+    ],
+    "project": [
+      ".trae/skills"
+    ],
+    "detect": [
+      "~/.trae-cn"
+    ],
+    "apps": [
+      "Trae CN.app"
+    ],
+    "bins": []
+  },
+  {
+    "tool": "Warp",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [
+      "~/.warp"
+    ],
+    "apps": [],
+    "bins": [
+      "warp"
+    ]
+  },
+  {
+    "tool": "Windsurf",
+    "global": [
+      "~/.codeium/windsurf/skills"
+    ],
+    "project": [
+      ".windsurf/skills"
+    ],
+    "detect": [
+      "~/.codeium/windsurf"
+    ],
+    "apps": [
+      "Windsurf.app"
+    ],
+    "bins": [
+      "windsurf"
+    ]
+  },
+  {
+    "tool": "Zed",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "Zed.app"
+    ],
+    "bins": [
+      "zed"
+    ]
+  },
+  {
+    "tool": "ZCode",
+    "global": [
+      "~/.zcode/skills"
+    ],
+    "project": [
+      ".zcode/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Zencoder",
+    "global": [
+      "~/.zencoder/skills"
+    ],
+    "project": [
+      ".zencoder/skills"
+    ],
+    "detect": [
+      "~/.zencoder"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Zenflow",
+    "global": [
+      "~/.zencoder/skills"
+    ],
+    "project": [
+      ".zencoder/skills"
+    ],
+    "detect": [
+      "~/.zencoder"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Neovate",
+    "global": [
+      "~/.neovate/skills"
+    ],
+    "project": [
+      ".neovate/skills"
+    ],
+    "detect": [
+      "~/.neovate"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Pochi",
+    "global": [
+      "~/.pochi/skills"
+    ],
+    "project": [
+      ".pochi/skills"
+    ],
+    "detect": [
+      "~/.pochi"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "PromptScript",
+    "global": [],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "AdaL",
+    "global": [
+      "~/.adal/skills"
+    ],
+    "project": [
+      ".adal/skills"
+    ],
+    "detect": [
+      "~/.adal"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Universal",
+    "global": [
+      "$CONFIG/agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Agent Skills",
+    "global": [
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Codex",
+    "global": [
+      "$CODEX/skills"
+    ],
+    "project": [
+      ".codex/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "Codex.app"
+    ],
+    "bins": [
+      "codex"
+    ]
+  },
+  {
+    "tool": "Claude Code",
+    "global": [
+      "$CLAUDE/plugins/cache"
+    ],
+    "project": [],
+    "detect": [],
+    "apps": [
+      "Claude.app",
+      "Claude Code.app"
+    ],
+    "bins": [
+      "claude"
+    ]
+  },
+  {
+    "tool": "Codex",
+    "global": [
+      "$CODEX/plugins/cache"
+    ],
+    "project": [],
+    "detect": [],
+    "apps": [
+      "Codex.app"
+    ],
+    "bins": [
+      "codex"
+    ]
+  },
+  {
+    "tool": "Codex",
+    "global": [
+      "/etc/codex/skills"
+    ],
+    "project": [],
+    "detect": [],
+    "apps": [
+      "Codex.app"
+    ],
+    "bins": [
+      "codex"
+    ]
+  },
+  {
+    "tool": "Cline",
+    "global": [
+      "~/.cline/skills"
+    ],
+    "project": [
+      ".cline/skills"
+    ],
+    "detect": [
+      "~/.cline"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Cline",
+    "global": [],
+    "project": [
+      ".clinerules/skills"
+    ],
+    "detect": [
+      "~/.cline"
+    ],
+    "apps": [],
+    "bins": []
+  },
+  {
+    "tool": "Cursor",
+    "global": [
+      "~/.cursor/skills"
+    ],
+    "project": [
+      ".cursor/skills"
+    ],
+    "detect": [
+      "~/.cursor"
+    ],
+    "apps": [
+      "Cursor.app"
+    ],
+    "bins": [
+      "cursor",
+      "cursor-agent",
+      "agent"
+    ]
+  },
+  {
+    "tool": "Gemini CLI",
+    "global": [
+      "~/.gemini/skills"
+    ],
+    "project": [
+      ".gemini/skills"
+    ],
+    "detect": [
+      "~/.gemini"
+    ],
+    "apps": [],
+    "bins": [
+      "gemini"
+    ]
+  },
+  {
+    "tool": "Gemini CLI",
+    "global": [
+      "~/.gemini/extensions"
+    ],
+    "project": [],
+    "detect": [
+      "~/.gemini"
+    ],
+    "apps": [],
+    "bins": [
+      "gemini"
+    ]
+  },
+  {
+    "tool": "OpenCode",
+    "global": [
+      "$CONFIG/opencode/skills"
+    ],
+    "project": [
+      ".opencode/skills"
+    ],
+    "detect": [],
+    "apps": [],
+    "bins": [
+      "opencode"
+    ]
+  },
+  {
+    "tool": "Pi",
+    "global": [
+      "~/.pi/agent/skills"
+    ],
+    "project": [
+      ".pi/skills"
+    ],
+    "detect": [
+      "~/.pi/agent"
+    ],
+    "apps": [],
+    "bins": [
+      "pi"
+    ]
+  },
+  {
+    "tool": "Kilo Code",
+    "global": [
+      "~/.kilocode/skills"
+    ],
+    "project": [
+      ".kilocode/skills"
+    ],
+    "detect": [
+      "~/.kilo",
+      "~/.kilocode"
+    ],
+    "apps": [],
+    "bins": [
+      "kilo"
+    ]
+  },
+  {
+    "tool": "Kilo Code",
+    "global": [
+      "~/.kilo/skills"
+    ],
+    "project": [
+      ".kilo/skills"
+    ],
+    "detect": [
+      "~/.kilo",
+      "~/.kilocode"
+    ],
+    "apps": [],
+    "bins": [
+      "kilo"
+    ]
+  },
+  {
+    "tool": "QoderWork",
+    "global": [
+      "~/.qoderwork/skills"
+    ],
+    "project": [
+      ".qoderwork/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "QoderWork.app"
+    ],
+    "bins": [
+      "qoderwork"
+    ]
+  },
+  {
+    "tool": "Devin / Windsurf",
+    "global": [
+      "$CONFIG/devin/skills"
+    ],
+    "project": [
+      ".devin/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "Devin.app",
+      "Windsurf.app"
+    ],
+    "bins": [
+      "devin"
+    ]
+  },
+  {
+    "tool": "Devin / Windsurf",
+    "global": [
+      "/Library/Application Support/Devin/skills"
+    ],
+    "project": [],
+    "detect": [],
+    "apps": [
+      "Devin.app",
+      "Windsurf.app"
+    ],
+    "bins": [
+      "devin"
+    ]
+  },
+  {
+    "tool": "Windsurf",
+    "global": [
+      "/Library/Application Support/Windsurf/skills"
+    ],
+    "project": [],
+    "detect": [
+      "~/.codeium/windsurf"
+    ],
+    "apps": [
+      "Windsurf.app"
+    ],
+    "bins": [
+      "windsurf"
+    ]
+  },
+  {
+    "tool": "VS Code",
+    "global": [
+      "~/.copilot/skills",
+      "~/.claude/skills",
+      "~/.agents/skills"
+    ],
+    "project": [
+      ".github/skills",
+      ".claude/skills",
+      ".agents/skills"
+    ],
+    "detect": [],
+    "apps": [
+      "Visual Studio Code.app"
+    ],
+    "bins": [
+      "code"
+    ]
+  },
+  {
+    "tool": "Antigravity",
+    "global": [
+      "~/.gemini/antigravity/skills"
+    ],
+    "project": [
+      ".agent/skills"
+    ],
+    "detect": [
+      "~/.gemini/antigravity"
+    ],
+    "apps": [
+      "Antigravity.app"
+    ],
+    "bins": []
+  },
+  {
+    "tool": "OpenClaw",
+    "global": [
+      "/opt/homebrew/lib/node_modules/openclaw/skills"
+    ],
+    "project": [],
+    "detect": [
+      "~/.openclaw",
+      "~/.clawdbot",
+      "~/.moltbot"
+    ],
+    "apps": [],
+    "bins": [
+      "openclaw"
+    ]
+  },
+  {
+    "tool": "OpenClaw",
+    "global": [
+      "/usr/local/lib/node_modules/openclaw/skills"
+    ],
+    "project": [],
+    "detect": [
+      "~/.openclaw",
+      "~/.clawdbot",
+      "~/.moltbot"
+    ],
+    "apps": [],
+    "bins": [
+      "openclaw"
+    ]
+  }
+]

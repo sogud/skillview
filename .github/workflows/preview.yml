@@ -1,0 +1,91 @@
+name: SkillView macOS preview
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skillview-preview-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  preview:
+    runs-on: macos-15
+    timeout-minutes: 30
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out SkillView
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Go
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version: '1.27.1'
+          cache: false
+
+      - name: Set up Node
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7
+        with:
+          node-version: '24.16.0'
+          package-manager-cache: false
+
+      - name: Check build architecture and install locked frontend dependencies
+        run: |
+          test "$(uname -m)" = arm64
+          npm --prefix frontend ci
+
+      - name: Check file operations, translation, cache and watcher behavior
+        run: |
+          source script/toolchain.sh
+          go test -race ./internal/library ./internal/translation ./internal/cache ./internal/watch
+          go vet ./internal/library ./internal/translation ./internal/app
+          node --test frontend/src/skill-groups.test.mjs
+
+      - name: Build and package local preview
+        run: bash script/package.sh
+
+      - name: Check known runtime dependency vulnerabilities
+        run: |
+          source script/toolchain.sh
+          go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
+          govulncheck -mode=binary bin/SkillView.app/Contents/MacOS/SkillView
+          npm --prefix frontend audit --omit=dev
+
+      - name: Verify package checksums
+        run: |
+          cd bin/releases
+          shasum -a 256 -c ./*.sha256
+          for image in ./*.dmg; do hdiutil verify "$image"; done
+
+      - name: Record the build environment
+        run: |
+          source script/toolchain.sh
+          {
+            printf 'Source commit: %s\n' "$GITHUB_SHA"
+            sw_vers
+            uname -m
+            go version
+            node --version
+          } > bin/releases/BUILD_INFO.txt
+
+      - name: Upload preview packages for review
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+        with:
+          name: skillview-macos-arm64-preview
+          path: |
+            bin/releases/*.zip
+            bin/releases/*.dmg
+            bin/releases/*.sha256
+            bin/releases/BUILD_INFO.txt
+          if-no-files-found: error
+          retention-days: 7
+          compression-level: 0

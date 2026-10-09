@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0"><dict>
+ <key>CFBundlePackageType</key><string>APPL</string>
+ <key>CFBundleName</key><string>SkillView</string>
+ <key>CFBundleDisplayName</key><string>SkillView</string>
+ <key>CFBundleDevelopmentRegion</key><string>en</string>
+ <key>CFBundleLocalizations</key><array><string>en</string><string>zh-Hans</string></array>
+ <key>CFBundleExecutable</key><string>SkillView</string>
+ <key>CFBundleIdentifier</key><string>me.sogud.skillview</string>
+ <key>CFBundleIconFile</key><string>AppIcon</string>
+ <key>CFBundleVersion</key><string>0.1.0</string>
+ <key>CFBundleShortVersionString</key><string>0.1.0</string>
+ <key>LSMinimumSystemVersion</key><string>13.0</string>
+ <key>NSHighResolutionCapable</key><true/>
+ <key>NSPrincipalClass</key><string>NSApplication</string>
+ <key>NSDocumentsFolderUsageDescription</key><string>Find and read Agent Skills stored in your Documents folder.</string>
+ <key>NSDownloadsFolderUsageDescription</key><string>Find and read Agent Skills stored in your Downloads folder.</string>
+ <key>NSDesktopFolderUsageDescription</key><string>Find and read Agent Skills stored on your Desktop.</string>
+ <key>NSRemovableVolumesUsageDescription</key><string>Find and read Agent Skills stored on your connected drives.</string>
+</dict></plist>

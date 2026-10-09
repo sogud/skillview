@@ -1,0 +1,4 @@
+"NSDocumentsFolderUsageDescription" = "查找并读取文稿文件夹中的 Agent Skills。";
+"NSDownloadsFolderUsageDescription" = "查找并读取下载文件夹中的 Agent Skills。";
+"NSDesktopFolderUsageDescription" = "查找并读取桌面上的 Agent Skills。";
+"NSRemovableVolumesUsageDescription" = "查找并读取已连接磁盘上的 Agent Skills。";

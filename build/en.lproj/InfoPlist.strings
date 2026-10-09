@@ -1,0 +1,4 @@
+"NSDocumentsFolderUsageDescription" = "Find and read Agent Skills stored in your Documents folder.";
+"NSDownloadsFolderUsageDescription" = "Find and read Agent Skills stored in your Downloads folder.";
+"NSDesktopFolderUsageDescription" = "Find and read Agent Skills stored on your Desktop.";
+"NSRemovableVolumesUsageDescription" = "Find and read Agent Skills stored on your connected drives.";

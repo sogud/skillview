@@ -1,0 +1,20 @@
+# Open-source review
+
+Reviewed on 2026-10-09 for the first experimental preview. This review covers the standalone SkillView source, its published Git history, dependency notices, build workflow and preview package contents. Private parent-workspace history, local settings, acceptance data and generated caches are excluded from publication.
+
+## Findings addressed before publication
+
+- **Missing project license:** added an MIT license for SkillView and included it in the application bundle. Third-party code and assets keep their existing licenses.
+- **Private-workspace assumptions:** replaced parent-only build instructions and workflow paths with standalone commands and CI. Local Codex configuration, generated files, secrets and acceptance artifacts are ignored.
+- **Internal acceptance material:** public documentation describes synthetic checks and their limits without publishing personal catalogs, machine paths, private screenshots, session records or recovery data.
+- **Dependency advisory:** the pinned Goldmark version is v1.7.17, fixing the earlier known renderer advisory. Runtime Go and npm scans are repeated by preview CI.
+
+## Scope and evidence
+
+Gitleaks v8.30.1 scanned the selected source without finding credentials. Manual review checked personal filesystem paths, credentials/configuration, registry provenance, third-party attribution and build/package boundaries. The project had no existing tracked files or commits in its private parent repository; its new independent history is reviewed in full before the first push. Commit metadata uses a GitHub noreply address.
+
+The application includes collected runtime dependency license texts plus notices for the Vercel Agent registry, LobeHub, Devicon and Simple Icons. The two MPL-2.0 HashiCorp libraries are unmodified; notices provide their exact upstream source URLs. Brand icons identify tools and do not imply affiliation. Magpie informed the visual direction; its implementation was not copied.
+
+## Remaining limits
+
+This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

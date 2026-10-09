@@ -1,0 +1,15 @@
+.artifacts/
+bin/
+frontend/dist/
+frontend/node_modules/
+.DS_Store
+.codex/
+.env
+.env.*
+*.pem
+*.key
+*.p12
+*.pfx
+__pycache__/
+*.py[cod]
+frontend/*.tsbuildinfo
