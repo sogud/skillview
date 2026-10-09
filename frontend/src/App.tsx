@@ -443,20 +443,7 @@ export default function App() {
     >
       <div className="titlebar">
         <span>{t('Skills')}</span>
-      </div>
-      <div className="shell">
-        <nav className="rail" aria-label={t('Navigation')}>
-          <IconButton
-            icon={BookOpen}
-            label={t('All Skills')}
-            active={!selected}
-            onClick={() =>
-              request(() => {
-                leaveReader()
-              })
-            }
-          />
-          <div className="rail-spacer" />
+        <div className="window-actions">
           {!!updateStatus?.latest && (
             <button
               className="update-badge"
@@ -480,7 +467,9 @@ export default function App() {
             label={t('Settings')}
             onClick={() => setSettings('general')}
           />
-        </nav>
+        </div>
+      </div>
+      <div className="shell">
         <main className={`workspace${selected ? ' expanded' : ''}`}>
           <section
             className="library"

@@ -4,7 +4,7 @@
 
 The updater begins with alpha.2. Alpha.1 has no update checker, so install an updater-enabled build once from [GitHub Releases](https://github.com/sogud/skillview/releases).
 
-SkillView checks at launch and every six hours without opening a dialog or downloading anything. When a newer compatible release is found, a download icon in the configured theme color appears above Settings. Click it to read the release notes, download the update and restart. The app also has **Settings → General → Check for updates** and **SkillView → Check for Updates…**.
+SkillView checks at launch and every six hours without opening a dialog or downloading anything. When a newer compatible release is found, a download icon in the configured theme color appears beside Settings at the top right. Click it to read the release notes, download the update and restart. The app also has **Settings → General → Check for updates** and **SkillView → Check for Updates…**.
 
 Before restarting, unsaved changes use the existing save/discard/cancel dialog. Cancelling keeps the current app and draft. Originals, settings and translation keys remain in their existing locations.
 

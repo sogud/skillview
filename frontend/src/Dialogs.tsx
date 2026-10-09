@@ -631,9 +631,9 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
   const { t, error: message } = useLocale()
   const [settings, setSettings] = useState<TranslationSettings | null>(null)
   const [aiKey, setAIKey] = useState('')
-  const [googleKey, setGoogleKey] = useState('')
+  const [providerKey, setProviderKey] = useState('')
   const [clearAI, setClearAI] = useState(false)
-  const [clearGoogle, setClearGoogle] = useState(false)
+  const [clearProvider, setClearProvider] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
   const [saved, setSaved] = useState(false)
@@ -672,14 +672,16 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
       await api.SetTranslationSettings(
         settings,
         aiKey,
-        googleKey,
+        '',
         clearAI,
-        clearGoogle,
+        false,
+        providerKey,
+        clearProvider,
       )
       setAIKey('')
-      setGoogleKey('')
+      setProviderKey('')
       setClearAI(false)
-      setClearGoogle(false)
+      setClearProvider(false)
       setSettings(await api.GetTranslationSettings())
       setSaved(true)
       onSaved()
@@ -722,6 +724,9 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
             value={settings.provider}
             onChange={(provider) => {
               setSettings({ ...settings, provider })
+              setProviderKey('')
+              setClearProvider(false)
+              setConnectionOK(false)
               setSaved(false)
             }}
             options={[
@@ -729,7 +734,14 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
                 value: 'google',
                 label: t('Google Translate (free web service)'),
               },
-              { value: 'google-cloud', label: t('Google Cloud Translation') },
+              {
+                value: 'youdao',
+                label: t('Youdao Translate (free web service)'),
+              },
+              {
+                value: 'libretranslate',
+                label: t('LibreTranslate (self-hosted)'),
+              },
               { value: 'ai', label: t('AI translation') },
             ]}
           />
@@ -749,10 +761,17 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
             }))}
           />
         </label>
+        {settings.provider === 'youdao' && (
+          <p className="quiet-note">
+            {t(
+              'Youdao uses its free web translation service. No API key is needed.',
+            )}
+          </p>
+        )}
         {settings.provider === 'google' && (
           <p className="quiet-note">
             {t(
-              "Google's public web service can be rate limited. Use Google Cloud for an official API.",
+              "Google's public web service can be rate limited. You can also choose Youdao or a local AI model.",
             )}
           </p>
         )}
@@ -812,35 +831,52 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
             </p>
           </>
         )}
-        {settings.provider === 'google-cloud' && (
+        {settings.provider === 'libretranslate' && (
           <>
             <label className="field">
-              {t('Google Cloud API key')}
+              {t('LibreTranslate server URL')}
+              <input
+                type="url"
+                required
+                value={settings.libreUrl}
+                onChange={(event) =>
+                  setSettings({ ...settings, libreUrl: event.target.value })
+                }
+                placeholder="http://localhost:5000"
+              />
+            </label>
+            <p className="quiet-note">
+              {t(
+                'Connect your own LibreTranslate server. Available languages depend on its installed models.',
+              )}
+            </p>
+            <label className="field">
+              {t('API key')}
               <input
                 type="password"
                 autoComplete="off"
-                value={googleKey}
-                onChange={(event) => setGoogleKey(event.target.value)}
+                value={providerKey}
+                onChange={(event) => setProviderKey(event.target.value)}
                 placeholder={t(
-                  settings.hasGoogleKey
+                  settings.hasLibreKey
                     ? 'Leave blank to keep the saved key'
-                    : 'API key',
+                    : 'Optional for your server',
                 )}
               />
             </label>
-            {settings.hasGoogleKey && (
+            {settings.hasLibreKey && (
               <label className="checkbox">
                 <input
                   type="checkbox"
-                  checked={clearGoogle}
-                  onChange={(event) => setClearGoogle(event.target.checked)}
+                  checked={clearProvider}
+                  onChange={(event) => setClearProvider(event.target.checked)}
                 />
                 {t('Remove saved key')}
               </label>
             )}
           </>
         )}
-        {(settings.hasAIKey || settings.hasGoogleKey) && (
+        {(settings.hasAIKey || settings.hasLibreKey) && (
           <p className="quiet-note">{t('Key saved in macOS Keychain')}</p>
         )}
         <p className="quiet-note">

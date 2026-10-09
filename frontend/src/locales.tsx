@@ -51,6 +51,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       const text = (
         failure instanceof Error ? failure.message : String(failure)
       ).replace(/^Error:\s*/, '')
+      const youdaoCode = text.match(
+        /^Youdao's free service rejected the translation \(code (\d+)\). Try again later or choose another provider\.$/,
+      )?.[1]
+      if (youdaoCode)
+        return t(
+          "Youdao's free service rejected the translation (code {code}). Try again later or choose another provider.",
+          { code: youdaoCode },
+        )
       const status = text.match(
         /^translation service returned HTTP (\d+)$/,
       )?.[1]
@@ -60,9 +68,9 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
         '401':
           'The translation service rejected the API key. Check Translation settings.',
         '403':
-          'The translation service denied access. Check your network or choose Google Cloud or AI translation.',
+          'The translation service denied access. Check your network or choose Youdao or AI translation.',
         '429':
-          'The translation service is rate limited. Wait and retry, or choose another provider.',
+          'The translation service is rate limited. Wait a minute, or choose another service in Translation settings.',
       }
       if (status && hints[status]) return `HTTP ${status} · ${t(hints[status])}`
       if (status)

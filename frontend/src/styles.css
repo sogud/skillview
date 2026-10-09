@@ -158,6 +158,7 @@ strong {
   -webkit-user-select: none;
 }
 .titlebar {
+  position: relative;
   height: 38px;
   display: flex;
   align-items: center;
@@ -172,22 +173,13 @@ strong {
   height: calc(100% - 38px);
   min-height: 0;
 }
-.rail {
-  width: 40px;
-  flex-shrink: 0;
-  background: var(--surface);
+.window-actions {
+  position: absolute;
+  right: 12px;
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 5px;
-  padding: 10px 4px;
-}
-.rail .icon-button {
-  width: 30px;
-  height: 30px;
-}
-.rail-spacer {
-  flex: 1;
+  gap: 6px;
+  --wails-draggable: no-drag;
 }
 .update-badge {
   width: 28px;
@@ -1205,9 +1197,6 @@ dialog::backdrop {
 
 .library[hidden] {
   display: none;
-}
-.rail .icon-button.active {
-  color: var(--accent);
 }
 .reader-back,
 .reader-translate {

@@ -78,8 +78,12 @@ func (s *Service) TranslationSettings() (translation.Settings, error) { return s
 func (s *Service) TestTranslationConnection(ctx context.Context) error {
 	return s.translator.TestConnection(ctx)
 }
-func (s *Service) SetTranslationSettings(settings translation.Settings, aiKey, googleKey string, clearAI, clearGoogle bool) error {
-	return s.translator.Update(settings, aiKey, googleKey, clearAI, clearGoogle)
+func (s *Service) SetTranslationSettings(settings translation.Settings, aiKey, googleKey string, clearAI, clearGoogle bool, providerKey string, clearProvider bool) error {
+	var changes []translation.KeyChange
+	if settings.Provider == "libretranslate" {
+		changes = append(changes, translation.KeyChange{Name: settings.Provider, Value: providerKey, Clear: clearProvider})
+	}
+	return s.translator.Update(settings, aiKey, googleKey, clearAI, clearGoogle, changes...)
 }
 func (s *Service) Translate(ctx context.Context, id, path, revision, requestID string) (translation.Result, error) {
 	doc, err := s.library.Read(id, path)

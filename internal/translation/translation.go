@@ -11,6 +11,7 @@ import (
 	"html"
 	"io"
 	"net/http"
+	"net/http/cookiejar"
 	"net/url"
 	"os"
 	"path/filepath"
@@ -19,6 +20,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/openai/openai-go/v3"
 	"github.com/openai/openai-go/v3/option"
@@ -35,6 +37,8 @@ type Settings struct {
 	Model          string `json:"model"`
 	HasAIKey       bool   `json:"hasAIKey"`
 	HasGoogleKey   bool   `json:"hasGoogleKey"`
+	HasLibreKey    bool   `json:"hasLibreKey"`
+	LibreURL       string `json:"libreUrl"`
 }
 
 type Result struct {
@@ -52,20 +56,38 @@ type KeyStore interface {
 	Delete(string) error
 }
 
+// Additional provider keys are written to Keychain, never to settings JSON.
+type KeyChange struct {
+	Name  string
+	Value string
+	Clear bool
+}
+
 type Service struct {
-	mu        sync.Mutex
-	dataDir   string
-	settings  Settings
-	keys      KeyStore
-	client    *http.Client
-	googleURL string
-	cloudURL  string
-	cache     map[string]Result
-	store     *cache.Store
+	mu            sync.Mutex
+	dataDir       string
+	settings      Settings
+	keys          KeyStore
+	client        *http.Client
+	googleURL     string
+	cloudURL      string
+	cache         map[string]Result
+	store         *cache.Store
+	webMu         sync.Mutex
+	webNext       time.Time
+	webBlocked    map[string]time.Time
+	youdaoMu      sync.Mutex
+	youdaoSession youdaoSession
+	youdaoURL     string
+	youdaoClient  *http.Client
 }
 
 func New(dataDir string, keys KeyStore) (*Service, error) {
-	s := &Service{dataDir: dataDir, keys: keys, settings: Settings{Provider: "google", TargetLanguage: "zh-CN", BaseURL: "https://api.openai.com/v1"}, client: newHTTPClient(), googleURL: "https://translate.googleapis.com/translate_a/single", cloudURL: "https://translation.googleapis.com/language/translate/v2", cache: map[string]Result{}}
+	s := &Service{dataDir: dataDir, keys: keys, settings: Settings{Provider: "google", TargetLanguage: "zh-CN", BaseURL: "https://api.openai.com/v1"}, client: newHTTPClient(), googleURL: "https://translate.googleapis.com/translate_a/single", cloudURL: "https://translation.googleapis.com/language/translate/v2", youdaoURL: "https://dict.youdao.com", cache: map[string]Result{}}
+	// Only Youdao receives this fresh anonymous session. Browser cookies and
+	// cookies from Google, AI and custom services are never imported or shared.
+	s.youdaoClient = newHTTPClient()
+	s.youdaoClient.Jar, _ = cookiejar.New(nil)
 	data, err := os.ReadFile(filepath.Join(dataDir, "translation.json"))
 	if err == nil {
 		if err = json.Unmarshal(data, &s.settings); err != nil {
@@ -73,6 +95,10 @@ func New(dataDir string, keys KeyStore) (*Service, error) {
 		}
 	} else if !os.IsNotExist(err) {
 		return nil, err
+	}
+	// Keep old API keys, but retire the paid provider from the active choices.
+	if s.settings.Provider == "google-cloud" {
+		s.settings.Provider = "google"
 	}
 	return s, nil
 }
@@ -91,11 +117,16 @@ func (s *Service) Settings() (Settings, error) {
 	}
 	settings.HasAIKey = ai != ""
 	settings.HasGoogleKey = google != ""
+	libre, err := s.keys.Get("libretranslate")
+	if err != nil {
+		return Settings{}, err
+	}
+	settings.HasLibreKey = libre != ""
 	return settings, nil
 }
 
-func (s *Service) Update(settings Settings, aiKey, googleKey string, clearAI, clearGoogle bool) (err error) {
-	if settings.Provider != "google" && settings.Provider != "google-cloud" && settings.Provider != "ai" {
+func (s *Service) Update(settings Settings, aiKey, googleKey string, clearAI, clearGoogle bool, additional ...KeyChange) (err error) {
+	if settings.Provider != "google" && settings.Provider != "google-cloud" && settings.Provider != "ai" && settings.Provider != "libretranslate" && settings.Provider != "youdao" {
 		return fmt.Errorf("unknown translation provider")
 	}
 	if !hasLanguage(settings.TargetLanguage) {
@@ -109,19 +140,28 @@ func (s *Service) Update(settings Settings, aiKey, googleKey string, clearAI, cl
 			return fmt.Errorf("choose an AI model in Translation settings")
 		}
 	}
+	if settings.Provider == "libretranslate" {
+		if _, err := validateBaseURL(settings.LibreURL); err != nil {
+			return err
+		}
+	}
+	changes := []KeyChange{{Name: "ai", Value: aiKey, Clear: clearAI}, {Name: "google", Value: googleKey, Clear: clearGoogle}}
+	for _, change := range additional {
+		if change.Name != "libretranslate" {
+			return fmt.Errorf("unknown translation provider")
+		}
+		changes = append(changes, change)
+	}
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	previousKeys := map[string]string{}
-	for _, change := range []struct {
-		name      string
-		requested bool
-	}{{"ai", aiKey != "" || clearAI}, {"google", googleKey != "" || clearGoogle}} {
-		if change.requested {
-			old, readErr := s.keys.Get(change.name)
+	for _, change := range changes {
+		if change.Value != "" || change.Clear {
+			old, readErr := s.keys.Get(change.Name)
 			if readErr != nil {
 				return readErr
 			}
-			previousKeys[change.name] = old
+			previousKeys[change.Name] = old
 		}
 	}
 	defer func() {
@@ -140,26 +180,20 @@ func (s *Service) Update(settings Settings, aiKey, googleKey string, clearAI, cl
 			}
 		}
 	}()
-	if aiKey != "" {
-		if err := s.keys.Set("ai", aiKey); err != nil {
-			return err
-		}
-	} else if clearAI {
-		if err := s.keys.Delete("ai"); err != nil {
-			return err
-		}
-	}
-	if googleKey != "" {
-		if err := s.keys.Set("google", googleKey); err != nil {
-			return err
-		}
-	} else if clearGoogle {
-		if err := s.keys.Delete("google"); err != nil {
-			return err
+	for _, change := range changes {
+		if change.Value != "" {
+			if err := s.keys.Set(change.Name, change.Value); err != nil {
+				return err
+			}
+		} else if change.Clear {
+			if err := s.keys.Delete(change.Name); err != nil {
+				return err
+			}
 		}
 	}
 	settings.HasAIKey = false
 	settings.HasGoogleKey = false
+	settings.HasLibreKey = false
 	data, err := json.MarshalIndent(settings, "", "  ")
 	if err != nil {
 		return err
@@ -203,7 +237,7 @@ func validateBaseURL(raw string) (*url.URL, error) {
 	}
 	local := u.Hostname() == "localhost" || u.Hostname() == "127.0.0.1" || u.Hostname() == "::1"
 	if u.Scheme != "https" && !(u.Scheme == "http" && local) {
-		return nil, fmt.Errorf("use HTTPS, or HTTP for a model on this Mac")
+		return nil, fmt.Errorf("use HTTPS, or HTTP for a service on this Mac")
 	}
 	return u, nil
 }
@@ -244,20 +278,16 @@ func (s *Service) Translate(ctx context.Context, body, revision string, progress
 	}
 	s.mu.Lock()
 	settings := s.settings
-	keyName := "ai"
-	if settings.Provider == "google-cloud" {
-		keyName = "google"
-	}
 	key := ""
 	var err error
-	if settings.Provider != "google" {
+	if keyName := providerKeyName(settings.Provider); keyName != "" {
 		key, err = s.keys.Get(keyName)
 	}
 	if err != nil {
 		s.mu.Unlock()
 		return Result{}, err
 	}
-	hash := sha256.Sum256([]byte(body + revision + settings.Provider + settings.TargetLanguage + settings.BaseURL + settings.Model + "segmenter-v3-prompt-v1"))
+	hash := sha256.Sum256([]byte(body + revision + settings.Provider + settings.TargetLanguage + settings.BaseURL + settings.LibreURL + settings.Model + "segmenter-v3-prompt-v1"))
 	cacheKey := hex.EncodeToString(hash[:])
 	if cached, ok := s.cache[cacheKey]; ok {
 		cached.Cached = true
@@ -355,6 +385,10 @@ func (s *Service) translateTexts(ctx context.Context, settings Settings, key str
 		}
 	case "google-cloud":
 		values, err = s.googleCloud(ctx, settings, key, texts, done)
+	case "youdao":
+		values, err = s.youdao(ctx, settings, texts, done)
+	case "libretranslate":
+		values, err = s.libreTranslate(ctx, settings, key, texts, done)
 	default:
 		values, err = s.google(ctx, settings, texts, done)
 	}
@@ -386,10 +420,8 @@ func (s *Service) TestConnection(ctx context.Context) error {
 	settings := s.settings
 	key := ""
 	var err error
-	if settings.Provider == "ai" {
-		key, err = s.keys.Get("ai")
-	} else if settings.Provider == "google-cloud" {
-		key, err = s.keys.Get("google")
+	if keyName := providerKeyName(settings.Provider); keyName != "" {
+		key, err = s.keys.Get(keyName)
 	}
 	s.mu.Unlock()
 	if err != nil {
@@ -399,7 +431,11 @@ func (s *Service) TestConnection(ctx context.Context) error {
 	return err
 }
 
-func (s *Service) request(ctx context.Context, method, endpoint, contentType string, body []byte, key string) ([]byte, error) {
+func (s *Service) request(ctx context.Context, method, endpoint, contentType string, body []byte, key string, headers ...http.Header) ([]byte, error) {
+	return s.requestUsing(ctx, s.client, method, endpoint, contentType, body, key, headers...)
+}
+
+func (s *Service) requestUsing(ctx context.Context, client *http.Client, method, endpoint, contentType string, body []byte, key string, headers ...http.Header) ([]byte, error) {
 	req, err := http.NewRequestWithContext(ctx, method, endpoint, bytes.NewReader(body))
 	if err != nil {
 		return nil, fmt.Errorf("invalid translation endpoint")
@@ -408,7 +444,12 @@ func (s *Service) request(ctx context.Context, method, endpoint, contentType str
 	if key != "" {
 		req.Header.Set("Authorization", "Bearer "+key)
 	}
-	response, err := s.client.Do(req)
+	for _, fields := range headers {
+		for name, values := range fields {
+			req.Header[name] = values
+		}
+	}
+	response, err := client.Do(req)
 	if err != nil {
 		if ctx.Err() != nil {
 			return nil, ctx.Err()
@@ -417,10 +458,10 @@ func (s *Service) request(ctx context.Context, method, endpoint, contentType str
 	}
 	defer response.Body.Close()
 	if response.StatusCode >= 300 && response.StatusCode < 400 {
-		return nil, fmt.Errorf("The translation service redirected the request. Check the service address or use Google Cloud or AI translation.")
+		return nil, fmt.Errorf("The translation service redirected the request. Check the service address or use Youdao or AI translation.")
 	}
 	if response.StatusCode < 200 || response.StatusCode >= 300 {
-		return nil, fmt.Errorf("translation service returned HTTP %d", response.StatusCode)
+		return nil, &httpStatusError{status: response.StatusCode}
 	}
 	data, err := io.ReadAll(io.LimitReader(response.Body, 2*1024*1024+1))
 	if err != nil {
@@ -433,48 +474,9 @@ func (s *Service) request(ctx context.Context, method, endpoint, contentType str
 }
 
 func (s *Service) google(ctx context.Context, settings Settings, texts []string, done func(int)) ([]string, error) {
-	results := make([]string, len(texts))
-	groupCtx, cancel := context.WithCancel(ctx)
-	defer cancel()
-	jobs := make(chan int)
-	var workers sync.WaitGroup
-	var firstError error
-	var errorMutex sync.Mutex
-	for worker := 0; worker < 4; worker++ {
-		workers.Add(1)
-		go func() {
-			defer workers.Done()
-			for index := range jobs {
-				value, err := s.googleText(groupCtx, settings.TargetLanguage, texts[index])
-				if err != nil {
-					errorMutex.Lock()
-					if firstError == nil {
-						firstError = err
-						cancel()
-					}
-					errorMutex.Unlock()
-					return
-				}
-				results[index] = value
-				done(1)
-			}
-		}()
-	}
-	for index := range texts {
-		select {
-		case jobs <- index:
-		case <-groupCtx.Done():
-		}
-	}
-	close(jobs)
-	workers.Wait()
-	if firstError != nil {
-		return nil, firstError
-	}
-	if err := ctx.Err(); err != nil {
-		return nil, err
-	}
-	return results, nil
+	return translateWebBatches(texts, func(input string) (string, error) {
+		return s.googleText(ctx, settings.TargetLanguage, input)
+	}, done)
 }
 
 func (s *Service) googleText(ctx context.Context, target, input string) (string, error) {
@@ -491,13 +493,13 @@ func (s *Service) googleText(ctx context.Context, target, input string) (string,
 			return "", fmt.Errorf("invalid translation endpoint")
 		}
 		endpoint.RawQuery = values.Encode()
-		data, err := s.request(ctx, http.MethodGet, endpoint.String(), "", nil, "")
+		data, err := s.googleRequest(ctx, endpoint.String())
 		if err != nil {
 			return "", err
 		}
 		var response []json.RawMessage
 		if json.Unmarshal(data, &response) != nil || len(response) == 0 {
-			return "", fmt.Errorf("Google returned an unreadable response; use Google Cloud or AI translation")
+			return "", fmt.Errorf("Google returned an unreadable response; use Youdao or AI translation")
 		}
 		var segments []json.RawMessage
 		if json.Unmarshal(response[0], &segments) != nil {
@@ -582,7 +584,7 @@ func (s *Service) ai(ctx context.Context, settings Settings, key string, texts [
 		var apiError *openai.Error
 		if errors.As(err, &apiError) {
 			if apiError.StatusCode >= 300 && apiError.StatusCode < 400 {
-				return nil, fmt.Errorf("The translation service redirected the request. Check the service address or use Google Cloud or AI translation.")
+				return nil, fmt.Errorf("The translation service redirected the request. Check the service address or use Youdao or AI translation.")
 			}
 			return nil, fmt.Errorf("translation service returned HTTP %d", apiError.StatusCode)
 		}

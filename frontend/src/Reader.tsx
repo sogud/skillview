@@ -34,6 +34,17 @@ import type {
 
 const Editor = lazy(() => import('./Editor'))
 
+function translationProviderName(provider: string): string {
+  const names: Record<string, string> = {
+    google: 'Google',
+    'google-cloud': 'Google Cloud',
+    ai: 'AI',
+    youdao: 'Youdao',
+    libretranslate: 'LibreTranslate',
+  }
+  return names[provider] ?? provider
+}
+
 export type Draft = { base: Document; text: string }
 
 type ReaderProps = {
@@ -140,7 +151,7 @@ export function Reader(props: ReaderProps) {
       if (current !== sequence.current) return
       if (
         (settings.provider === 'ai' && !settings.model.trim()) ||
-        (settings.provider === 'google-cloud' && !settings.hasGoogleKey)
+        (settings.provider === 'libretranslate' && !settings.libreUrl.trim())
       ) {
         props.onConfigureTranslation()
         return
@@ -383,7 +394,7 @@ export function Reader(props: ReaderProps) {
                 {' · '}
                 {t('{seconds}s elapsed', { seconds: elapsed })}
                 {progress
-                  ? ` · ${progress.provider === 'ai' ? 'AI' : 'Google'} → ${progress.targetLanguage}`
+                  ? ` · ${translationProviderName(progress.provider)} → ${progress.targetLanguage}`
                   : ''}
               </span>
               <progress
@@ -428,7 +439,7 @@ export function Reader(props: ReaderProps) {
                   : t('Translation complete')}
               </strong>
               {' · '}
-              {translation.provider === 'ai' ? 'AI' : 'Google'} →{' '}
+              {translationProviderName(translation.provider)} →{' '}
               {translation.targetLanguage}
               {translation.cached ? ` · ${t('Cached translation')}` : ''}
               <span className="translation-actions">

@@ -25,4 +25,6 @@ export interface Settings {
     "model": string;
     "hasAIKey": boolean;
     "hasGoogleKey": boolean;
+    "hasLibreKey": boolean;
+    "libreUrl": string;
 }

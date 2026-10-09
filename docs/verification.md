@@ -55,6 +55,14 @@ Focused race-enabled checks cover retiring old automatic sources outside the reg
 
 An isolated native preview showed only library and Settings navigation, manual scanning, the theme-color palette and readable update diagnostics. The selected color survived a real app restart, which reopened the cached catalog without scanning. An unreachable loopback update service produced localized retry controls and a persisted, classified connection failure in the diagnostics view. No real Skill contents were transmitted.
 
+## Free translation services and navigation (alpha.6)
+
+Focused translation/app tests passed with race detection. They cover batched Google and Youdao requests, request pacing and per-provider cooldown, anonymous Youdao cookies/signatures/encrypted responses, malformed or incomplete responses, cancellation, caching, LibreTranslate batches and independent credential rollback. Thirty short Google spans use two requests instead of thirty. Incomplete translations are neither shown as complete nor cached.
+
+The production translation service successfully translated a fixed synthetic two-section Markdown sample through both public Google and anonymous Youdao endpoints on this Mac. No real Skill was transmitted. LibreTranslate used a local synthetic API fixture; no public hosted instance or paid AI account was tested.
+
+A browser fixture rendered the actual React components with isolated API responses. It showed no left navigation rail, Settings and update controls at the top right, and exactly four translation choices: Google, Youdao, self-hosted LibreTranslate and AI. Selecting Youdao showed no key field; saving and connection-test completion labels were observed with mock responses. The final TypeScript/frontend and native production builds passed. Native window clicks were not checked for this version.
+
 ## Remaining acceptance
 
 The ordinary app loaded a large real catalog with installed-Agent tabs; originals were not modified. This does not prove unrestricted access to every folder or execution of a Skill by an Agent. Permission failures and scan limits are reported.

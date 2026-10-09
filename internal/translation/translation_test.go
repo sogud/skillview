@@ -108,7 +108,9 @@ func TestGoogleAndCodeOnlyDocument(t *testing.T) {
 		if r.Form.Get("tl") != "zh-CN" || r.Form.Get("q") == "" {
 			t.Error("missing Google request fields")
 		}
-		_, _ = w.Write([]byte(`[[["你好", "Hello"]],null,"en"]`))
+		lines := strings.Split(r.Form.Get("q"), "\n")
+		translated := strings.TrimSuffix(strings.Repeat("你好\n", len(lines)), "\n")
+		_ = json.NewEncoder(w).Encode([]any{[]any{[]any{translated, "Hello"}}, nil, "en"})
 	}))
 	defer server.Close()
 	s, _ := New(t.TempDir(), NewMemoryKeys())

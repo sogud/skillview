@@ -138,8 +138,8 @@ export function SetTheme(theme: string): $CancellablePromise<void> {
     return $Call.ByID(2415550359, theme);
 }
 
-export function SetTranslationSettings(settings: translation$0.Settings, aiKey: string, googleKey: string, clearAI: boolean, clearGoogle: boolean): $CancellablePromise<void> {
-    return $Call.ByID(4236937148, settings, aiKey, googleKey, clearAI, clearGoogle);
+export function SetTranslationSettings(settings: translation$0.Settings, aiKey: string, googleKey: string, clearAI: boolean, clearGoogle: boolean, providerKey: string, clearProvider: boolean): $CancellablePromise<void> {
+    return $Call.ByID(4236937148, settings, aiKey, googleKey, clearAI, clearGoogle, providerKey, clearProvider);
 }
 
 export function ShouldQuit(): $CancellablePromise<boolean> {
