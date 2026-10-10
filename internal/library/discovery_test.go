@@ -128,11 +128,34 @@ func TestSharedGlobalRootRetainsDeclaredAgentMembership(t *testing.T) {
 			continue
 		}
 		found = true
-		if !hasString(source.Tools, "Shared") || !hasString(source.Tools, "Codex") || !hasString(source.Tools, "Pi") {
+		if !hasString(source.Tools, "Shared") || !hasString(source.Tools, "Codex") || !hasString(source.Tools, "Pi") || !hasString(source.Tools, "fx") {
 			t.Fatal("shared root lost declared consumers", source.Tools)
 		}
 	}
 	if !found {
 		t.Fatal("shared root missing")
+	}
+}
+
+func TestFxSharedAndLegacySkillRoots(t *testing.T) {
+	home := t.TempDir()
+	for _, path := range []string{".agents/skills", ".fx/skills"} {
+		if err := os.MkdirAll(filepath.Join(home, path), 0755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	found := 0
+	for _, source := range DefaultSources(home) {
+		if hasString(source.Tools, "fx") {
+			found++
+		}
+	}
+	if found != 2 {
+		t.Fatalf("fx roots: got %d, want shared and legacy", found)
+	}
+	for _, location := range Locations() {
+		if location.Tool == "fx" && (!hasString(location.Project, ".agents/skills") || !hasString(location.Project, ".fx/skills")) {
+			t.Fatal("fx project roots missing", location.Project)
+		}
 	}
 }

@@ -6,6 +6,8 @@ Reviewed 2026-10-08. Paths are capability definitions, not proof that all Agents
 
 The [Vercel Skills Agent registry](https://github.com/vercel-labs/skills/blob/main/src/agents.ts) supplies the broad Agent definitions. Native additions and checks use official documentation:
 
+Rechecked 2026-10-10 against [Skills CLI commit 13e4063](https://github.com/vercel-labs/skills/blob/13e4063a1cf913f5606d57d42ab83a86f5001e04/src/agents.ts). Its 79 named Agents are included in SkillView's 83 definitions. Project/global paths match the macOS registry, including fx's shared `.agents/skills` roots; legacy `.fx/skills` paths remain readable. This is directory compatibility, not live acceptance of every Agent or an online marketplace browser.
+
 | Agent | Official reference | Locations covered |
 | --- | --- | --- |
 | Codex | [Skills](https://developers.openai.com/codex/skills) | `.agents/skills`, legacy `.codex/skills`, configured home, plugin caches and the older `$CODEX/.tmp/bundled-marketplace` plugin root |

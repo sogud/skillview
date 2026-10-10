@@ -1352,13 +1352,37 @@ dialog::backdrop {
   padding: 8px 6px 12px 12px;
   background: var(--surface);
 }
+.explorer-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 4px 8px 8px;
+}
+.explorer-head .icon-button {
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+}
 .explorer-title {
+  flex: 1;
+  min-width: 0;
   font-size: 12px;
   font-weight: 600;
-  padding: 0 8px 8px;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
+}
+.reader-tree-restore {
+  padding: 0 16px 4px;
+}
+.reader-tree-restore button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 26px;
+  padding: 4px 8px;
+  color: var(--secondary);
+  font-size: 11px;
 }
 .explorer-label {
   display: flex;

@@ -419,9 +419,11 @@
   {
     "tool": "fx",
     "global": [
+      "~/.agents/skills",
       "~/.fx/skills"
     ],
     "project": [
+      ".agents/skills",
       ".fx/skills"
     ],
     "detect": [

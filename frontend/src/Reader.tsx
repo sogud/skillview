@@ -15,7 +15,8 @@ import {
   Trash2,
   Copy,
   Download,
-  PanelLeft,
+  PanelLeftClose,
+  PanelLeftOpen,
   Minus,
   Plus,
   Check,
@@ -274,12 +275,6 @@ export function Reader(props: ReaderProps) {
           <ArrowLeft size={15} />
           {t('Back to Skills')}
         </button>
-        <IconButton
-          icon={PanelLeft}
-          label={t(explorerOpen ? 'Hide file tree' : 'Show file tree')}
-          active={explorerOpen}
-          onClick={() => setExplorerOpen((open) => !open)}
-        />
         <span className="filename" title={doc?.path}>
           {doc?.path ?? 'SKILL.md'}
           {dirty && (
@@ -356,8 +351,15 @@ export function Reader(props: ReaderProps) {
             aria-label={t('Skill files')}
             style={{ width: Math.min(width, maxWidth) }}
           >
-            <div className="explorer-title" title={skill.path}>
-              {skill.name}
+            <div className="explorer-head">
+              <span className="explorer-title" title={skill.path}>
+                {skill.name}
+              </span>
+              <IconButton
+                icon={PanelLeftClose}
+                label={t('Hide file tree')}
+                onClick={() => setExplorerOpen(false)}
+              />
             </div>
             {props.copies.length > 1 && (
               <div className="explorer-copy">
@@ -495,6 +497,14 @@ export function Reader(props: ReaderProps) {
           className="reader-document"
           aria-label={doc?.path ?? 'SKILL.md'}
         >
+          {!explorerOpen && (
+            <div className="reader-tree-restore">
+              <button onClick={() => setExplorerOpen(true)}>
+                <PanelLeftOpen size={14} />
+                {t('Show file tree')}
+              </button>
+            </div>
+          )}
           {translating && (
             <div
               className="translation-progress"
