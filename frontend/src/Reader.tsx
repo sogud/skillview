@@ -16,8 +16,19 @@ import {
   Copy,
   Download,
   PanelLeft,
+  Minus,
+  Plus,
+  Check,
+  LoaderCircle,
 } from 'lucide-react'
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+} from 'react'
 import { Events } from '@wailsio/runtime'
 import { IconButton, Markdown, Disclosure } from './components'
 import { Select } from './Select'
@@ -48,6 +59,9 @@ function translationProviderName(provider: string): string {
 export type Draft = { base: Document; text: string }
 
 type ReaderProps = {
+  fontSize: number
+  explorerWidth: number
+  onLayoutChange: (fontSize: number, width: number) => void
   translationVersion: number
   onConfigureTranslation: () => void
   onNewResource: () => void
@@ -90,9 +104,41 @@ export function Reader(props: ReaderProps) {
   const [translationNotice, setTranslationNotice] = useState('')
   const [exporting, setExporting] = useState(false)
   const [explorerOpen, setExplorerOpen] = useState(true)
+  const [width, setWidth] = useState(props.explorerWidth)
+  const [maxWidth, setMaxWidth] = useState(400)
+  const body = useRef<HTMLDivElement>(null)
+  const content = useRef<HTMLDivElement>(null)
+  const drag = useRef<{ x: number; width: number } | null>(null)
   const pending = useRef<ReturnType<typeof api.Translate> | null>(null)
   const sequence = useRef(0)
   const requestID = useRef('')
+  useEffect(() => setWidth(props.explorerWidth), [props.explorerWidth])
+  useEffect(() => {
+    content.current?.scrollTo(0, 0)
+  }, [doc?.skillId, doc?.path])
+  useEffect(() => {
+    const observer = new ResizeObserver(([entry]) => {
+      setMaxWidth(
+        Math.max(
+          180,
+          Math.min(
+            400,
+            Math.floor(entry.contentRect.width * 0.38),
+            Math.floor(entry.contentRect.width) - 320,
+          ),
+        ),
+      )
+    })
+    if (body.current) observer.observe(body.current)
+    return () => observer.disconnect()
+  }, [])
+  function resize(value: number) {
+    return Math.max(180, Math.min(maxWidth, Math.round(value)))
+  }
+  function saveWidth(value: number) {
+    setWidth(value)
+    props.onLayoutChange(props.fontSize, value)
+  }
   useEffect(
     () =>
       Events.On('skillview:translation', (event) => {
@@ -214,7 +260,11 @@ export function Reader(props: ReaderProps) {
   }
   const dirty = !!draft && draft.text !== draft.base.text
   return (
-    <aside className="reader" aria-label={`${skill.name} ${t('reader')}`}>
+    <aside
+      className="reader"
+      aria-label={`${skill.name} ${t('reader')}`}
+      style={{ '--reader-font-size': `${props.fontSize}px` } as CSSProperties}
+    >
       <header className="reader-head">
         <button
           className="reader-back"
@@ -298,9 +348,14 @@ export function Reader(props: ReaderProps) {
           />
         </div>
       </header>
-      <div className="reader-body">
+      <div className="reader-body" ref={body}>
         {explorerOpen && (
-          <nav className="file-explorer" aria-label={t('Skill files')}>
+          <nav
+            id="skill-file-explorer"
+            className="file-explorer"
+            aria-label={t('Skill files')}
+            style={{ width: Math.min(width, maxWidth) }}
+          >
             <div className="explorer-title" title={skill.path}>
               {skill.name}
             </div>
@@ -374,6 +429,68 @@ export function Reader(props: ReaderProps) {
             />
           </nav>
         )}
+        {explorerOpen && (
+          <div
+            className="explorer-resize"
+            role="separator"
+            tabIndex={0}
+            aria-label={t('Resize file tree')}
+            aria-orientation="vertical"
+            aria-controls="skill-file-explorer"
+            aria-valuemin={180}
+            aria-valuemax={maxWidth}
+            aria-valuenow={Math.min(width, maxWidth)}
+            title={t(
+              'Drag to resize. Double-click to reset. Use arrow keys to adjust.',
+            )}
+            onPointerDown={(event) => {
+              if (event.button !== 0) return
+              event.preventDefault()
+              event.currentTarget.focus()
+              event.currentTarget.setPointerCapture(event.pointerId)
+              drag.current = {
+                x: event.clientX,
+                width: Math.min(width, maxWidth),
+              }
+            }}
+            onPointerMove={(event) => {
+              if (drag.current)
+                setWidth(
+                  resize(drag.current.width + event.clientX - drag.current.x),
+                )
+            }}
+            onPointerUp={() => {
+              if (drag.current) saveWidth(resize(width))
+              drag.current = null
+            }}
+            onPointerCancel={() => {
+              drag.current = null
+              setWidth(props.explorerWidth)
+            }}
+            onLostPointerCapture={() => {
+              drag.current = null
+            }}
+            onDoubleClick={() => saveWidth(244)}
+            onKeyDown={(event) => {
+              if (
+                !['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Enter'].includes(
+                  event.key,
+                )
+              )
+                return
+              event.preventDefault()
+              let next = Math.min(width, maxWidth)
+              if (event.key === 'Home') next = 180
+              else if (event.key === 'End') next = maxWidth
+              else if (event.key === 'Enter') next = 244
+              else
+                next +=
+                  (event.key === 'ArrowRight' ? 1 : -1) *
+                  (event.shiftKey ? 40 : 16)
+              saveWidth(resize(next))
+            }}
+          />
+        )}
         <section
           className="reader-document"
           aria-label={doc?.path ?? 'SKILL.md'}
@@ -385,6 +502,11 @@ export function Reader(props: ReaderProps) {
               aria-live="polite"
             >
               <span>
+                <LoaderCircle
+                  size={13}
+                  className="translation-spinner"
+                  aria-hidden="true"
+                />
                 {progress
                   ? t('Translating {done} / {total} sections', {
                       done: progress.completed,
@@ -412,31 +534,37 @@ export function Reader(props: ReaderProps) {
             </div>
           )}
           {translationError && (
-            <p className="translation-error" role="alert">
-              {translationError}{' '}
-              <button
-                onClick={() => {
-                  void translate()
-                }}
-              >
-                {t('Try again')}
-              </button>
+            <div className="translation-error" role="alert">
+              <AlertCircle size={14} />
+              <span>{translationError}</span>
+              {!translation && (
+                <button
+                  onClick={() => {
+                    void translate()
+                  }}
+                >
+                  {t('Try again')}
+                </button>
+              )}
               {!translated && (
                 <button onClick={props.onConfigureTranslation}>
                   {t('Configure translation')}
                 </button>
               )}
-            </p>
+            </div>
           )}
-          {translated && translation && (
+          {translation && !draft && (
             <p
               className="translation-note"
               title={t('Translation does not change the original file.')}
             >
               <strong>
+                <Check size={13} aria-hidden="true" />
                 {translation.sections === 0
                   ? t('No prose to translate')
-                  : t('Translation complete')}
+                  : t(
+                      translated ? 'Translation complete' : 'Translation ready',
+                    )}
               </strong>
               {' · '}
               {translationProviderName(translation.provider)} →{' '}
@@ -469,7 +597,11 @@ export function Reader(props: ReaderProps) {
               {translationNotice}
             </p>
           )}
-          <div className={`reader-content${draft ? ' editing' : ''}`}>
+          <div
+            ref={content}
+            className={`reader-content${draft ? ' editing' : ''}`}
+            tabIndex={draft ? -1 : 0}
+          >
             {props.loading ? (
               <p className="quiet-note">{t('Reading file\u2026')}</p>
             ) : props.error ? (
@@ -596,6 +728,46 @@ export function Reader(props: ReaderProps) {
             <span className="access-label">
               {doc?.editable ? t('Writable') : t('Read-only')}
             </span>
+            {!draft && (
+              <div
+                className="reading-size"
+                role="group"
+                aria-label={t('Reading size')}
+              >
+                <IconButton
+                  icon={Minus}
+                  label={t('Decrease reading size')}
+                  disabled={props.fontSize <= 12}
+                  onClick={() =>
+                    props.onLayoutChange(
+                      props.fontSize - 1,
+                      props.explorerWidth,
+                    )
+                  }
+                />
+                <button
+                  className="reading-size-value"
+                  title={t('Reset reading size')}
+                  aria-label={t('Reading size {size}px. Reset to 14px.', {
+                    size: props.fontSize,
+                  })}
+                  onClick={() => props.onLayoutChange(14, props.explorerWidth)}
+                >
+                  {props.fontSize}
+                </button>
+                <IconButton
+                  icon={Plus}
+                  label={t('Increase reading size')}
+                  disabled={props.fontSize >= 20}
+                  onClick={() =>
+                    props.onLayoutChange(
+                      props.fontSize + 1,
+                      props.explorerWidth,
+                    )
+                  }
+                />
+              </div>
+            )}
           </footer>
         </section>
       </div>

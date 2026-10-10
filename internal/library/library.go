@@ -38,7 +38,7 @@ func New(dataDir string, candidates []Source) (*Library, error) {
 	if err := os.MkdirAll(dataDir, 0700); err != nil {
 		return nil, err
 	}
-	l := &Library{dataDir: dataDir, refs: map[string]fileRef{}, prefs: Preferences{Theme: "system", Language: "system"}}
+	l := &Library{dataDir: dataDir, refs: map[string]fileRef{}, prefs: Preferences{Theme: "system", Language: "system", ReaderFontSize: 14, ExplorerWidth: 244}}
 	data, err := os.ReadFile(filepath.Join(dataDir, "preferences.json"))
 	if err == nil {
 		if err := json.Unmarshal(data, &l.prefs); err != nil {
@@ -166,6 +166,21 @@ func (l *Library) SetTheme(theme string) error {
 	l.prefs.Theme = theme
 	if err := l.persist(); err != nil {
 		l.prefs.Theme = previous
+		return err
+	}
+	return nil
+}
+
+func (l *Library) SetReaderLayout(fontSize, explorerWidth int) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	if fontSize < 12 || fontSize > 20 || explorerWidth < 180 || explorerWidth > 400 {
+		return fmt.Errorf("invalid reading layout")
+	}
+	previousFontSize, previousWidth := l.prefs.ReaderFontSize, l.prefs.ExplorerWidth
+	l.prefs.ReaderFontSize, l.prefs.ExplorerWidth = fontSize, explorerWidth
+	if err := l.persist(); err != nil {
+		l.prefs.ReaderFontSize, l.prefs.ExplorerWidth = previousFontSize, previousWidth
 		return err
 	}
 	return nil

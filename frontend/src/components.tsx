@@ -105,6 +105,16 @@ export function Markdown({
         skipHtml
         remarkPlugins={[remarkGfm]}
         components={{
+          table: ({ children }) => (
+            <div
+              className="markdown-table"
+              tabIndex={0}
+              role="region"
+              aria-label={t('Table')}
+            >
+              <table>{children}</table>
+            </div>
+          ),
           a: ({ href, children }) => (
             <a
               href={href || '#'}

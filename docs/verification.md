@@ -71,6 +71,8 @@ A browser fixture showed the additional-folder explanation, a 26 px Add button a
 
 ## Remaining acceptance
 
+Alpha.8 reading-layout checks use isolated preferences to verify old settings receive 14 px/244 px defaults, changes survive reload, invalid ranges are rejected and a failed save preserves previous values. A browser fixture exercises the production UI with synthetic documents and a mock service: drag and keyboard resizing, restored width/font size, the 20 px limit, 640 px window layout, wide-table containment, keyboard scrolling and translation progress/completion/failure states. The reader has zero automated accessibility violations in the tested final light/dark states. Translation providers and native macOS interactions are not exercised by this fixture.
+
 The ordinary app loaded a large real catalog with installed-Agent tabs; originals were not modified. This does not prove unrestricted access to every folder or execution of a Skill by an Agent. Permission failures and scan limits are reported.
 
 The optional Google public endpoint succeeded once on synthetic text and failed in a later native check. AI and Google Cloud response/error behavior was checked with local fixtures, not paid accounts. Credential rollback used an in-memory key store; real Keychain acceptance remains outstanding.

@@ -134,6 +134,10 @@ export function SetLanguage(language: string): $CancellablePromise<void> {
     return $Call.ByID(2405167788, language);
 }
 
+export function SetReaderLayout(fontSize: number, explorerWidth: number): $CancellablePromise<void> {
+    return $Call.ByID(1527236203, fontSize, explorerWidth);
+}
+
 export function SetTheme(theme: string): $CancellablePromise<void> {
     return $Call.ByID(2415550359, theme);
 }

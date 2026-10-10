@@ -165,8 +165,11 @@ func (s *Service) Save(id, path, revision, text string) (library.SaveResult, err
 func (s *Service) Create(sourceID, name, description string) (string, error) {
 	return s.library.Create(sourceID, name, description)
 }
-func (s *Service) Preferences() library.Preferences  { return s.library.Settings() }
-func (s *Service) SetTheme(theme string) error       { return s.library.SetTheme(theme) }
+func (s *Service) Preferences() library.Preferences { return s.library.Settings() }
+func (s *Service) SetTheme(theme string) error      { return s.library.SetTheme(theme) }
+func (s *Service) SetReaderLayout(fontSize, explorerWidth int) error {
+	return s.library.SetReaderLayout(fontSize, explorerWidth)
+}
 func (s *Service) SetAccentColor(color string) error { return s.library.SetAccentColor(color) }
 func (s *Service) RemoveSource(id string) error      { return s.library.RemoveSource(id) }
 

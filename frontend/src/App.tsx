@@ -54,6 +54,7 @@ export default function App() {
   )
   const [theme, setTheme] = useState('system')
   const [accentColor, setAccentColor] = useState('')
+  const [readerLayout, setReaderLayout] = useState({ fontSize: 14, width: 244 })
   const [settings, setSettings] = useState<SettingsTab | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateInfo | null>(null)
   const [updatesOpen, setUpdatesOpen] = useState(false)
@@ -146,6 +147,10 @@ export default function App() {
           setTheme(preferences.theme || 'system')
           setAccentColor(preferences.accentColor || '')
           setLanguage(preferences.language || 'system')
+          setReaderLayout({
+            fontSize: preferences.readerFontSize || 14,
+            width: preferences.explorerWidth || 244,
+          })
         }
       })
       .catch((failure) => failRef.current(failure))
@@ -605,6 +610,12 @@ export default function App() {
                 })
               }
               translationVersion={translationVersion}
+              fontSize={readerLayout.fontSize}
+              explorerWidth={readerLayout.width}
+              onLayoutChange={(fontSize, width) => {
+                setReaderLayout({ fontSize, width })
+                void api.SetReaderLayout(fontSize, width).catch(fail)
+              }}
               onConfigureTranslation={() => setSettings('translation')}
               onNewResource={() =>
                 request(() => setResourceAction({ kind: 'new' }))

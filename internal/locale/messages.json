@@ -380,6 +380,16 @@
     "Remove": "移除",
     "Allow editing": "允许编辑",
     "Added folders are read-only unless you allow editing.": "添加的文件夹默认为只读，勾选后才允许编辑。",
-    "translate a document smaller than 1 MiB": "请选择小于 1 MiB 的文档进行翻译。长文会自动分块，并保留原文件。"
+    "translate a document smaller than 1 MiB": "请选择小于 1 MiB 的文档进行翻译。长文会自动分块，并保留原文件。",
+    "Resize file tree": "调整文件树宽度",
+    "Drag to resize. Double-click to reset. Use arrow keys to adjust.": "拖动调整宽度，双击恢复默认；也可用方向键调整。",
+    "Reading size": "阅读字号",
+    "Decrease reading size": "缩小阅读字号",
+    "Increase reading size": "放大阅读字号",
+    "Reset reading size": "恢复默认字号",
+    "Reading size {size}px. Reset to 14px.": "当前字号 {size}px，点击恢复为 14px。",
+    "Table": "表格",
+    "invalid reading layout": "阅读布局设置无效",
+    "Translation ready": "译文已就绪"
   }
 }

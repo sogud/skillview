@@ -103,5 +103,7 @@ type Preferences struct {
 	AccentColor     string          `json:"accentColor"`
 	Theme           string          `json:"theme"`
 	Language        string          `json:"language"`
+	ReaderFontSize  int             `json:"readerFontSize"`
+	ExplorerWidth   int             `json:"explorerWidth"`
 	ExcludedSources map[string]bool `json:"excludedSources"`
 }

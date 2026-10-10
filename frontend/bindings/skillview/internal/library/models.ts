@@ -64,6 +64,8 @@ export interface Preferences {
     "accentColor": string;
     "theme": string;
     "language": string;
+    "readerFontSize": number;
+    "explorerWidth": number;
     "excludedSources": { [_ in string]?: boolean } | null;
 }
 
