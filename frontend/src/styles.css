@@ -431,8 +431,15 @@ kbd {
   flex-direction: column;
   animation: reader-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
+.reader-navigation {
+  display: flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  flex-shrink: 0;
+}
 .reader-head {
-  min-height: 46px;
+  min-height: 40px;
   padding: 0 12px;
   display: flex;
   align-items: center;
@@ -1373,14 +1380,12 @@ dialog::backdrop {
   text-overflow: ellipsis;
 }
 .reader-tree-restore {
-  padding: 0 16px 4px;
-}
-.reader-tree-restore button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
   min-height: 26px;
   padding: 4px 8px;
+  flex-shrink: 0;
   color: var(--secondary);
   font-size: 11px;
 }

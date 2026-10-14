@@ -1,6 +1,6 @@
 # Release readiness
 
-The published first release is an experimental Apple Silicon preview tagged `v0.1.0-alpha.1`. The current source version is declared in [`internal/updates/version.txt`](internal/updates/version.txt). Packages carry ad-hoc signatures, not Developer ID signatures or Apple notarization. The public alpha.1 release provides a ZIP; its DMG was excluded after a native mounting failure.
+The first regular GitHub release is `v0.1.0`; earlier builds are alpha prereleases. The source version is declared in [`internal/updates/version.txt`](internal/updates/version.txt). Packages carry ad-hoc signatures, not Developer ID signatures or Apple notarization. A regular version number does not imply Apple distribution acceptance or acceptance on every declared macOS version. The release provides a signed-update ZIP; the early alpha.1 DMG was excluded after a native mounting failure.
 
 ## Preview acceptance
 
@@ -11,9 +11,9 @@ The published first release is an experimental Apple Silicon preview tagged `v0.
 
 See [verification](docs/verification.md) for the practical limits of the observed behavior. A successful build or checksum alone does not prove native launch or Apple notarization.
 
-## Required before a stable release
+## Remaining platform and distribution acceptance
 
-1. Sign with a real **Developer ID Application** identity, submit the concrete archive to Apple notarization, inspect acceptance, staple the app and recreate packages. Verify installation on another Mac with Gatekeeper enabled. No usable Developer ID identity is configured on the current build machine.
+1. Sign with a real **Developer ID Application** identity, submit the concrete archive to Apple notarization, inspect acceptance, staple the app and recreate packages. Verify installation on another Mac with Gatekeeper enabled. Developer ID signing and notarization have not been performed for the published package.
 2. Verify the declared macOS 13 minimum on real hardware, or raise the minimum to the oldest accepted OS. Local native acceptance is on macOS 27, Apple Silicon. Intel support requires a separate build and native acceptance.
 3. Accept storage and retrieval through real macOS Keychain and configured AI/Google Cloud providers using authorized accounts. The no-key Google endpoint is unofficial: an earlier synthetic document succeeded, while a later native attempt reported a connection failure.
 4. Review remaining Wails v3 beta and native-library risks, and refresh runtime dependency checks for each release. Automated scans cover known advisories, not every defect. Resource rename reports affected Markdown links and leaves their edits to the user.
@@ -27,7 +27,7 @@ bash script/package.sh
 
 For an existing Developer ID identity, set `SIGNING_IDENTITY` when building. Signing uses hardened runtime and a timestamp. The scripts never create credentials, publish, disable Gatekeeper or remove quarantine attributes.
 
-After a signing identity and notarization profile have been configured, a production release requires:
+After a signing identity and notarization profile have been configured, an Apple-notarized package requires:
 
 ```sh
 SIGNING_IDENTITY='Developer ID Application: YOUR EXISTING IDENTITY' bash script/package.sh
@@ -38,4 +38,4 @@ spctl --assess --type execute --verbose=4 bin/SkillView.app
 bash script/package.sh --skip-build
 ```
 
-Notarization is a separate operation using the maintainer's existing Apple account; it has not been performed for the preview.
+Notarization is a separate operation using the maintainer's existing Apple account; it has not been performed for the current release.

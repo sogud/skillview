@@ -69,6 +69,12 @@ Focused race-enabled translation/app checks cover sentence boundaries, Unicode/e
 
 A browser fixture showed the additional-folder explanation, a 26 px Add button and no empty list occupying space. Adding read-only/editable folders passed the selected permission to the mock picker; removing a mock folder restored the empty state. These browser checks do not verify the native macOS folder picker. No real folders or Skills were modified or sent to a service.
 
+## Navigation and first regular release (0.1.0)
+
+Back to Skills is the only action in a separate navigation row. File-tree controls and current-document actions belong to their own panes. An isolated native macOS build with disposable documents verified collapsing folders, hiding the tree without leaving the reader, Enter to restore it with focus on the selected file, reference reading and returning to the list. Original fixture bytes remained unchanged. This does not exercise Apple Gatekeeper installation or live providers.
+
+Focused update tests verify stable/alpha ordering, stable feed filtering and signed download/extraction; file-tree unit checks pass. TypeScript and the native production build pass, including strict ad-hoc signature verification. A production React browser fixture verifies separated control positions, keyboard focus, and no horizontal page overflow at 640 px. The tested reader and the introduction website have zero automated accessibility violations. Website checks cover English/Chinese switching, loaded demo imagery and a 390 px viewport without horizontal overflow. The screenshot uses only synthetic content. No real Skills or private account data are included in the website.
+
 ## Remaining acceptance
 
 Alpha.9 checks compare all 79 named Agents and their macOS project/global paths in the pinned Vercel Skills CLI registry with SkillView's 83 definitions. Focused discovery tests verify fx membership in the shared root and preservation of legacy roots. A browser fixture verifies that hiding, restoring and collapsing the tree keep the reader open, Back returns to the list, and the tree visibility controls are outside the top navigation. English/Chinese labels and the tested light/open and dark/hidden reader states pass with zero automated accessibility violations. SQLite persistence and translation cache/failure tests pass with race detection; no live provider requests are made. Frontend and native production builds pass with strict ad-hoc signature verification. Native window clicks are not exercised in this pass.

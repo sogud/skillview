@@ -107,12 +107,31 @@ export function Reader(props: ReaderProps) {
   const [explorerOpen, setExplorerOpen] = useState(true)
   const [width, setWidth] = useState(props.explorerWidth)
   const [maxWidth, setMaxWidth] = useState(400)
+  const restoreTree = useRef<HTMLButtonElement>(null)
+  const focusExplorer = useRef(false)
   const body = useRef<HTMLDivElement>(null)
   const content = useRef<HTMLDivElement>(null)
   const drag = useRef<{ x: number; width: number } | null>(null)
   const pending = useRef<ReturnType<typeof api.Translate> | null>(null)
   const sequence = useRef(0)
   const requestID = useRef('')
+  function showExplorer(open: boolean) {
+    focusExplorer.current = true
+    setExplorerOpen(open)
+  }
+  useEffect(() => {
+    if (!focusExplorer.current) return
+    focusExplorer.current = false
+    if (explorerOpen) {
+      body.current
+        ?.querySelector<HTMLButtonElement>(
+          '[role="treeitem"][aria-selected="true"]',
+        )
+        ?.focus()
+    } else {
+      restoreTree.current?.focus()
+    }
+  }, [explorerOpen])
   useEffect(() => setWidth(props.explorerWidth), [props.explorerWidth])
   useEffect(() => {
     content.current?.scrollTo(0, 0)
@@ -266,7 +285,7 @@ export function Reader(props: ReaderProps) {
       aria-label={`${skill.name} ${t('reader')}`}
       style={{ '--reader-font-size': `${props.fontSize}px` } as CSSProperties}
     >
-      <header className="reader-head">
+      <nav className="reader-navigation" aria-label={t('Skill navigation')}>
         <button
           className="reader-back"
           onClick={props.onClose}
@@ -275,74 +294,7 @@ export function Reader(props: ReaderProps) {
           <ArrowLeft size={15} />
           {t('Back to Skills')}
         </button>
-        <span className="filename" title={doc?.path}>
-          {doc?.path ?? 'SKILL.md'}
-          {dirty && (
-            <span className="unsaved" aria-label={t('Unsaved changes')}>
-              ●
-            </span>
-          )}
-        </span>
-        <div className="reader-tools">
-          {canTranslate && (
-            <button
-              className="reader-translate"
-              aria-pressed={translated}
-              title={t('Translation does not change the original file.')}
-              onClick={() => {
-                if (translating) cancelTranslation()
-                else void translate()
-              }}
-            >
-              {translating ? <X size={14} /> : <Languages size={15} />}
-              {t(
-                translating
-                  ? 'Cancel translation'
-                  : translated
-                    ? 'Show original'
-                    : translation
-                      ? 'Show translation'
-                      : 'Translate document',
-              )}
-            </button>
-          )}
-          {doc &&
-            !draft &&
-            (doc.kind === 'markdown' || doc.kind === 'text') && (
-              <IconButton
-                icon={props.raw ? Eye : FileCode}
-                label={props.raw ? t('Read Markdown') : t('View raw file')}
-                active={props.raw}
-                onClick={() => {
-                  setTranslated(false)
-                  props.onRaw()
-                }}
-              />
-            )}
-          {doc?.editable && !draft && (
-            <IconButton
-              icon={Pencil}
-              label={t('Edit file')}
-              onClick={() => {
-                setTranslated(false)
-                props.onEdit()
-              }}
-            />
-          )}
-          {skill.editable && !draft && (
-            <IconButton
-              icon={Trash2}
-              label={t('Move Skill to Trash')}
-              onClick={props.onTrashSkill}
-            />
-          )}
-          <IconButton
-            icon={Folder}
-            label={t('Show in Finder')}
-            onClick={props.onReveal}
-          />
-        </div>
-      </header>
+      </nav>
       <div className="reader-body" ref={body}>
         {explorerOpen && (
           <nav
@@ -358,7 +310,7 @@ export function Reader(props: ReaderProps) {
               <IconButton
                 icon={PanelLeftClose}
                 label={t('Hide file tree')}
-                onClick={() => setExplorerOpen(false)}
+                onClick={() => showExplorer(false)}
               />
             </div>
             {props.copies.length > 1 && (
@@ -497,14 +449,86 @@ export function Reader(props: ReaderProps) {
           className="reader-document"
           aria-label={doc?.path ?? 'SKILL.md'}
         >
-          {!explorerOpen && (
-            <div className="reader-tree-restore">
-              <button onClick={() => setExplorerOpen(true)}>
+          <header className="reader-head">
+            {!explorerOpen && (
+              <button
+                className="reader-tree-restore"
+                ref={restoreTree}
+                onClick={() => showExplorer(true)}
+              >
                 <PanelLeftOpen size={14} />
                 {t('Show file tree')}
               </button>
+            )}
+
+            <span className="filename" title={doc?.path}>
+              {doc?.path ?? 'SKILL.md'}
+              {dirty && (
+                <span className="unsaved" aria-label={t('Unsaved changes')}>
+                  ●
+                </span>
+              )}
+            </span>
+            <div className="reader-tools">
+              {canTranslate && (
+                <button
+                  className="reader-translate"
+                  aria-pressed={translated}
+                  title={t('Translation does not change the original file.')}
+                  onClick={() => {
+                    if (translating) cancelTranslation()
+                    else void translate()
+                  }}
+                >
+                  {translating ? <X size={14} /> : <Languages size={15} />}
+                  {t(
+                    translating
+                      ? 'Cancel translation'
+                      : translated
+                        ? 'Show original'
+                        : translation
+                          ? 'Show translation'
+                          : 'Translate document',
+                  )}
+                </button>
+              )}
+              {doc &&
+                !draft &&
+                (doc.kind === 'markdown' || doc.kind === 'text') && (
+                  <IconButton
+                    icon={props.raw ? Eye : FileCode}
+                    label={props.raw ? t('Read Markdown') : t('View raw file')}
+                    active={props.raw}
+                    onClick={() => {
+                      setTranslated(false)
+                      props.onRaw()
+                    }}
+                  />
+                )}
+              {doc?.editable && !draft && (
+                <IconButton
+                  icon={Pencil}
+                  label={t('Edit file')}
+                  onClick={() => {
+                    setTranslated(false)
+                    props.onEdit()
+                  }}
+                />
+              )}
+              {skill.editable && !draft && (
+                <IconButton
+                  icon={Trash2}
+                  label={t('Move Skill to Trash')}
+                  onClick={props.onTrashSkill}
+                />
+              )}
+              <IconButton
+                icon={Folder}
+                label={t('Show in Finder')}
+                onClick={props.onReveal}
+              />
             </div>
-          )}
+          </header>
           {translating && (
             <div
               className="translation-progress"

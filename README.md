@@ -4,11 +4,11 @@ A compact macOS app for finding, reading and editing local Agent Skills. Origina
 
 ![SkillView showing six synthetic Skills shared across Agents](docs/images/skillview-demo.jpg)
 
-The screenshot uses synthetic documents and isolated settings.
+The screenshot uses synthetic documents and isolated settings. Visit the [website](https://sogud.github.io/skillview/) for a short introduction and downloads.
 
-## Try the preview
+## Download
 
-Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). This is an experimental preview, ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
+Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). The first regular release is `0.1.0`. The app is ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
 
 The bundle declares macOS 13 or newer, but the minimum OS has not been accepted on a real macOS 13 device. Intel builds are not provided. See [release readiness](RELEASE_READINESS.md) for the remaining checks.
 
@@ -17,7 +17,7 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 - Click Scan to read known global skill/plugin directories across 83 Agent definitions (including all 79 in the reviewed Vercel Skills CLI registry), plus folders you explicitly add. Home and connected drives are not searched. Startup opens the saved catalog without a background scan. Manual scanning shows folder counts and can be canceled; inaccessible paths and scan limits are reported.
 - Agent tabs wrap into rows and show installed local applications or executables by default. Configuration folders alone do not count as an installation.
 - One list entry per Skill name, with overlapping platform logos and a platform count. Different contents remain available as versions and independent copies in the reader.
-- A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Tree visibility controls sit inside the file workspace, separate from Back to Skills. Search, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
+- A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Back to Skills has its own navigation row. Tree visibility controls stay in the file workspace, and keyboard focus follows the current file when the tree is restored. Search, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
 - Adjust the file tree with its draggable edge or arrow keys; double-click to reset its width. Reading size (12–20 px) is adjustable in the footer. Both preferences survive restart. Narrow windows reserve more room for prose, and wide tables scroll inside the document.
 - System/light/dark appearance and a configurable theme color. English and Simplified Chinese interface, following the system language by default. Translation services include free Google and Youdao web translation, self-hosted LibreTranslate and OpenAI-compatible AI. See [translation setup](docs/translation.md).
 - AI uses the official OpenAI Go SDK with a configurable compatible endpoint, including local models. Keys stay in macOS Keychain. Translation only runs after a click and does not modify the original file.
@@ -46,7 +46,9 @@ Tools, caches and acceptance fixtures stay under `.artifacts`; builds and packag
 
 For an isolated acceptance build, set `SKILLVIEW_APP_BUNDLE` to a new absolute `.app` path under `.artifacts`. `script/package.sh` uses the same bundle path; `SKILLVIEW_RELEASE_DIR` selects a separate package directory.
 
-The [macOS preview workflow](.github/workflows/preview.yml) reuses these build/package scripts on pushes, pull requests and manual dispatch. It tests file operations and translation, checks known runtime dependency vulnerabilities, and uploads packages with their source commit and build environment. Downloaded package sets can be checked from their own directory with `shasum -a 256 -c <package>.sha256`.
+The [macOS build workflow](.github/workflows/preview.yml) reuses these build/package scripts on pushes, pull requests and manual dispatch. It tests file operations and translation, checks known runtime dependency vulnerabilities, and uploads packages with their source commit and build environment. Downloaded package sets can be checked from their own directory with `shasum -a 256 -c <package>.sha256`.
+
+The buildless introduction page lives in `website/`. GitHub Pages deploys it after a release is published, or by manually running the **SkillView website** workflow. Preview it with `python3 -m http.server 9380 --directory website`.
 
 Focused checks:
 
