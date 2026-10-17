@@ -71,6 +71,14 @@ export function PlanTrash(id: string, path: string): $CancellablePromise<library
     return $Call.ByID(3199981789, id, path);
 }
 
+export function PluginResources(id: string): $CancellablePromise<library$0.Resource[] | null> {
+    return $Call.ByID(1293541862, id);
+}
+
+export function Plugins(): $CancellablePromise<library$0.PluginCatalog> {
+    return $Call.ByID(2178744326);
+}
+
 export function Preferences(): $CancellablePromise<library$0.Preferences> {
     return $Call.ByID(1733517212);
 }
@@ -81,6 +89,10 @@ export function Quit(): $CancellablePromise<void> {
 
 export function Read(id: string, path: string): $CancellablePromise<library$0.Document> {
     return $Call.ByID(2286431182, id, path);
+}
+
+export function ReadPlugin(id: string, path: string): $CancellablePromise<library$0.Document> {
+    return $Call.ByID(3191413689, id, path);
 }
 
 export function Ready(): $CancellablePromise<void> {

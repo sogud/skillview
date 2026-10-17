@@ -438,6 +438,127 @@ kbd {
   padding: 0 12px;
   flex-shrink: 0;
 }
+.view-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: 7px;
+  background: var(--inset);
+  --wails-draggable: no-drag;
+}
+.view-switch button {
+  min-width: 62px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--secondary);
+}
+.view-switch button[aria-selected="true"] {
+  color: var(--text);
+  background: var(--surface);
+}
+.skills-view,
+.plugins-view,
+.plugins-browser {
+  display: flex;
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+}
+.skills-view[hidden],
+.plugins-view[hidden] {
+  display: none;
+}
+.plugins-browser {
+  flex-direction: column;
+}
+.plugin-agent-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 0 16px 10px;
+}
+.plugin-agent-tabs button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+}
+.plugin-agent-tabs button.active {
+  background: var(--selected);
+  color: var(--text);
+}
+.plugin-agent-tabs small {
+  color: var(--secondary);
+}
+.plugin-agent-tabs button.active small {
+  color: inherit;
+}
+.plugin-issues .error {
+  color: var(--danger);
+}
+.plugin-issues {
+  padding: 0 20px;
+  font-size: 12px;
+}
+.plugin-list {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  padding: 0 12px;
+}
+.plugin-list ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.plugin-list .skill-select {
+  width: 100%;
+  min-height: 68px;
+}
+.plugin-version {
+  font-size: 10px;
+  font-weight: 400;
+  color: var(--secondary);
+  margin-left: 6px;
+}
+.plugin-platform {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--secondary);
+  font-size: 11px;
+  flex-shrink: 0;
+}
+.plugin-heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 5px 8px 14px;
+  min-width: 0;
+}
+.plugin-heading > div {
+  min-width: 0;
+}
+.plugin-heading strong {
+  display: block;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.plugin-heading small {
+  display: block;
+  font-size: 10px;
+  color: var(--secondary);
+  margin-top: 4px;
+}
+.plugin-reader .raw-file {
+  font-size: var(--reader-font-size, 14px);
+}
+@media (max-width: 720px) {
+  .plugin-platform {
+    font-size: 0;
+  }
+}
 .reader-head {
   min-height: 40px;
   padding: 0 12px;

@@ -8,6 +8,8 @@ export type {
     Document,
     Issue,
     Occurrence,
+    Plugin,
+    PluginCatalog,
     Preferences,
     Resource,
     SaveResult,

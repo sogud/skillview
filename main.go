@@ -60,10 +60,17 @@ func main() {
 	var window *application.WebviewWindow
 	var updateManager *updates.Manager
 	var keys translation.KeyStore = translation.MacKeychain{}
+	var pluginHomes func() library.PluginHomes
 	var knownSources func() []library.Source = func() []library.Source { return library.DefaultSources(home) }
 	if fixtureRoot != "" {
 		keys = translation.NewMemoryKeys()
 		knownSources = nil
+		pluginHomes = func() library.PluginHomes {
+			if root := os.Getenv("SKILLVIEW_PLUGIN_FIXTURE"); root != "" {
+				return library.PluginHomes{Claude: filepath.Join(root, "claude"), Codex: filepath.Join(root, "codex")}
+			}
+			return library.PluginHomes{}
+		}
 	}
 	translator, err := translation.New(dataDir, keys)
 	if err != nil {
@@ -109,7 +116,7 @@ func main() {
 		app.Menu.Set(menu)
 		window.SetTitle(locale.T(language, "Skills"))
 	}
-	service := appservice.New(lib, appservice.Native{Application: func() *application.App { return app }, Window: func() *application.WebviewWindow { return window }, KnownSources: knownSources, UpdateLanguage: updateLanguage, Updates: func() *updates.Manager { return updateManager }}, translator)
+	service := appservice.New(lib, appservice.Native{Application: func() *application.App { return app }, Window: func() *application.WebviewWindow { return window }, KnownSources: knownSources, PluginHomes: pluginHomes, UpdateLanguage: updateLanguage, Updates: func() *updates.Manager { return updateManager }}, translator)
 	defer service.Close()
 	app = application.New(application.Options{
 		Name: "SkillView", Description: "Read, browse, and safely edit local Agent Skills.",

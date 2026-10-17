@@ -7,6 +7,8 @@ export type {
   TrashReceipt,
   Document,
   Resource,
+  Plugin,
+  PluginCatalog,
   Skill,
   Source,
   Occurrence,

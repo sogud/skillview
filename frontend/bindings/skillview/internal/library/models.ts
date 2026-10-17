@@ -58,6 +58,21 @@ export interface Occurrence {
     "linkRevision": string;
 }
 
+export interface Plugin {
+    "id": string;
+    "name": string;
+    "version": string;
+    "description": string;
+    "agent": string;
+    "icon": string;
+    "enabled": boolean | null;
+}
+
+export interface PluginCatalog {
+    "plugins": Plugin[] | null;
+    "issues": string[] | null;
+}
+
 export interface Preferences {
     "recentTrash": TrashReceipt[] | null;
     "sources": Source[] | null;

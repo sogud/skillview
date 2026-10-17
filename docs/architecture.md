@@ -16,6 +16,8 @@ Installed detection requires a recognized desktop app, executable or a supported
 
 ## File handling
 
+`internal/library/plugins.go` reads Claude Code installation records and Codex configuration/desktop installation markers into a separate in-memory plugin catalog. Plugin identifiers cannot be used by the Skill write APIs. The generated `Plugins`, `PluginResources` and `ReadPlugin` bindings expose metadata and read-only previews. React reuses the existing file tree and Markdown renderer; file contents remain data. See [plugin browsing](plugins.md) for cache-version selection and discovery limits.
+
 - Sources record resolved paths and filesystem identities. Access rechecks root links and opens components through held directory descriptors with `O_NOFOLLOW`. Intermediate absolute-path components use macOS search permission; the final directory must be readable.
 - Automatic symlink targets can be read with cycle detection and captured identities. Linked-only entries remain read-only. Resource symlinks are listed and never followed.
 - Only ordinary UTF-8 files up to 2 MiB are editable; hard links are read-only. Resource imports are bounded to 16 MiB. Raster previews are bounded; HTML and SVG never execute.

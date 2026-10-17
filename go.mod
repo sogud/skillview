@@ -9,6 +9,7 @@ require (
 	github.com/mattn/go-ieproxy v0.0.12
 	github.com/mattn/go-sqlite3 v1.14.32
 	github.com/openai/openai-go/v3 v3.74.0
+	github.com/pelletier/go-toml/v2 v2.4.3
 	github.com/wailsapp/wails/v3 v3.0.0-beta.27
 	github.com/yuin/goldmark v1.7.17
 	golang.org/x/mod v0.41.0

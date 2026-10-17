@@ -8,7 +8,7 @@ The screenshot uses synthetic documents and isolated settings. Visit the [websit
 
 ## Download
 
-Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). The first regular release is `0.1.0`. The app is ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
+Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). Version `0.1.1` adds installed plugin browsing; the first regular release was `0.1.0`. The app is ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
 
 The bundle declares macOS 13 or newer, but the minimum OS has not been accepted on a real macOS 13 device. Intel builds are not provided. See [release readiness](RELEASE_READINESS.md) for the remaining checks.
 
@@ -17,6 +17,7 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 - Click Scan to read known global skill/plugin directories across 83 Agent definitions (including all 79 in the reviewed Vercel Skills CLI registry), plus folders you explicitly add. Home and connected drives are not searched. Startup opens the saved catalog without a background scan. Manual scanning shows folder counts and can be canceled; inaccessible paths and scan limits are reported.
 - Agent tabs wrap into rows and show installed local applications or executables by default. Configuration folders alone do not count as an installation.
 - One list entry per Skill name, with overlapping platform logos and a platform count. Different contents remain available as versions and independent copies in the reader.
+- Switch between **Skills** and **Plugins** at the top. Browse installed Claude Code and Codex plugins by name, version and Agent, then read their complete file tree. Plugin files are read-only; scripts, commands and hooks are never executed. See [plugin browsing](docs/plugins.md) for discovery details.
 - A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Back to Skills has its own navigation row. Tree visibility controls stay in the file workspace, and keyboard focus follows the current file when the tree is restored. Search, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
 - Adjust the file tree with its draggable edge or arrow keys; double-click to reset its width. Reading size (12–20 px) is adjustable in the footer. Both preferences survive restart. Narrow windows reserve more room for prose, and wide tables scroll inside the document.
 - System/light/dark appearance and a configurable theme color. English and Simplified Chinese interface, following the system language by default. Translation services include free Google and Youdao web translation, self-hosted LibreTranslate and OpenAI-compatible AI. See [translation setup](docs/translation.md).

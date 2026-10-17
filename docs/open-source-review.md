@@ -46,6 +46,14 @@ This change introduces no dependency. Automatic scanning is restricted to regist
 
 Synthetic tests, UI screenshots, local logs, update acceptance data and private signing credentials remain excluded from the public source and packages. Gitleaks scanned the selected 137 public source files and complete six-commit history without finding credentials. Manual checks found no private machine paths, personal commit email or sensitive historical filename. Review of the exact downloadable ZIP and fresh CI runtime scans remain required before publication. Apple notarization and acceptance on the user's other Mac remain outside this local review.
 
+## 0.1.1 installed plugin browsing review
+
+Reviewed on 2026-10-17. The selected 153 public source files and complete twelve-commit pre-release history passed Gitleaks with no findings. Private-path, local-context and private-network checks found no disclosure blocker. Commit metadata uses the existing GitHub noreply identity. Test fixtures, screenshots, local installation records, application settings and the private update key remain excluded.
+
+Plugin discovery reads Claude Code installation records and Codex configuration/desktop installation markers. Configuration parse errors return fixed messages rather than configuration contents. Plugin documents are read-only, use the existing bounded file reader, refuse resource symlinks and replaced roots, and cannot enter Skill write APIs. No plugin instructions, scripts, commands or hooks are executed. The browser has no plugin translation controls.
+
+The new TOML parser is pinned to `github.com/pelletier/go-toml/v2` v2.4.3 under MIT; its license is included in regenerated notices. Focused race-enabled plugin/resource, manual-scan and updater tests, frontend checks and the local production build pass. Existing synthetic native/browser acceptance is documented in [verification](verification.md). Fresh CI dependency checks and inspection of the exact release ZIP remain required before publishing. This review does not establish project-specific plugin enablement or the Agent's exact active cached version; see [plugin browsing](plugins.md).
+
 ## Coverage limits
 
 This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

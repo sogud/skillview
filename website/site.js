@@ -8,7 +8,7 @@ const copy = {
       'Find what you have. Read it comfortably. Keep your Agent Skills close, wherever they live.',
     download: 'Download for macOS ↓',
     source: 'Explore the source ↗',
-    requirements: 'Free & open source · Apple Silicon · Version 0.1.0',
+    requirements: 'Free & open source · Apple Silicon · Version 0.1.1',
     caption: 'A real SkillView interface with example content.',
     preview:
       'SkillView with a file tree on the left and a readable Skill document on the right.',
@@ -17,7 +17,7 @@ const copy = {
       'Browse Skills from Codex, Claude Code, Cursor, Gemini and more. Shared copies appear once, with their Agent logos together.',
     readTitle: 'Room to read.',
     readBody:
-      'A familiar file tree, readable Markdown and an adjustable reading size. References and scripts are just a click away.',
+      'A familiar file tree, readable Markdown and an adjustable reading size. Switch to Plugins to browse installed Claude Code and Codex plugins, including their names, versions and files.',
     translateTitle: 'Read in your language.',
     translateBody:
       'Translate with Google, Youdao, your own LibreTranslate server or AI. Saved translations stay available across restarts.',
@@ -43,7 +43,7 @@ const copy = {
       '找到已安装的技能，舒服地阅读。无论它们属于哪个 Agent，都能在这里查看。',
     download: '下载 macOS 版 ↓',
     source: '查看源代码 ↗',
-    requirements: '免费开源 · Apple Silicon · 版本 0.1.0',
+    requirements: '免费开源 · Apple Silicon · 版本 0.1.1',
     caption: 'SkillView 实际界面，使用示例内容。',
     preview: 'SkillView 左侧为文件树，右侧为技能文档阅读区。',
     findTitle: '多个 Agent，一个技能库。',
@@ -51,7 +51,7 @@ const copy = {
       '查看 Codex、Claude Code、Cursor、Gemini 等工具的技能。相同技能合并展示，用平台图标标记所属 Agent。',
     readTitle: '留出空间，好好阅读。',
     readBody:
-      '熟悉的文件树、清晰的 Markdown、可调整的阅读字号。参考文档和脚本，点击即可查看。',
+      '熟悉的文件树、清晰的 Markdown、可调整的阅读字号。切换到“插件”，查看本机 Claude Code 和 Codex 插件的名称、版本与文件。',
     translateTitle: '用熟悉的语言阅读。',
     translateBody:
       '支持 Google、有道、自建 LibreTranslate 和 AI 翻译。已保存的译文在重启后仍可复用。',

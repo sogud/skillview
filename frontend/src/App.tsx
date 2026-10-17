@@ -19,6 +19,7 @@ import type {
   UpdateInfo,
   ScanProgress,
 } from './api'
+import { Plugins, type PluginsHandle } from './Plugins'
 import { UpdateDialog } from './UpdateDialog'
 import { IconButton, Modal } from './components'
 import {
@@ -34,6 +35,8 @@ import { groupSkills, selectCopy, type SkillGroup } from './skill-groups'
 
 export default function App() {
   const { t, error: message, language, setLanguage } = useLocale()
+  const [view, setView] = useState<'skills' | 'plugins'>('skills')
+  const plugins = useRef<PluginsHandle>(null)
   const [verified, setVerified] = useState(false)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [query, setQuery] = useState('')
@@ -365,6 +368,10 @@ export default function App() {
 
   const commands = useRef<(command: string) => void>(() => {})
   commands.current = (command) => {
+    if (view === 'plugins' && ['find', 'rescan'].includes(command)) {
+      plugins.current?.command(command)
+      return
+    }
     if (command === 'updates') openUpdates()
     if (command === 'find') {
       window.document.documentElement.dataset.inputMode = 'keyboard'
@@ -374,7 +381,11 @@ export default function App() {
       })
     }
     if (command === 'settings') setSettings('general')
-    if (command === 'new') request(() => setCreating(true))
+    if (command === 'new')
+      request(() => {
+        setView('skills')
+        setCreating(true)
+      })
     if (command === 'save') void save()
     if (command === 'rescan') void refresh().catch(fail)
     if (command === 'quit')
@@ -443,11 +454,41 @@ export default function App() {
           !resourceAction &&
           !trashing
         )
-          closeReader()
+          view === 'plugins' ? plugins.current?.command('back') : closeReader()
       }}
     >
       <div className="titlebar">
-        <span>{t('Skills')}</span>
+        <div
+          className="view-switch"
+          role="tablist"
+          aria-label={t('Library view')}
+        >
+          {(['skills', 'plugins'] as const).map((mode) => (
+            <button
+              key={mode}
+              id={`${mode}-tab`}
+              role="tab"
+              aria-selected={view === mode}
+              aria-controls={`${mode}-view`}
+              tabIndex={view === mode ? 0 : -1}
+              onClick={() => request(() => setView(mode))}
+              onKeyDown={(event) => {
+                if (['ArrowLeft', 'ArrowRight'].includes(event.key)) {
+                  event.preventDefault()
+                  const next = mode === 'skills' ? 'plugins' : 'skills'
+                  request(() => {
+                    setView(next)
+                    requestAnimationFrame(() =>
+                      window.document.getElementById(`${next}-tab`)?.focus(),
+                    )
+                  })
+                }
+              }}
+            >
+              {t(mode === 'skills' ? 'Skills' : 'Plugins')}
+            </button>
+          ))}
+        </div>
         <div className="window-actions">
           {!!updateStatus?.latest && (
             <button
@@ -476,211 +517,235 @@ export default function App() {
       </div>
       <div className="shell">
         <main className={`workspace${selected ? ' expanded' : ''}`}>
-          <section
-            className="library"
-            hidden={!!selected}
-            aria-label={t('Skills library')}
+          <div
+            className="skills-view"
+            id="skills-view"
+            role="tabpanel"
+            aria-labelledby="skills-tab"
+            hidden={view !== 'skills'}
           >
-            <div className="library-toolbar">
-              <div className="search">
-                <Search size={14} />
-                <input
-                  ref={search}
-                  aria-label={t('Search Skills')}
-                  placeholder={t('Search Skills')}
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                />
-                <kbd>⌘F</kbd>
-              </div>
-              <IconButton
-                icon={RotateCw}
-                label={t('Rescan folders')}
-                onClick={() => {
-                  void refresh().catch(fail)
-                }}
-                disabled={scanning}
-              />
-              <IconButton
-                icon={Plus}
-                label={t('New Skill')}
-                onClick={() => request(() => setCreating(true))}
-                disabled={scanning || saving}
-              />
-            </div>
-            <AgentTabs
-              agents={catalog?.agents ?? []}
-              groups={groups}
-              value={agentFilter}
-              onChange={changeAgent}
-            />
-            {scanning && (
-              <div className="scan-status" role="status" aria-live="polite">
-                <div>
-                  <strong>{t('Reading Skills…')}</strong>
-                  <span>
-                    {t('{done} / {total} folders · {count} Skills found', {
-                      done: scanProgress?.sourcesDone ?? 0,
-                      total: scanProgress?.sourcesTotal ?? 0,
-                      count: scanProgress?.skills ?? 0,
-                    })}
-                  </span>
-                  <button
-                    onClick={() => {
-                      scanCanceled.current = true
-                      scanPromise.current?.cancel()
-                    }}
-                  >
-                    {t('Cancel scan')}
-                  </button>
+            <section
+              className="library"
+              hidden={!!selected}
+              aria-label={t('Skills library')}
+            >
+              <div className="library-toolbar">
+                <div className="search">
+                  <Search size={14} />
+                  <input
+                    ref={search}
+                    aria-label={t('Search Skills')}
+                    placeholder={t('Search Skills')}
+                    value={query}
+                    onChange={(event) => setQuery(event.target.value)}
+                  />
+                  <kbd>⌘F</kbd>
                 </div>
-                <progress
-                  aria-label={t('Scan progress')}
-                  value={
-                    scanProgress?.phase === 'reading' &&
-                    scanProgress.sourcesTotal > 0
-                      ? scanProgress.sourcesDone
-                      : undefined
-                  }
-                  max={scanProgress?.sourcesTotal || 1}
+                <IconButton
+                  icon={RotateCw}
+                  label={t('Rescan folders')}
+                  onClick={() => {
+                    void refresh().catch(fail)
+                  }}
+                  disabled={scanning}
+                />
+                <IconButton
+                  icon={Plus}
+                  label={t('New Skill')}
+                  onClick={() => request(() => setCreating(true))}
+                  disabled={scanning || saving}
                 />
               </div>
-            )}
-            {!scanning && catalog?.needsScan && !!catalog.skills?.length && (
-              <p className="scan-hint">
-                {t('Scan once to reopen your saved Skills.')}
-              </p>
-            )}
-            <SkillsList
-              groups={skills}
-              agents={catalog?.agents ?? []}
-              selectedId={selected?.id}
-              verified={verified}
-              scanning={scanning}
-              onOpen={openGroup}
-              empty={
-                <div className="empty-library">
-                  <BookOpen size={30} strokeWidth={1.2} />
-                  <h2>
-                    {scanning
-                      ? t('Reading your Skills folders…')
-                      : query
-                        ? t('No Skills match your search')
-                        : t('Scan your Skills folders')}
-                  </h2>
-                  <p>
-                    {query
-                      ? t('Try a Skill name or a word from its description.')
-                      : t('Scanning only starts when you click Scan folders.')}
-                  </p>
-                  {!query && !scanning && (
+              <AgentTabs
+                agents={catalog?.agents ?? []}
+                groups={groups}
+                value={agentFilter}
+                onChange={changeAgent}
+              />
+              {scanning && (
+                <div className="scan-status" role="status" aria-live="polite">
+                  <div>
+                    <strong>{t('Reading Skills…')}</strong>
+                    <span>
+                      {t('{done} / {total} folders · {count} Skills found', {
+                        done: scanProgress?.sourcesDone ?? 0,
+                        total: scanProgress?.sourcesTotal ?? 0,
+                        count: scanProgress?.skills ?? 0,
+                      })}
+                    </span>
                     <button
-                      className="primary"
                       onClick={() => {
-                        void refresh().catch(fail)
+                        scanCanceled.current = true
+                        scanPromise.current?.cancel()
                       }}
                     >
-                      {t('Scan folders')}
+                      {t('Cancel scan')}
                     </button>
-                  )}
+                  </div>
+                  <progress
+                    aria-label={t('Scan progress')}
+                    value={
+                      scanProgress?.phase === 'reading' &&
+                      scanProgress.sourcesTotal > 0
+                        ? scanProgress.sourcesDone
+                        : undefined
+                    }
+                    max={scanProgress?.sourcesTotal || 1}
+                  />
                 </div>
-              }
-            />
-            <footer className="library-footer">
-              <span>
-                {scanning
-                  ? t('Scanning…')
-                  : t('{count} Skills', { count: skills.length })}
-              </span>
-              {!!catalog?.issues?.length && (
-                <button onClick={() => setSettings('folders')}>
-                  {t('Some paths need attention')}
-                </button>
               )}
-            </footer>
-          </section>
-          {selected && (
-            <Reader
-              skill={selected}
-              copies={selectedGroup?.members ?? [selected]}
-              versions={selectedGroup?.versions.length ?? 1}
-              onCopy={(copy) =>
-                request(() => {
-                  void load(copy)
-                })
-              }
-              translationVersion={translationVersion}
+              {!scanning && catalog?.needsScan && !!catalog.skills?.length && (
+                <p className="scan-hint">
+                  {t('Scan once to reopen your saved Skills.')}
+                </p>
+              )}
+              <SkillsList
+                groups={skills}
+                agents={catalog?.agents ?? []}
+                selectedId={selected?.id}
+                verified={verified}
+                scanning={scanning}
+                onOpen={openGroup}
+                empty={
+                  <div className="empty-library">
+                    <BookOpen size={30} strokeWidth={1.2} />
+                    <h2>
+                      {scanning
+                        ? t('Reading your Skills folders…')
+                        : query
+                          ? t('No Skills match your search')
+                          : t('Scan your Skills folders')}
+                    </h2>
+                    <p>
+                      {query
+                        ? t('Try a Skill name or a word from its description.')
+                        : t(
+                            'Scanning only starts when you click Scan folders.',
+                          )}
+                    </p>
+                    {!query && !scanning && (
+                      <button
+                        className="primary"
+                        onClick={() => {
+                          void refresh().catch(fail)
+                        }}
+                      >
+                        {t('Scan folders')}
+                      </button>
+                    )}
+                  </div>
+                }
+              />
+              <footer className="library-footer">
+                <span>
+                  {scanning
+                    ? t('Scanning…')
+                    : t('{count} Skills', { count: skills.length })}
+                </span>
+                {!!catalog?.issues?.length && (
+                  <button onClick={() => setSettings('folders')}>
+                    {t('Some paths need attention')}
+                  </button>
+                )}
+              </footer>
+            </section>
+            {selected && (
+              <Reader
+                skill={selected}
+                copies={selectedGroup?.members ?? [selected]}
+                versions={selectedGroup?.versions.length ?? 1}
+                onCopy={(copy) =>
+                  request(() => {
+                    void load(copy)
+                  })
+                }
+                translationVersion={translationVersion}
+                fontSize={readerLayout.fontSize}
+                explorerWidth={readerLayout.width}
+                onLayoutChange={(fontSize, width) => {
+                  setReaderLayout({ fontSize, width })
+                  void api.SetReaderLayout(fontSize, width).catch(fail)
+                }}
+                onConfigureTranslation={() => setSettings('translation')}
+                onNewResource={() =>
+                  request(() => setResourceAction({ kind: 'new' }))
+                }
+                onRenameResource={(resource) =>
+                  request(() => setResourceAction({ kind: 'rename', resource }))
+                }
+                onImportResource={() =>
+                  request(() => {
+                    void api
+                      .ChooseResource(selected.id)
+                      .then(async (path) => {
+                        if (path) {
+                          await refresh()
+                          await load(selected, path)
+                        }
+                      })
+                      .catch(fail)
+                  })
+                }
+                onTrashResource={(resource) =>
+                  request(() => setTrashing({ path: resource.path }))
+                }
+                onTrashSkill={() => request(() => setTrashing({ path: '' }))}
+                onRemoveLink={(copy, occurrence) =>
+                  request(() =>
+                    setTrashing({
+                      path: '',
+                      link: {
+                        skillId: copy.id,
+                        sourceId: occurrence.sourceId,
+                        path: occurrence.path,
+                      },
+                    }),
+                  )
+                }
+                document={document}
+                resources={resources}
+                draft={draft}
+                raw={raw}
+                loading={loading}
+                error={readError}
+                saving={saving}
+                onRaw={() => setRaw((value) => !value)}
+                onEdit={() => {
+                  if (document?.editable)
+                    setDraft({ base: document, text: document.text })
+                }}
+                onChange={(text) =>
+                  setDraft((previous) =>
+                    previous ? { ...previous, text } : null,
+                  )
+                }
+                onSave={() => {
+                  void save()
+                }}
+                onCancel={() => request(() => setDraft(null))}
+                onResource={openResource}
+                onLink={openLink}
+                onReveal={() => {
+                  void api.Reveal(selected.id, document?.path ?? '').catch(fail)
+                }}
+                onClose={closeReader}
+              />
+            )}
+          </div>
+          <section
+            className="plugins-view"
+            id="plugins-view"
+            role="tabpanel"
+            aria-labelledby="plugins-tab"
+            hidden={view !== 'plugins'}
+          >
+            <Plugins
+              ref={plugins}
+              active={view === 'plugins'}
               fontSize={readerLayout.fontSize}
               explorerWidth={readerLayout.width}
-              onLayoutChange={(fontSize, width) => {
-                setReaderLayout({ fontSize, width })
-                void api.SetReaderLayout(fontSize, width).catch(fail)
-              }}
-              onConfigureTranslation={() => setSettings('translation')}
-              onNewResource={() =>
-                request(() => setResourceAction({ kind: 'new' }))
-              }
-              onRenameResource={(resource) =>
-                request(() => setResourceAction({ kind: 'rename', resource }))
-              }
-              onImportResource={() =>
-                request(() => {
-                  void api
-                    .ChooseResource(selected.id)
-                    .then(async (path) => {
-                      if (path) {
-                        await refresh()
-                        await load(selected, path)
-                      }
-                    })
-                    .catch(fail)
-                })
-              }
-              onTrashResource={(resource) =>
-                request(() => setTrashing({ path: resource.path }))
-              }
-              onTrashSkill={() => request(() => setTrashing({ path: '' }))}
-              onRemoveLink={(copy, occurrence) =>
-                request(() =>
-                  setTrashing({
-                    path: '',
-                    link: {
-                      skillId: copy.id,
-                      sourceId: occurrence.sourceId,
-                      path: occurrence.path,
-                    },
-                  }),
-                )
-              }
-              document={document}
-              resources={resources}
-              draft={draft}
-              raw={raw}
-              loading={loading}
-              error={readError}
-              saving={saving}
-              onRaw={() => setRaw((value) => !value)}
-              onEdit={() => {
-                if (document?.editable)
-                  setDraft({ base: document, text: document.text })
-              }}
-              onChange={(text) =>
-                setDraft((previous) =>
-                  previous ? { ...previous, text } : null,
-                )
-              }
-              onSave={() => {
-                void save()
-              }}
-              onCancel={() => request(() => setDraft(null))}
-              onResource={openResource}
-              onLink={openLink}
-              onReveal={() => {
-                void api.Reveal(selected.id, document?.path ?? '').catch(fail)
-              }}
-              onClose={closeReader}
             />
-          )}
+          </section>
         </main>
       </div>
       {notice && (

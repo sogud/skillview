@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -21,6 +22,7 @@ type Native struct {
 	Application    func() *application.App
 	Window         func() *application.WebviewWindow
 	KnownSources   func() []library.Source
+	PluginHomes    func() library.PluginHomes
 	UpdateLanguage func(string)
 	Updates        func() *updates.Manager
 }
@@ -155,7 +157,23 @@ func (s *Service) CopyTranslation(id, path string, result translation.Result) er
 	}
 	return nil
 }
-func (s *Service) CachedCatalog() (library.Catalog, error)         { return s.library.CachedCatalog() }
+func (s *Service) CachedCatalog() (library.Catalog, error) { return s.library.CachedCatalog() }
+func (s *Service) Plugins() (library.PluginCatalog, error) {
+	if s.native.PluginHomes != nil {
+		return s.library.DiscoverPlugins(s.native.PluginHomes()), nil
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return library.PluginCatalog{}, err
+	}
+	return s.library.DiscoverPlugins(library.DefaultPluginHomes(home)), nil
+}
+func (s *Service) PluginResources(id string) ([]library.Resource, error) {
+	return s.library.PluginResources(id)
+}
+func (s *Service) ReadPlugin(id, path string) (library.Document, error) {
+	return s.library.ReadPlugin(id, path)
+}
 func (s *Service) ClearCache() error                               { return s.translator.ClearCache() }
 func (s *Service) Read(id, path string) (library.Document, error)  { return s.library.Read(id, path) }
 func (s *Service) Resources(id string) ([]library.Resource, error) { return s.library.Resources(id) }

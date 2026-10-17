@@ -33,6 +33,10 @@ func (l *Library) Resources(id string) ([]Resource, error) {
 		}
 		return []Resource{{Path: ref.fileName, Kind: "markdown", Size: info.Size()}}, nil
 	}
+	return directoryResources(directory, false)
+}
+
+func directoryResources(directory *os.File, skipGenerated bool) ([]Resource, error) {
 	resources := []Resource{}
 	var walk func(*os.File, string, int) error
 	walk = func(parent *os.File, prefix string, depth int) error {
@@ -44,7 +48,7 @@ func (l *Library) Resources(id string) ([]Resource, error) {
 			return err
 		}
 		for _, entry := range entries {
-			if entry.Name() == ".git" {
+			if entry.Name() == ".git" || (skipGenerated && entry.IsDir() && skipDiscoveryDirectory(entry.Name())) {
 				continue
 			}
 			path := filepath.Join(prefix, entry.Name())

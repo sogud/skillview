@@ -27,15 +27,17 @@ export function FileTree({
   onTrash,
   onNew,
   onImport,
+  label,
 }: {
   resources: Resource[]
   path: string
   editable: boolean
   onOpen: (path: string) => void
-  onRename: (resource: Resource) => void
-  onTrash: (resource: Resource) => void
-  onNew: () => void
-  onImport: () => void
+  onRename?: (resource: Resource) => void
+  onTrash?: (resource: Resource) => void
+  onNew?: () => void
+  onImport?: () => void
+  label?: string
 }) {
   const { t } = useLocale()
   const nodes = useMemo(() => buildFileTree(resources), [resources])
@@ -71,16 +73,20 @@ export function FileTree({
         <div className="explorer-tools">
           {editable && (
             <>
-              <IconButton
-                icon={Plus}
-                label={t('New resource')}
-                onClick={onNew}
-              />
-              <IconButton
-                icon={Upload}
-                label={t('Import resource')}
-                onClick={onImport}
-              />
+              {onNew && (
+                <IconButton
+                  icon={Plus}
+                  label={t('New resource')}
+                  onClick={onNew}
+                />
+              )}
+              {onImport && (
+                <IconButton
+                  icon={Upload}
+                  label={t('Import resource')}
+                  onClick={onImport}
+                />
+              )}
             </>
           )}
           <IconButton
@@ -97,7 +103,7 @@ export function FileTree({
         ref={tree}
         className="file-tree"
         role="tree"
-        aria-label={t('Skill files')}
+        aria-label={label ?? t('Skill files')}
       >
         {rows.map(({ node, depth }, index) => {
           const resource = node.resource
@@ -189,22 +195,24 @@ export function FileTree({
               </button>
               {editable && resource && resource.path !== 'SKILL.md' && (
                 <div className="tree-actions">
-                  {!linked && (
+                  {!linked && onRename && (
                     <IconButton
                       icon={FilePenLine}
                       label={t('Rename {name}', { name: resource.path })}
                       onClick={() => onRename(resource)}
                     />
                   )}
-                  <IconButton
-                    icon={Trash2}
-                    label={
-                      linked
-                        ? t('Remove link ({path})', { path: resource.path })
-                        : t('Move {name} to Trash', { name: resource.path })
-                    }
-                    onClick={() => onTrash(resource)}
-                  />
+                  {onTrash && (
+                    <IconButton
+                      icon={Trash2}
+                      label={
+                        linked
+                          ? t('Remove link ({path})', { path: resource.path })
+                          : t('Move {name} to Trash', { name: resource.path })
+                      }
+                      onClick={() => onTrash(resource)}
+                    />
+                  )}
                 </div>
               )}
             </div>

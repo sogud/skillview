@@ -20,6 +20,7 @@ type Library struct {
 	prefs      Preferences
 	catalog    Catalog
 	refs       map[string]fileRef
+	plugins    map[string]Source
 	discovery  DiscoveryReport
 	cache      *cache.Store
 	watchPaths map[string]bool
