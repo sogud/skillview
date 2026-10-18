@@ -15,16 +15,18 @@ import (
 )
 
 type Library struct {
-	mu         sync.Mutex
-	dataDir    string
-	prefs      Preferences
-	catalog    Catalog
-	refs       map[string]fileRef
-	plugins    map[string]Source
-	discovery  DiscoveryReport
-	cache      *cache.Store
-	watchPaths map[string]bool
-	trash      func(string) (string, error)
+	mu           sync.Mutex
+	dataDir      string
+	prefs        Preferences
+	catalog      Catalog
+	refs         map[string]fileRef
+	plugins      map[string]Source
+	discovery    DiscoveryReport
+	cache        *cache.Store
+	watchPaths   map[string]bool
+	trash        func(string) (string, error)
+	archiveDir   string
+	archiveMover func(string, string) error
 }
 
 type fileRef struct {

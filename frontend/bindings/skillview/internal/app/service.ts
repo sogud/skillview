@@ -15,6 +15,14 @@ import * as translation$0 from "../translation/models.js";
 // @ts-ignore: Unused imports
 import * as updates$0 from "../updates/models.js";
 
+export function ArchiveSkill(id: string, token: string): $CancellablePromise<library$0.ArchiveEntry> {
+    return $Call.ByID(807154857, id, token);
+}
+
+export function ArchivedSkills(): $CancellablePromise<library$0.ArchiveCatalog> {
+    return $Call.ByID(18899498);
+}
+
 export function CachedCatalog(): $CancellablePromise<library$0.Catalog> {
     return $Call.ByID(1877209423);
 }
@@ -61,6 +69,10 @@ export function ExportTranslation(id: string, path: string, result: translation$
 
 export function OpenLink(raw: string): $CancellablePromise<void> {
     return $Call.ByID(1382672430, raw);
+}
+
+export function PlanArchive(id: string): $CancellablePromise<library$0.ArchivePreview> {
+    return $Call.ByID(1303095981, id);
 }
 
 export function PlanLinkTrash(id: string, sourceID: string, path: string): $CancellablePromise<library$0.TrashPreview> {
@@ -122,8 +134,16 @@ export function RestartUpdate(): $CancellablePromise<void> {
     return $Call.ByID(2386701256);
 }
 
+export function RestoreArchivedSkill(id: string): $CancellablePromise<void> {
+    return $Call.ByID(4034584907, id);
+}
+
 export function Reveal(id: string, path: string): $CancellablePromise<void> {
     return $Call.ByID(1969797355, id, path);
+}
+
+export function RevealArchive(): $CancellablePromise<void> {
+    return $Call.ByID(828140307);
 }
 
 export function RevealUpdateLog(): $CancellablePromise<void> {

@@ -8,7 +8,7 @@ The screenshot uses synthetic documents and isolated settings. Visit the [websit
 
 ## Download
 
-Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). Version `0.1.1` adds installed plugin browsing; the first regular release was `0.1.0`. The app is ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
+Download the Apple Silicon ZIP from [GitHub Releases](https://github.com/sogud/skillview/releases). Version `0.1.2` adds reversible Skill archiving; the first regular release was `0.1.0`. The app is ad-hoc signed and not notarized by Apple. macOS may block a downloaded app; see [Apple's app-opening guidance](https://support.apple.com/en-us/102445). Only open a build you trust. The project does not disable Gatekeeper or remove quarantine attributes.
 
 The bundle declares macOS 13 or newer, but the minimum OS has not been accepted on a real macOS 13 device. Intel builds are not provided. See [release readiness](RELEASE_READINESS.md) for the remaining checks.
 
@@ -17,6 +17,7 @@ The bundle declares macOS 13 or newer, but the minimum OS has not been accepted 
 - Click Scan to read known global skill/plugin directories across 83 Agent definitions (including all 79 in the reviewed Vercel Skills CLI registry), plus folders you explicitly add. Home and connected drives are not searched. Startup opens the saved catalog without a background scan. Manual scanning shows folder counts and can be canceled; inaccessible paths and scan limits are reported.
 - Agent tabs wrap into rows and show installed local applications or executables by default. Configuration folders alone do not count as an installation.
 - One list entry per Skill name, with overlapping platform logos and a platform count. Different contents remain available as versions and independent copies in the reader.
+- Archive a writable Skill copy for later instead of moving it to Trash. Entire folders and their recovery records stay in `~/.agents/.skillview-archive/`, outside the shared `skills/` directory. Restore from **Archived Skills** in the list toolbar; existing destinations are never replaced. See [archiving](docs/archive.md).
 - Switch between **Skills** and **Plugins** at the top. Browse installed Claude Code and Codex plugins by name, version and Agent, then read their complete file tree. Plugin files are read-only; scripts, commands and hooks are never executed. See [plugin browsing](docs/plugins.md) for discovery details.
 - A compact file tree beside the document shows `SKILL.md`, references, scripts and assets. Click a file to read or edit it; folders expand with the mouse or arrow keys. Back to Skills has its own navigation row. Tree visibility controls stay in the file workspace, and keyboard focus follows the current file when the tree is restored. Search, revision checks, collision-safe creation, resource import and rename, macOS Trash and persisted restore records remain available.
 - Adjust the file tree with its draggable edge or arrow keys; double-click to reset its width. Reading size (12–20 px) is adjustable in the footer. Both preferences survive restart. Narrow windows reserve more room for prose, and wide tables scroll inside the document.
@@ -43,9 +44,9 @@ bash script/build.sh
 bash script/package.sh
 ```
 
-Tools, caches and acceptance fixtures stay under `.artifacts`; builds and packages stay under `bin`. No development server is needed to launch the production `.app`. Save drafts before rebuilding. The bootstrap downloads Go only when missing and checks its official SHA-256.
+Reinstallable tools stay under `runtime/`; temporary caches and fixtures use `tmp/`. Set `SKILLVIEW_TMP_DIR` to an absolute path to use a separate temporary directory. Builds and packages stay under `bin`. No development server is needed to launch the production `.app`. Save drafts before rebuilding. The bootstrap downloads Go only when missing and checks its official SHA-256.
 
-For an isolated acceptance build, set `SKILLVIEW_APP_BUNDLE` to a new absolute `.app` path under `.artifacts`. `script/package.sh` uses the same bundle path; `SKILLVIEW_RELEASE_DIR` selects a separate package directory.
+For an isolated acceptance build, set `SKILLVIEW_APP_BUNDLE` to a new absolute `.app` path under your temporary directory. `script/package.sh` uses the same bundle path; `SKILLVIEW_RELEASE_DIR` selects a separate package directory.
 
 The [macOS build workflow](.github/workflows/preview.yml) reuses these build/package scripts on pushes, pull requests and manual dispatch. It tests file operations and translation, checks known runtime dependency vulnerabilities, and uploads packages with their source commit and build environment. Downloaded package sets can be checked from their own directory with `shasum -a 256 -c <package>.sha256`.
 

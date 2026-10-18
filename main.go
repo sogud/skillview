@@ -52,6 +52,11 @@ func main() {
 		log.Fatal(err)
 	}
 	if fixtureRoot != "" {
+		archiveRoot, archiveErr := filepath.Abs(filepath.Join(dataDir, "archive"))
+		if archiveErr != nil {
+			log.Fatal(archiveErr)
+		}
+		lib.SetArchiveDirectory(archiveRoot)
 		if _, err := lib.AddSource(fixtureRoot, os.Getenv("SKILLVIEW_FIXTURE_EDIT") == "1"); err != nil {
 			log.Fatal(err)
 		}

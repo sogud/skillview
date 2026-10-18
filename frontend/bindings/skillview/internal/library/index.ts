@@ -3,6 +3,9 @@
 
 export type {
     AgentInfo,
+    ArchiveCatalog,
+    ArchiveEntry,
+    ArchivePreview,
     Catalog,
     DiscoveryReport,
     Document,

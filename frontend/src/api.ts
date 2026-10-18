@@ -3,6 +3,9 @@ export type { Status as UpdateInfo } from '../bindings/skillview/internal/update
 export type {
   Catalog,
   AgentInfo,
+  ArchiveCatalog,
+  ArchiveEntry,
+  ArchivePreview,
   TrashPreview,
   TrashReceipt,
   Document,

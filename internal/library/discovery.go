@@ -148,6 +148,9 @@ func (l *Library) RefreshSources(candidates []Source) error {
 }
 
 func skipDiscoveryDirectory(name string) bool {
+	if name == ".skillview-archive" || strings.HasPrefix(name, ".skillview-archiving-") {
+		return true
+	}
 	switch name {
 	case ".git", "node_modules", ".artifacts", ".Trash", ".Trashes", ".Spotlight-V100", ".fseventsd", ".npm", ".cache", ".venv", "venv", "__pycache__", ".build", "DerivedData":
 		return true

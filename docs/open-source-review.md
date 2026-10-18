@@ -54,6 +54,14 @@ Plugin discovery reads Claude Code installation records and Codex configuration/
 
 The new TOML parser is pinned to `github.com/pelletier/go-toml/v2` v2.4.3 under MIT; its license is included in regenerated notices. Focused race-enabled plugin/resource, manual-scan and updater tests, frontend checks and the local production build pass. Existing synthetic native/browser acceptance is documented in [verification](verification.md). Fresh CI dependency checks and inspection of the exact release ZIP remain required before publishing. This review does not establish project-specific plugin enablement or the Agent's exact active cached version; see [plugin browsing](plugins.md).
 
+## 0.1.2 Skill archive review
+
+Reviewed on 2026-10-18. The selected public source and complete thirteen-commit pre-release history passed Gitleaks without findings. Manual checks covered private paths, local context, private-network addresses, historical filenames and commit metadata. No disclosure blocker was found. The existing GitHub noreply author identity is retained. Synthetic fixtures, screenshots, recovery records, toolchains and the private update key remain excluded.
+
+Archiving moves only an explicitly writable original Skill, retains a per-item recovery record and refuses stale previews, linked roots and occupied restore destinations. Interrupted and cross-volume moves are tested with disposable folders. No new runtime dependency is introduced; the macOS Foundation framework handles cross-volume metadata. Build tools now live in ignored `runtime/`, while temporary output is configurable with `SKILLVIEW_TMP_DIR`.
+
+Focused race-enabled checks, generated bindings, the production frontend/native build and strict ad-hoc signature verification pass. The remaining native pointer acceptance and distribution limits are recorded in [verification](verification.md). CI dependency checks and inspection of the exact downloadable ZIP must pass before publication.
+
 ## Coverage limits
 
 This is a source-disclosure and license review, not a guarantee that the app has no vulnerabilities. Secret scanning can miss unknown formats. Live API accounts, real Keychain behavior, development/native dependency advisories, older macOS hardware, Intel builds and Apple notarization are not covered. Preview packages are explicitly labeled ad-hoc signed and unnotarized. See [security](../SECURITY.md), [verification](verification.md) and [release readiness](../RELEASE_READINESS.md).

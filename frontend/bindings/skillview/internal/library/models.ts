@@ -11,6 +11,32 @@ export interface AgentInfo {
     "sharedSkills": boolean;
 }
 
+export interface ArchiveCatalog {
+    "directory": string;
+    "entries": ArchiveEntry[] | null;
+    "issues": string[] | null;
+}
+
+export interface ArchiveEntry {
+    "id": string;
+    "name": string;
+    "originalPath": string;
+    "archivedPath": string;
+    "archivedAt": string;
+    "canRestore": boolean;
+    "warning": string;
+}
+
+export interface ArchivePreview {
+    "path": string;
+    "count": number;
+    "token": string;
+    "links": string[] | null;
+    "link": boolean;
+    "linkTarget": string;
+    "directory": string;
+}
+
 export interface Catalog {
     "skills": Skill[] | null;
     "sources": Source[] | null;

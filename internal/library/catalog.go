@@ -19,14 +19,15 @@ import (
 const maxTextBytes = 2 * 1024 * 1024
 
 type scanState struct {
-	library     *Library
-	catalog     Catalog
-	refs        map[string]fileRef
-	positions   map[string]int
-	directories int
-	context     context.Context
-	progress    []func(ScanProgress)
-	sourcesDone int
+	library          *Library
+	catalog          Catalog
+	refs             map[string]fileRef
+	positions        map[string]int
+	directories      int
+	context          context.Context
+	progress         []func(ScanProgress)
+	sourcesDone      int
+	archiveDirectory string
 }
 
 func (l *Library) Scan(ctx context.Context, progress ...func(ScanProgress)) (Catalog, error) {
@@ -34,6 +35,7 @@ func (l *Library) Scan(ctx context.Context, progress ...func(ScanProgress)) (Cat
 	defer l.mu.Unlock()
 	l.watchPaths = map[string]bool{}
 	state := scanState{library: l, catalog: Catalog{Skills: []Skill{}, Sources: []Source{}, Issues: []Issue{}, ScannedAt: time.Now().UTC().Format(time.RFC3339)}, refs: map[string]fileRef{}, positions: map[string]int{}, context: ctx}
+	state.archiveDirectory, _ = l.archiveDirectory()
 	state.catalog.Discovery = l.discovery
 	state.progress = progress
 	state.report()
@@ -101,6 +103,11 @@ func (s *scanState) issue(sourceID, path, target, message string) {
 }
 
 func (s *scanState) walk(directory *os.File, source Source, entrySource Source, relative, entryPath string, linked bool, ancestors map[string]bool, depth int) {
+	if s.archiveDirectory != "" {
+		if _, inside := within(s.archiveDirectory, filepath.Join(source.ResolvedPath, relative)); inside {
+			return
+		}
+	}
 	if s.context.Err() != nil {
 		return
 	}
@@ -184,7 +191,7 @@ func (s *scanState) walk(directory *os.File, source Source, entrySource Source, 
 			return
 		}
 		name := entry.Name()
-		if name == ".git" || name == "node_modules" || name == ".artifacts" {
+		if name == ".git" || name == "node_modules" || name == ".artifacts" || name == ".skillview-archive" || strings.HasPrefix(name, ".skillview-archiving-") {
 			continue
 		}
 		childPath := filepath.Join(entryPath, name)

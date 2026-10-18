@@ -9,6 +9,7 @@ import {
   RotateCw,
   X,
   Download,
+  ArchiveRestore,
 } from 'lucide-react'
 import * as api from './api'
 import type {
@@ -20,6 +21,7 @@ import type {
   ScanProgress,
 } from './api'
 import { Plugins, type PluginsHandle } from './Plugins'
+import { ArchiveSkillDialog, ArchivedSkillsDialog } from './ArchiveDialogs'
 import { UpdateDialog } from './UpdateDialog'
 import { IconButton, Modal } from './components'
 import {
@@ -71,6 +73,8 @@ export default function App() {
     link?: { skillId: string; sourceId: string; path: string }
   } | null>(null)
   const [lastTrash, setLastTrash] = useState<string | null>(null)
+  const [archiving, setArchiving] = useState(false)
+  const [archivesOpen, setArchivesOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
   const [conflict, setConflict] = useState<Document | null>(null)
@@ -452,7 +456,9 @@ export default function App() {
           !conflict &&
           !pendingAction &&
           !resourceAction &&
-          !trashing
+          !trashing &&
+          !archiving &&
+          !archivesOpen
         )
           view === 'plugins' ? plugins.current?.command('back') : closeReader()
       }}
@@ -555,6 +561,12 @@ export default function App() {
                   onClick={() => request(() => setCreating(true))}
                   disabled={scanning || saving}
                 />
+                <IconButton
+                  icon={ArchiveRestore}
+                  label={t('Archived Skills')}
+                  onClick={() => request(() => setArchivesOpen(true))}
+                  disabled={scanning || saving}
+                />
               </div>
               <AgentTabs
                 agents={catalog?.agents ?? []}
@@ -614,14 +626,16 @@ export default function App() {
                         ? t('Reading your Skills folders…')
                         : query
                           ? t('No Skills match your search')
-                          : t('Scan your Skills folders')}
+                          : verified
+                            ? t('No active Skills in this view')
+                            : t('Scan your Skills folders')}
                     </h2>
                     <p>
                       {query
                         ? t('Try a Skill name or a word from its description.')
-                        : t(
-                            'Scanning only starts when you click Scan folders.',
-                          )}
+                        : verified
+                          ? t('Scan folders or restore a Skill from the archive.')
+                          : t('Scanning only starts when you click Scan folders.')}
                     </p>
                     {!query && !scanning && (
                       <button
@@ -631,6 +645,11 @@ export default function App() {
                         }}
                       >
                         {t('Scan folders')}
+                      </button>
+                    )}
+                    {!query && !scanning && verified && (
+                      <button onClick={() => request(() => setArchivesOpen(true))}>
+                        {t('Archived Skills')}
                       </button>
                     )}
                   </div>
@@ -690,6 +709,7 @@ export default function App() {
                   request(() => setTrashing({ path: resource.path }))
                 }
                 onTrashSkill={() => request(() => setTrashing({ path: '' }))}
+                onArchiveSkill={() => request(() => setArchiving(true))}
                 onRemoveLink={(copy, occurrence) =>
                   request(() =>
                     setTrashing({
@@ -861,6 +881,33 @@ export default function App() {
             setResourceAction(null)
             await refresh()
             await load(selected, path)
+          }}
+        />
+      )}
+      {archiving && selected && (
+        <ArchiveSkillDialog
+          skillId={selected.id}
+          onClose={() => setArchiving(false)}
+          onArchive={async (token) => {
+            const receipt = await api.ArchiveSkill(selected.id, token)
+            setArchiving(false)
+            readSequence.current++
+            setSelected(null)
+            setDocument(null)
+            setDraft(null)
+            await refresh()
+            notify(
+              receipt.warning ? message(receipt.warning) : t('Skill archived.'),
+              !!receipt.warning,
+            )
+          }}
+        />
+      )}
+      {archivesOpen && (
+        <ArchivedSkillsDialog
+          onClose={() => setArchivesOpen(false)}
+          onRestored={async () => {
+            await refresh()
           }}
         />
       )}

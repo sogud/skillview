@@ -13,6 +13,7 @@ import {
   AlertCircle,
   Languages,
   Trash2,
+  Archive,
   Copy,
   Download,
   PanelLeftClose,
@@ -70,6 +71,7 @@ type ReaderProps = {
   onRenameResource: (resource: Resource) => void
   onTrashResource: (resource: Resource) => void
   onTrashSkill: () => void
+  onArchiveSkill: () => void
   onRemoveLink: (copy: Skill, occurrence: Occurrence) => void
   skill: Skill
   copies: Skill[]
@@ -513,6 +515,18 @@ export function Reader(props: ReaderProps) {
                     setTranslated(false)
                     props.onEdit()
                   }}
+                />
+              )}
+              {!draft && (
+                <IconButton
+                  icon={Archive}
+                  label={t(
+                    skill.editable
+                      ? 'Archive Skill'
+                      : 'Archive Skill (allow editing for the original folder first)',
+                  )}
+                  disabled={!skill.editable}
+                  onClick={props.onArchiveSkill}
                 />
               )}
               {skill.editable && !draft && (

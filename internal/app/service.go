@@ -324,6 +324,26 @@ func (s *Service) ChooseResource(id string) (string, error) {
 
 func (s *Service) UndoTrash(id string) error { return s.library.UndoTrash(id) }
 
+func (s *Service) PlanArchive(id string) (library.ArchivePreview, error) {
+	return s.library.PlanArchive(id)
+}
+func (s *Service) ArchiveSkill(id, token string) (library.ArchiveEntry, error) {
+	return s.library.ArchiveSkill(id, token)
+}
+func (s *Service) ArchivedSkills() (library.ArchiveCatalog, error) {
+	return s.library.ArchivedSkills()
+}
+func (s *Service) RestoreArchivedSkill(id string) error {
+	return s.library.RestoreArchivedSkill(id)
+}
+func (s *Service) RevealArchive() error {
+	catalog, err := s.library.ArchivedSkills()
+	if err != nil {
+		return err
+	}
+	return exec.Command("open", catalog.Directory).Run()
+}
+
 func (s *Service) ResourceReferences(id, path string) ([]string, error) {
 	return s.library.ResourceReferences(id, path)
 }

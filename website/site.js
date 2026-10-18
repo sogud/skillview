@@ -8,7 +8,7 @@ const copy = {
       'Find what you have. Read it comfortably. Keep your Agent Skills close, wherever they live.',
     download: 'Download for macOS ↓',
     source: 'Explore the source ↗',
-    requirements: 'Free & open source · Apple Silicon · Version 0.1.1',
+    requirements: 'Free & open source · Apple Silicon · Version 0.1.2',
     caption: 'A real SkillView interface with example content.',
     preview:
       'SkillView with a file tree on the left and a readable Skill document on the right.',
@@ -24,7 +24,7 @@ const copy = {
     localEyebrow: 'Your files stay yours',
     localTitle: 'Local by default.',
     localBody:
-      'Scan when you choose. Original files stay in their folders. Choose which folders can be edited. Translation sends only the document you select to the service you choose.',
+      'Scan when you choose. Archive unused Skills and restore them later. Choose which folders can be edited. Translation sends only the document you select to the service you choose.',
     startTitle: 'A quieter way to explore your Skills.',
     startBody: 'Download the app, move it to Applications, then click Scan.',
     installNote:
@@ -43,7 +43,7 @@ const copy = {
       '找到已安装的技能，舒服地阅读。无论它们属于哪个 Agent，都能在这里查看。',
     download: '下载 macOS 版 ↓',
     source: '查看源代码 ↗',
-    requirements: '免费开源 · Apple Silicon · 版本 0.1.1',
+    requirements: '免费开源 · Apple Silicon · 版本 0.1.2',
     caption: 'SkillView 实际界面，使用示例内容。',
     preview: 'SkillView 左侧为文件树，右侧为技能文档阅读区。',
     findTitle: '多个 Agent，一个技能库。',
@@ -58,7 +58,7 @@ const copy = {
     localEyebrow: '文件由你管理',
     localTitle: '从本机开始。',
     localBody:
-      '点击才扫描，原始文件留在原有目录。由你选择哪些目录允许编辑。翻译时，仅将选中的文档发送到你选择的服务。',
+      '点击才扫描，暂时不用的技能可以归档，随时恢复。由你选择哪些目录允许编辑。翻译时，仅将选中的文档发送到你选择的服务。',
     startTitle: '换一种轻松的方式，阅读你的技能。',
     startBody: '下载后移入“应用程序”，打开并点击“扫描”。',
     installNote:

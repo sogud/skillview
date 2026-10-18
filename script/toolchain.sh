@@ -2,11 +2,17 @@
 set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-TOOLS_DIR="$PROJECT_DIR/.artifacts/toolchain"
-export GOPATH="$PROJECT_DIR/.artifacts/go"
-export GOCACHE="$PROJECT_DIR/.artifacts/go-cache"
+TOOLS_DIR="$PROJECT_DIR/runtime/toolchain"
+export SKILLVIEW_TMP_DIR="${SKILLVIEW_TMP_DIR:-$PROJECT_DIR/tmp}"
+export GOPATH="$PROJECT_DIR/runtime/go"
+export GOCACHE="$SKILLVIEW_TMP_DIR/go-cache"
 export GOBIN="$TOOLS_DIR/bin"
 export PATH="$TOOLS_DIR/go/bin:$GOBIN:$PATH"
+# Keep downloaded Go sources outside the application module during recursive checks.
+mkdir -p "$PROJECT_DIR/runtime"
+if [[ ! -f "$PROJECT_DIR/runtime/go.mod" ]]; then
+  printf "module skillview-runtime\n" > "$PROJECT_DIR/runtime/go.mod"
+fi
 export MACOSX_DEPLOYMENT_TARGET=13.0
 export CGO_CFLAGS="-mmacosx-version-min=13.0 ${CGO_CFLAGS:-}"
 export CGO_LDFLAGS="-mmacosx-version-min=13.0 ${CGO_LDFLAGS:-}"

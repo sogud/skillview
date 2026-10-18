@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
-cd "$(dirname "${BASH_SOURCE[0]}")/.."
+source "$(dirname "${BASH_SOURCE[0]}")/toolchain.sh"
+cd "$PROJECT_DIR"
 if [[ "${1:-}" != "--skip-build" ]]; then bash script/build.sh; fi
 APP_BUNDLE="${SKILLVIEW_APP_BUNDLE:-$PWD/bin/SkillView.app}"
 RELEASE_DIR="${SKILLVIEW_RELEASE_DIR:-$PWD/bin/releases}"
@@ -10,7 +11,8 @@ PACKAGE="SkillView-$VERSION-macos-$ARCH"
 mkdir -p "$RELEASE_DIR"
 plutil -lint "$APP_BUNDLE/Contents/Info.plist"
 codesign --verify --strict --verbose=2 "$APP_BUNDLE"
-STAGING=$(mktemp -d "$PWD/.artifacts/package.XXXXXX")
+mkdir -p "$SKILLVIEW_TMP_DIR"
+STAGING=$(mktemp -d "$SKILLVIEW_TMP_DIR/package.XXXXXX")
 trap 'rm -rf "$STAGING"' EXIT
 ditto "$APP_BUNDLE" "$STAGING/SkillView.app"
 ditto -c -k --keepParent --norsrc --noextattr "$STAGING/SkillView.app" "$RELEASE_DIR/$PACKAGE.zip"

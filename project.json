@@ -4,5 +4,5 @@
   "description": "SkillView: a local macOS app for reading, browsing, and safely editing Agent Skills.",
   "skills": { "installed": [], "shared": [] },
   "repositories": [],
-  "paths": { "knowledge": "docs", "artifacts": ".artifacts" }
+  "paths": { "knowledge": "docs", "runtime": "runtime", "tmp": "tmp" }
 }

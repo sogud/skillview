@@ -423,6 +423,9 @@ kbd {
   line-height: 1.6;
   margin-bottom: 18px;
 }
+.empty-library > button + button {
+  margin-left: 8px;
+}
 .reader {
   flex: 1;
   min-width: 0;
@@ -500,6 +503,62 @@ kbd {
 .plugin-issues {
   padding: 0 20px;
   font-size: 12px;
+}
+.archive-location {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.archive-location > div {
+  flex: 1;
+  min-width: 0;
+}
+.archive-location p {
+  margin: 0 0 8px;
+}
+.archive-list {
+  padding: 0;
+  margin: 16px 0;
+  list-style: none;
+}
+.archive-list > li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 0;
+}
+.archive-list > li > svg {
+  color: var(--secondary);
+  margin-top: 3px;
+  flex-shrink: 0;
+}
+.archive-details {
+  flex: 1;
+  min-width: 0;
+}
+.archive-details strong {
+  display: block;
+  font-size: 13px;
+  overflow-wrap: anywhere;
+}
+.archive-details small,
+.archive-details > span {
+  display: block;
+  font-size: 11px;
+  color: var(--secondary);
+  margin-top: 5px;
+}
+.archive-restore {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.archive-empty {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--secondary);
 }
 .plugin-list {
   flex: 1;

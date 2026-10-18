@@ -33,7 +33,7 @@ for LANGUAGE_DIR in build/*.lproj; do
   cp "$LANGUAGE_DIR/InfoPlist.strings" "$APP_BUNDLE/Contents/Resources/$(basename "$LANGUAGE_DIR")/InfoPlist.strings"
 done
 bash script/icon.sh
-cp .artifacts/AppIcon.icns "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
+cp "$SKILLVIEW_TMP_DIR/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"
 if [[ -f THIRD_PARTY_NOTICES.md ]]; then cp THIRD_PARTY_NOTICES.md "$APP_BUNDLE/Contents/Resources/ThirdPartyNotices.txt"; fi
 if [[ -n "${SIGNING_IDENTITY:-}" ]]; then
   codesign --force --options runtime --timestamp --sign "$SIGNING_IDENTITY" "$APP_BUNDLE"
