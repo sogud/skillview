@@ -225,6 +225,24 @@ func TestSharedWriterBusyAndMalformedSettings(t *testing.T) {
 	}
 }
 
+func TestSharedPreferencesRemovalRevokesEditing(t *testing.T) {
+	l, _ := managedFixture(t)
+	if err := os.Remove(filepath.Join(l.dataDir, "preferences.json")); err != nil {
+		t.Fatal(err)
+	}
+	prefs := l.Settings()
+	if len(prefs.Sources) != 0 || prefs.ReaderFontSize != 14 || prefs.ExplorerWidth != 244 {
+		t.Fatalf("removed preferences retained editing access or lost defaults: %+v", prefs)
+	}
+	if err := os.WriteFile(filepath.Join(l.dataDir, "preferences.json"), []byte(`{"theme":"dark"}`), 0600); err != nil {
+		t.Fatal(err)
+	}
+	prefs = l.Settings()
+	if prefs.Theme != "dark" || prefs.ReaderFontSize != 14 || prefs.ExplorerWidth != 244 {
+		t.Fatalf("external preferences lost defaults: %+v", prefs)
+	}
+}
+
 func TestBackupPreservesResourcesAndLinks(t *testing.T) {
 	l, home := managedFixture(t)
 	p, _ := FindPlatform(home, "agents")

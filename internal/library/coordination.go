@@ -31,6 +31,9 @@ func (l *Library) beginWrite() (func(), error) {
 func (l *Library) reloadPreferences() error {
 	data, err := os.ReadFile(filepath.Join(l.dataDir, "preferences.json"))
 	if errors.Is(err, os.ErrNotExist) {
+		if _, directoryErr := os.Stat(l.dataDir); directoryErr != nil {
+			return directoryErr
+		}
 		if l.preferencesRevision != digest(nil) {
 			l.prefs = Preferences{Theme: "system", Language: "system", ReaderFontSize: 14, ExplorerWidth: 244, ExcludedSources: map[string]bool{}}
 			l.preferencesRevision = digest(nil)
@@ -44,7 +47,7 @@ func (l *Library) reloadPreferences() error {
 	if digest(data) == l.preferencesRevision {
 		return nil
 	}
-	var prefs Preferences
+	prefs := Preferences{Theme: "system", Language: "system", ReaderFontSize: 14, ExplorerWidth: 244}
 	if err = json.Unmarshal(data, &prefs); err != nil {
 		return fmt.Errorf("Preferences changed and could not be read. Keep the file for recovery.")
 	}
