@@ -77,6 +77,9 @@ func (l *Library) archiveDirectory() (string, error) {
 func (l *Library) PlanArchive(id string) (ArchivePreview, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if err := l.reloadPreferences(); err != nil {
+		return ArchivePreview{}, err
+	}
 	return l.planArchive(id)
 }
 
@@ -149,6 +152,11 @@ func (l *Library) moveArchiveItem(source *os.File, name, sourcePath string, targ
 func (l *Library) ArchiveSkill(id, token string) (ArchiveEntry, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return ArchiveEntry{}, err
+	}
+	defer release()
 	preview, err := l.planArchive(id)
 	if err != nil {
 		return ArchiveEntry{}, err
@@ -356,6 +364,11 @@ func (l *Library) ArchivedSkills() (ArchiveCatalog, error) {
 func (l *Library) RestoreArchivedSkill(id string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	directory, err := l.archiveDirectory()
 	if err != nil {
 		return err

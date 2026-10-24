@@ -15,18 +15,20 @@ import (
 )
 
 type Library struct {
-	mu           sync.Mutex
-	dataDir      string
-	prefs        Preferences
-	catalog      Catalog
-	refs         map[string]fileRef
-	plugins      map[string]Source
-	discovery    DiscoveryReport
-	cache        *cache.Store
-	watchPaths   map[string]bool
-	trash        func(string) (string, error)
-	archiveDir   string
-	archiveMover func(string, string) error
+	mu                  sync.Mutex
+	dataDir             string
+	prefs               Preferences
+	catalog             Catalog
+	refs                map[string]fileRef
+	plugins             map[string]Source
+	discovery           DiscoveryReport
+	cache               *cache.Store
+	watchPaths          map[string]bool
+	trash               func(string) (string, error)
+	archiveDir          string
+	archiveMover        func(string, string) error
+	preferencesRevision string
+	candidates          []Source
 }
 
 type fileRef struct {
@@ -63,6 +65,8 @@ func New(dataDir string, candidates []Source) (*Library, error) {
 			}
 		}
 	}
+	l.preferencesRevision = digest(data)
+	l.candidates = candidates
 	l.mergeAutomatic(candidates)
 	return l, nil
 }
@@ -70,10 +74,15 @@ func New(dataDir string, candidates []Source) (*Library, error) {
 func digest(data []byte) string   { hash := sha256.Sum256(data); return hex.EncodeToString(hash[:]) }
 func objectID(path string) string { return digest([]byte(path))[:24] }
 
-// AddSource is called only after the native directory picker returns a selection.
+// AddSource records an explicit folder selection in the app or CLI.
 func (l *Library) AddSource(path string, writable bool) (Source, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return Source{}, err
+	}
+	defer release()
 	absolute, err := filepath.Abs(path)
 	if err != nil {
 		return Source{}, err
@@ -116,6 +125,11 @@ func (l *Library) AddSource(path string, writable bool) (Source, error) {
 func (l *Library) RemoveSource(id string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	previous := append([]Source(nil), l.prefs.Sources...)
 	sources := []Source{}
 	for _, source := range previous {
@@ -139,6 +153,11 @@ func (l *Library) RemoveSource(id string) error {
 func (l *Library) SetLanguage(language string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if language != "system" && language != "en" && language != "zh-CN" {
 		return fmt.Errorf("unknown interface language")
 	}
@@ -154,6 +173,7 @@ func (l *Library) SetLanguage(language string) error {
 func (l *Library) Settings() Preferences {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	_ = l.reloadPreferences()
 	data, _ := json.Marshal(l.prefs)
 	var p Preferences
 	_ = json.Unmarshal(data, &p)
@@ -162,6 +182,11 @@ func (l *Library) Settings() Preferences {
 func (l *Library) SetTheme(theme string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if theme != "system" && theme != "light" && theme != "dark" {
 		return fmt.Errorf("unknown appearance")
 	}
@@ -177,6 +202,11 @@ func (l *Library) SetTheme(theme string) error {
 func (l *Library) SetReaderLayout(fontSize, explorerWidth int) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if fontSize < 12 || fontSize > 20 || explorerWidth < 180 || explorerWidth > 400 {
 		return fmt.Errorf("invalid reading layout")
 	}
@@ -192,6 +222,11 @@ func (l *Library) SetReaderLayout(fontSize, explorerWidth int) error {
 func (l *Library) SetAccentColor(color string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if color != "" && !regexp.MustCompile(`^#[0-9a-fA-F]{6}$`).MatchString(color) {
 		return fmt.Errorf("invalid theme color")
 	}
@@ -224,7 +259,11 @@ func (l *Library) persist() error {
 	if err = temp.Close(); err != nil {
 		return err
 	}
-	return os.Rename(temp.Name(), filepath.Join(l.dataDir, "preferences.json"))
+	if err = os.Rename(temp.Name(), filepath.Join(l.dataDir, "preferences.json")); err != nil {
+		return err
+	}
+	l.preferencesRevision = digest(data)
+	return nil
 }
 
 func (l *Library) source(id string) (Source, error) {

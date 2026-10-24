@@ -18,6 +18,7 @@ import type * as updates$0 from "../../../../../skillview/internal/updates/model
 declare module "@wailsio/runtime" {
     namespace Events {
         interface CustomEvents {
+            "skillview:activated": boolean;
             "skillview:command": string;
             "skillview:scan": library$0.ScanProgress;
             "skillview:translation": translation$0.Progress;

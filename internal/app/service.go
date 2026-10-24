@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
+	"skillview/internal/launch"
 	"skillview/internal/library"
 	"skillview/internal/locale"
 	"skillview/internal/translation"
@@ -346,4 +347,16 @@ func (s *Service) RevealArchive() error {
 
 func (s *Service) ResourceReferences(id, path string) ([]string, error) {
 	return s.library.ResourceReferences(id, path)
+}
+
+func (s *Service) InstallCLI() (string, error) {
+	executable, err := os.Executable()
+	if err != nil {
+		return "", err
+	}
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", err
+	}
+	return launch.InstallCommand(executable, home)
 }

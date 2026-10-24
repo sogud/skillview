@@ -87,7 +87,15 @@ An isolated native Apple Silicon build with two synthetic installations verifies
 
 Focused race-enabled tests cover complete-folder archive/restore, recovery after replacing application settings, preservation of independent copies and resource symlinks, exclusion from regular and explicitly selected archive sources, stale previews, read-only sources, failed moves and staged interruption recovery. Restoration refuses occupied destinations, replaced payloads/parents and linked archive roots. A disposable fixture crossing the external SSD and system volume verifies original bytes, file permissions and relative links after archive and restore.
 
-The production frontend and native build pass, with strict ad-hoc signature verification. Browser fixtures exercise archive confirmation, removal from the active list, the archive list, a collision with both copies retained, successful restoration, the empty archive and an empty active list with a restore entry. Chinese/light and English/dark dialogs have zero settled automated accessibility violations; the tested 640 px viewport has no horizontal page or dialog overflow. These fixtures do not modify real Skills. Native pointer acceptance remains pending because the Mac was locked during this check.
+The production frontend and native build pass, with strict ad-hoc signature verification. Browser fixtures exercise archive confirmation, removal from the active list, the archive list, a collision with both copies retained, successful restoration, the empty archive and an empty active list with a restore entry. Chinese/light and English/dark dialogs have zero settled automated accessibility violations; the tested 640 px viewport has no horizontal page or dialog overflow. These fixtures do not modify real Skills. Native pointer acceptance subsequently passed with the shared CLI fixture below.
+
+## Shared CLI and Skill
+
+Focused race-enabled tests cover shared settings and write locks, revoked editing access, stale previews, sync boundaries, recoverable cleanup, resource backups, security-rule matching, current-Agent filtering and command installation conflicts. TypeScript, the production native build, focused vet checks and strict ad-hoc signature verification pass.
+
+An isolated native fixture verifies manual scanning, reading, archive/restore and command installation. The installed CLI reads the same catalog, cold-starts the app and activates one running window. CLI archive/restore updates the app's list on activation without scanning; restored bytes match the original. Doctor, topology, graph, backup and security commands run against synthetic files. No real Skills are changed or sent to translation services.
+
+The local skill is now `skillview`, backed by this repository's CLI. Downloading or installing Skills is not supported. Distribution signing and another-machine installation remain unverified.
 
 ## Remaining acceptance
 

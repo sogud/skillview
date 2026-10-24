@@ -458,6 +458,9 @@
     "Restoring failed. Inspect the archive folder; saved files were kept.": "恢复失败，文件仍已保留，请打开归档目录检查。",
     "Close": "关闭",
     "No active Skills in this view": "这里暂时没有启用中的技能",
-    "Scan folders or restore a Skill from the archive.": "可以扫描目录，或从归档中恢复技能。"
+    "Scan folders or restore a Skill from the archive.": "可以扫描目录，或从归档中恢复技能。",
+    "Install command line": "安装命令行",
+    "Command installed: {path}": "命令已安装：{path}",
+    "Another SkillView operation is running. Try again.": "另一个 SkillView 操作正在进行，请稍后重试。"
   }
 }

@@ -16,6 +16,9 @@ import (
 func (l *Library) Resources(id string) ([]Resource, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if err := l.reloadPreferences(); err != nil {
+		return nil, err
+	}
 	directory, _, err := l.openSkill(id)
 	if err != nil {
 		return nil, err
@@ -124,6 +127,9 @@ func openResource(directory *os.File, path string) (*os.File, *os.File, string, 
 func (l *Library) Read(id, path string) (Document, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if err := l.reloadPreferences(); err != nil {
+		return Document{}, err
+	}
 	return l.read(id, path)
 }
 

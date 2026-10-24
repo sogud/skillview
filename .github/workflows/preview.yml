@@ -47,8 +47,8 @@ jobs:
         run: |
           source script/toolchain.sh
           go test -race ./internal/library ./internal/translation ./internal/cache ./internal/watch
-          go test -race ./internal/updates ./internal/app ./internal/network
-          go vet ./internal/library ./internal/translation ./internal/app ./internal/updates ./internal/network
+          go test -race ./internal/updates ./internal/app ./internal/network ./internal/cli ./internal/launch
+          go vet ./internal/library ./internal/translation ./internal/app ./internal/updates ./internal/network ./internal/cli ./internal/launch
           node --test frontend/src/skill-groups.test.mjs frontend/src/file-tree.test.mjs
 
       - name: Build and package local preview

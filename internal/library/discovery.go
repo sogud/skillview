@@ -15,12 +15,14 @@ import (
 var locationData []byte
 
 type AgentLocation struct {
-	Tool    string   `json:"tool"`
-	Global  []string `json:"global"`
-	Project []string `json:"project"`
-	Detect  []string `json:"detect"`
-	Apps    []string `json:"apps"`
-	Bins    []string `json:"bins"`
+	CLIAliases     []string `json:"cliAliases,omitempty"`
+	WritableGlobal bool     `json:"writableGlobal,omitempty"`
+	Tool           string   `json:"tool"`
+	Global         []string `json:"global"`
+	Project        []string `json:"project"`
+	Detect         []string `json:"detect"`
+	Apps           []string `json:"apps"`
+	Bins           []string `json:"bins"`
 }
 
 func Locations() []AgentLocation {
@@ -138,7 +140,13 @@ func (l *Library) mergeAutomatic(candidates []Source) {
 func (l *Library) RefreshSources(candidates []Source) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	previous := l.prefs.Sources
+	l.candidates = candidates
 	l.mergeAutomatic(candidates)
 	if err := l.persist(); err != nil {
 		l.prefs.Sources = previous

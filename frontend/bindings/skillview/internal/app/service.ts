@@ -67,6 +67,10 @@ export function ExportTranslation(id: string, path: string, result: translation$
     return $Call.ByID(2559751975, id, path, result);
 }
 
+export function InstallCLI(): $CancellablePromise<string> {
+    return $Call.ByID(1724087297);
+}
+
 export function OpenLink(raw: string): $CancellablePromise<void> {
     return $Call.ByID(1382672430, raw);
 }

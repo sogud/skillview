@@ -1,0 +1,226 @@
+# Security scan rules - 11 dimensions from skill-vetter
+# Format: pattern (regex) | level (CRITICAL/HIGH/MEDIUM) | description
+
+# Dimension 1: Prompt Injection
+prompt_injection:
+  - pattern: 'ignore\s+(all\s+)?(previous|above|prior)\s+(instructions?|prompts?|rules?)'
+    level: CRITICAL
+    desc: "Prompt injection: ignore previous"
+
+  - pattern: 'disregard\s+(everything|all|previous)'
+    level: CRITICAL
+    desc: "Prompt injection: disregard"
+
+  - pattern: 'forget\s+(your\s+)?(previous|all)\s+(instructions?|prompts?)'
+    level: CRITICAL
+    desc: "Prompt injection: forget"
+
+  - pattern: 'your\s+new\s+identity\s+is'
+    level: CRITICAL
+    desc: "Prompt injection: identity override"
+
+  - pattern: 'you\s+are\s+now\s+(operating\s+as|acting\s+as)'
+    level: CRITICAL
+    desc: "Prompt injection: identity override"
+
+  - pattern: 'override\s+(your\s+)?system\s+prompt'
+    level: CRITICAL
+    desc: "Prompt injection: override system"
+
+  - pattern: '\[SYSTEM\]:'
+    level: CRITICAL
+    desc: "Prompt injection: fake system tag"
+
+  - pattern: 'jailbreak'
+    level: CRITICAL
+    desc: "Prompt injection: jailbreak keyword"
+
+  - pattern: 'DAN\s*:'
+    level: CRITICAL
+    desc: "Prompt injection: DAN attack"
+
+# Dimension 2: Permission Abuse
+permission_abuse:
+  - pattern: '~\/\.ssh\/'
+    level: CRITICAL
+    desc: "Permission abuse: SSH key access"
+
+  - pattern: '~\/\.aws\/(credentials|config)'
+    level: CRITICAL
+    desc: "Permission abuse: AWS credentials"
+
+  - pattern: '~\/\.gnupg\/'
+    level: CRITICAL
+    desc: "Permission abuse: GPG key access"
+
+  - pattern: '\/etc\/(passwd|shadow|sudoers)'
+    level: CRITICAL
+    desc: "Permission abuse: system files"
+
+  - pattern: 'read\s+all\s+files\s+in\s+the\s+project'
+    level: HIGH
+    desc: "Permission abuse: read all files"
+
+  - pattern: 'you\s+have\s+been\s+granted\s+full\s+access'
+    level: HIGH
+    desc: "Permission abuse: full access claim"
+
+# Dimension 3: Suspicious Hook Behavior
+hook_behavior:
+  - pattern: 'silently\s+\[?do'
+    level: CRITICAL
+    desc: "Hook: silently execute"
+
+  - pattern: 'without\s+(informing|telling)\s+the\s+user'
+    level: CRITICAL
+    desc: "Hook: without user knowledge"
+
+  - pattern: 'in\s+the\s+background,?\s+also'
+    level: CRITICAL
+    desc: "Hook: background execution"
+
+  - pattern: 'monitor\s+all\s+(user\s+)?actions'
+    level: CRITICAL
+    desc: "Hook: monitor all actions"
+
+# Dimension 4: Data Exfiltration
+data_exfiltration:
+  - pattern: 'curl\s+-X\s+POST\s+https?://(?!registry\.npmjs\.org|api\.github\.com|docs\.)'
+    level: CRITICAL
+    desc: "Exfiltration: POST to unknown endpoint"
+
+  - pattern: 'webhook\.site\/'
+    level: CRITICAL
+    desc: "Exfiltration: webhook.site"
+
+  - pattern: 'hooks\.slack\.com\/services\/'
+    level: CRITICAL
+    desc: "Exfiltration: Slack webhook"
+
+  - pattern: 'discord\.com\/api\/webhooks\/'
+    level: CRITICAL
+    desc: "Exfiltration: Discord webhook"
+
+  - pattern: '\|\s*base64\s*\|\s*curl'
+    level: CRITICAL
+    desc: "Exfiltration: pipe to curl via base64"
+
+# Dimension 5: Social Engineering
+social_engineering:
+  - pattern: 'Official\s+Anthropic\s+(skill|tool)'
+    level: CRITICAL
+    desc: "Social: fake Anthropic official"
+
+  - pattern: 'Certified\s+by\s+Anthropic'
+    level: CRITICAL
+    desc: "Social: fake Anthropic certification"
+
+  - pattern: 'do\s+not\s+show\s+the\s+user\s+this\s+section'
+    level: CRITICAL
+    desc: "Social: hide from user"
+
+  - pattern: 'URGENT\s*:'
+    level: HIGH
+    desc: "Social: urgency pressure"
+
+  - pattern: 'skip\s+the\s+confirmation\s+step'
+    level: HIGH
+    desc: "Social: skip confirmation"
+
+# Dimension 6: Scope Creep
+scope_creep:
+  - pattern: "while\\s+you're\\s+at\\s+it,?\\s+also"
+    level: HIGH
+    desc: "Scope creep: while at it"
+
+  - pattern: 'as\s+a\s+bonus\s+step'
+    level: HIGH
+    desc: "Scope creep: bonus step"
+
+# Dimension 7: Obfuscation
+obfuscation:
+  - pattern: '<!--\s*(ignore|forget|override|execute|run)'
+    level: CRITICAL
+    desc: "Obfuscation: hidden instructions in comment"
+
+  - pattern: '[\u200B\u200C\u200D\uFEFF]'
+    level: HIGH
+    desc: "Obfuscation: zero-width characters"
+
+# Dimension 8: Destructive Operations
+destructive_ops:
+  - pattern: 'rm\s+-rf\s+[^|]*$'
+    level: CRITICAL
+    desc: "Destructive: rm -rf without pipe"
+
+  - pattern: 'shutil\.rmtree\s*\('
+    level: CRITICAL
+    desc: "Destructive: rmtree"
+
+  - pattern: 'DROP\s+(TABLE|DATABASE)'
+    level: CRITICAL
+    desc: "Destructive: DROP"
+
+  - pattern: 'git\s+push\s+--force'
+    level: HIGH
+    desc: "Destructive: force push"
+
+  - pattern: 'git\s+reset\s+--hard'
+    level: HIGH
+    desc: "Destructive: hard reset"
+
+# Dimension 9: Supply Chain Manipulation
+supply_chain:
+  - pattern: 'npm\s+install\s+--registry\s+https?://(?!registry\.npmjs\.org)'
+    level: CRITICAL
+    desc: "Supply chain: custom registry"
+
+  - pattern: 'bash\s*<\s*\(curl'
+    level: CRITICAL
+    desc: "Supply chain: bash from curl"
+
+  - pattern: 'eval\s*\(\s*\$?\(?curl'
+    level: CRITICAL
+    desc: "Supply chain: eval from curl"
+
+# Dimension 10: Identity Impersonation
+identity_impersonation:
+  - pattern: "name\\s*:\\s*['\"`]?claude-core['\"`]?"
+    level: CRITICAL
+    desc: "Impersonation: claude-core name"
+
+  - pattern: "name\\s*:\\s*['\"`]?system-default['\"`]?"
+    level: CRITICAL
+    desc: "Impersonation: system-default name"
+
+  - pattern: 'Anthropic-verified'
+    level: CRITICAL
+    desc: "Impersonation: fake verification"
+
+# Dimension 11: Sensitive Data
+sensitive_data:
+  - pattern: 'sk-[a-zA-Z0-9]{20,}'
+    level: CRITICAL
+    desc: "Secret: OpenAI API key"
+
+  - pattern: 'ghp_[a-zA-Z0-9]{36}'
+    level: CRITICAL
+    desc: "Secret: GitHub PAT"
+
+  - pattern: 'AKIA[A-Z0-9]{16}'
+    level: CRITICAL
+    desc: "Secret: AWS access key"
+
+# Trust signals (positive indicators)
+trust_signals:
+  - pattern: 'confirm\s+with\s+the\s+user\s+before'
+    points: 2
+    desc: "User confirmation required"
+
+  - pattern: 'all\s+operations\s+are\s+local'
+    points: 2
+    desc: "Local-only operations"
+
+  - pattern: 'no\s+data\s+is\s+transmitted\s+externally'
+    points: 2
+    desc: "No external transmission"

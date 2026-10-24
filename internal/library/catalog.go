@@ -33,6 +33,11 @@ type scanState struct {
 func (l *Library) Scan(ctx context.Context, progress ...func(ScanProgress)) (Catalog, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return Catalog{}, err
+	}
+	defer release()
 	l.watchPaths = map[string]bool{}
 	state := scanState{library: l, catalog: Catalog{Skills: []Skill{}, Sources: []Source{}, Issues: []Issue{}, ScannedAt: time.Now().UTC().Format(time.RFC3339)}, refs: map[string]fileRef{}, positions: map[string]int{}, context: ctx}
 	state.archiveDirectory, _ = l.archiveDirectory()
@@ -338,6 +343,9 @@ func fileLinks(file *os.File) (uint16, error) {
 func (l *Library) CachedCatalog() (Catalog, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if err := l.reloadPreferences(); err != nil {
+		return Catalog{}, err
+	}
 	empty := Catalog{Skills: []Skill{}, Sources: l.prefs.Sources, NeedsScan: true}
 	if home, err := os.UserHomeDir(); err == nil {
 		empty.Agents = Agents(home)

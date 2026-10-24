@@ -1,6 +1,8 @@
 [
   {
     "tool": "AiderDesk",
+    "cliAliases": ["aiderdesk"],
+    "writableGlobal": true,
     "global": [
       "~/.aider-desk/skills"
     ],
@@ -17,6 +19,8 @@
   },
   {
     "tool": "Amp",
+    "cliAliases": ["amp"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/agents/skills"
     ],
@@ -31,6 +35,8 @@
   },
   {
     "tool": "Antigravity",
+    "cliAliases": ["antigravity"],
+    "writableGlobal": true,
     "global": [
       "~/.gemini/antigravity/skills"
     ],
@@ -47,6 +53,8 @@
   },
   {
     "tool": "Antigravity CLI",
+    "cliAliases": ["antigravity-cli"],
+    "writableGlobal": true,
     "global": [
       "~/.gemini/antigravity-cli/skills"
     ],
@@ -61,6 +69,8 @@
   },
   {
     "tool": "AstrBot",
+    "cliAliases": ["astrbot"],
+    "writableGlobal": true,
     "global": [
       "~/.astrbot/data/skills"
     ],
@@ -75,6 +85,8 @@
   },
   {
     "tool": "Autohand Code CLI",
+    "cliAliases": ["autohand-code-cli"],
+    "writableGlobal": true,
     "global": [
       "$AUTOHAND/skills"
     ],
@@ -87,6 +99,8 @@
   },
   {
     "tool": "Augment",
+    "cliAliases": ["augment"],
+    "writableGlobal": true,
     "global": [
       "~/.augment/skills"
     ],
@@ -103,6 +117,8 @@
   },
   {
     "tool": "IBM Bob",
+    "cliAliases": ["ibm-bob"],
+    "writableGlobal": true,
     "global": [
       "~/.bob/skills"
     ],
@@ -119,6 +135,8 @@
   },
   {
     "tool": "Claude Code",
+    "cliAliases": ["claude"],
+    "writableGlobal": true,
     "global": [
       "$CLAUDE/skills"
     ],
@@ -136,6 +154,8 @@
   },
   {
     "tool": "OpenClaw",
+    "cliAliases": ["openclaw"],
+    "writableGlobal": true,
     "global": [
       "~/.openclaw/skills",
       "~/.clawdbot/skills",
@@ -156,6 +176,8 @@
   },
   {
     "tool": "Cline",
+    "cliAliases": ["cline"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -170,6 +192,8 @@
   },
   {
     "tool": "CodeArts Agent",
+    "cliAliases": ["codearts-agent"],
+    "writableGlobal": true,
     "global": [
       "~/.codeartsdoer/skills"
     ],
@@ -184,6 +208,8 @@
   },
   {
     "tool": "CodeBuddy",
+    "cliAliases": ["codebuddy"],
+    "writableGlobal": true,
     "global": [
       "~/.codebuddy/skills"
     ],
@@ -198,6 +224,8 @@
   },
   {
     "tool": "Codemaker",
+    "cliAliases": ["codemaker"],
+    "writableGlobal": true,
     "global": [
       "~/.codemaker/skills"
     ],
@@ -212,6 +240,8 @@
   },
   {
     "tool": "Code Studio",
+    "cliAliases": ["code-studio"],
+    "writableGlobal": true,
     "global": [
       "~/.codestudio/skills"
     ],
@@ -226,6 +256,8 @@
   },
   {
     "tool": "Codex",
+    "cliAliases": ["codex"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -242,6 +274,8 @@
   },
   {
     "tool": "Command Code",
+    "cliAliases": ["command-code"],
+    "writableGlobal": true,
     "global": [
       "~/.commandcode/skills"
     ],
@@ -256,6 +290,8 @@
   },
   {
     "tool": "Continue",
+    "cliAliases": ["continue"],
+    "writableGlobal": true,
     "global": [
       "~/.continue/skills"
     ],
@@ -272,6 +308,8 @@
   },
   {
     "tool": "Cortex Code",
+    "cliAliases": ["cortex-code"],
+    "writableGlobal": true,
     "global": [
       "~/.snowflake/cortex/skills"
     ],
@@ -286,6 +324,8 @@
   },
   {
     "tool": "Crush",
+    "cliAliases": ["crush"],
+    "writableGlobal": true,
     "global": [
       "~/.config/crush/skills"
     ],
@@ -302,6 +342,8 @@
   },
   {
     "tool": "Cursor",
+    "cliAliases": ["cursor"],
+    "writableGlobal": true,
     "global": [
       "~/.cursor/skills"
     ],
@@ -322,6 +364,8 @@
   },
   {
     "tool": "Deep Agents",
+    "cliAliases": ["deep-agents"],
+    "writableGlobal": true,
     "global": [
       "~/.deepagents/agent/skills"
     ],
@@ -336,6 +380,8 @@
   },
   {
     "tool": "Devin for Terminal",
+    "cliAliases": ["devin-for-terminal"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/devin/skills"
     ],
@@ -350,6 +396,8 @@
   },
   {
     "tool": "Dexto",
+    "cliAliases": ["dexto"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -364,6 +412,8 @@
   },
   {
     "tool": "Droid",
+    "cliAliases": ["droid"],
+    "writableGlobal": true,
     "global": [
       "~/.factory/skills"
     ],
@@ -380,6 +430,7 @@
   },
   {
     "tool": "Eve",
+    "cliAliases": ["eve"],
     "global": [],
     "project": [
       "agent/skills"
@@ -390,6 +441,8 @@
   },
   {
     "tool": "Firebender",
+    "cliAliases": ["firebender"],
+    "writableGlobal": true,
     "global": [
       "~/.firebender/skills"
     ],
@@ -404,6 +457,8 @@
   },
   {
     "tool": "ForgeCode",
+    "cliAliases": ["forgecode"],
+    "writableGlobal": true,
     "global": [
       "~/.forge/skills"
     ],
@@ -418,6 +473,8 @@
   },
   {
     "tool": "fx",
+    "cliAliases": ["fx"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills",
       "~/.fx/skills"
@@ -434,6 +491,8 @@
   },
   {
     "tool": "Gemini CLI",
+    "cliAliases": ["gemini"],
+    "writableGlobal": true,
     "global": [
       "~/.gemini/skills"
     ],
@@ -450,6 +509,8 @@
   },
   {
     "tool": "GitHub Copilot",
+    "cliAliases": ["copilot"],
+    "writableGlobal": true,
     "global": [
       "~/.copilot/skills"
     ],
@@ -466,6 +527,8 @@
   },
   {
     "tool": "Goose",
+    "cliAliases": ["goose"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/goose/skills"
     ],
@@ -480,6 +543,8 @@
   },
   {
     "tool": "Grok Build",
+    "cliAliases": ["grok-build"],
+    "writableGlobal": true,
     "global": [
       "$GROK/skills"
     ],
@@ -494,6 +559,8 @@
   },
   {
     "tool": "Hermes Agent",
+    "cliAliases": ["hermes"],
+    "writableGlobal": true,
     "global": [
       "$HERMES/skills"
     ],
@@ -508,6 +575,8 @@
   },
   {
     "tool": "inference.sh",
+    "cliAliases": ["inference-sh"],
+    "writableGlobal": true,
     "global": [
       "~/.inferencesh/skills"
     ],
@@ -522,6 +591,8 @@
   },
   {
     "tool": "Jazz",
+    "cliAliases": ["jazz"],
+    "writableGlobal": true,
     "global": [
       "~/.jazz/skills"
     ],
@@ -536,6 +607,8 @@
   },
   {
     "tool": "Junie",
+    "cliAliases": ["junie"],
+    "writableGlobal": true,
     "global": [
       "~/.junie/skills"
     ],
@@ -552,6 +625,8 @@
   },
   {
     "tool": "iFlow CLI",
+    "cliAliases": ["iflow-cli"],
+    "writableGlobal": true,
     "global": [
       "~/.iflow/skills"
     ],
@@ -566,6 +641,8 @@
   },
   {
     "tool": "Kilo Code",
+    "cliAliases": ["kilo-code"],
+    "writableGlobal": true,
     "global": [
       "~/.kilo/skills"
     ],
@@ -583,6 +660,8 @@
   },
   {
     "tool": "Kimchi",
+    "cliAliases": ["kimchi"],
+    "writableGlobal": true,
     "global": [
       "~/.config/kimchi/harness/skills"
     ],
@@ -595,6 +674,8 @@
   },
   {
     "tool": "Kimi Code CLI",
+    "cliAliases": ["kimi-code-cli"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -612,6 +693,8 @@
   },
   {
     "tool": "Kiro CLI",
+    "cliAliases": ["kiro"],
+    "writableGlobal": true,
     "global": [
       "~/.kiro/skills"
     ],
@@ -631,6 +714,8 @@
   },
   {
     "tool": "Kode",
+    "cliAliases": ["kode"],
+    "writableGlobal": true,
     "global": [
       "~/.kode/skills"
     ],
@@ -645,6 +730,8 @@
   },
   {
     "tool": "Lingma",
+    "cliAliases": ["lingma"],
+    "writableGlobal": true,
     "global": [
       "~/.lingma/skills"
     ],
@@ -659,6 +746,8 @@
   },
   {
     "tool": "Loaf",
+    "cliAliases": ["loaf"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -673,6 +762,8 @@
   },
   {
     "tool": "MCPJam",
+    "cliAliases": ["mcpjam"],
+    "writableGlobal": true,
     "global": [
       "~/.mcpjam/skills"
     ],
@@ -687,6 +778,8 @@
   },
   {
     "tool": "MiniMax Code",
+    "cliAliases": ["minimax-code"],
+    "writableGlobal": true,
     "global": [
       "~/.minimax/skills"
     ],
@@ -701,6 +794,8 @@
   },
   {
     "tool": "Mistral Vibe",
+    "cliAliases": ["mistral-vibe"],
+    "writableGlobal": true,
     "global": [
       "$VIBE/skills"
     ],
@@ -715,6 +810,8 @@
   },
   {
     "tool": "Moxby",
+    "cliAliases": ["moxby"],
+    "writableGlobal": true,
     "global": [
       "~/.moxby/skills"
     ],
@@ -729,6 +826,8 @@
   },
   {
     "tool": "Mux",
+    "cliAliases": ["mux"],
+    "writableGlobal": true,
     "global": [
       "~/.mux/skills"
     ],
@@ -743,6 +842,8 @@
   },
   {
     "tool": "OpenCode",
+    "cliAliases": ["opencode"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/opencode/skills"
     ],
@@ -757,6 +858,8 @@
   },
   {
     "tool": "OpenHands",
+    "cliAliases": ["openhands"],
+    "writableGlobal": true,
     "global": [
       "~/.openhands/skills"
     ],
@@ -771,6 +874,8 @@
   },
   {
     "tool": "Ona",
+    "cliAliases": ["ona"],
+    "writableGlobal": true,
     "global": [
       "~/.ona/skills"
     ],
@@ -785,6 +890,8 @@
   },
   {
     "tool": "Pi",
+    "cliAliases": ["pi"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -801,6 +908,8 @@
   },
   {
     "tool": "Posit Assistant",
+    "cliAliases": ["posit-assistant"],
+    "writableGlobal": true,
     "global": [
       "~/.posit/assistant/skills"
     ],
@@ -813,6 +922,8 @@
   },
   {
     "tool": "Qoder",
+    "cliAliases": ["qoder"],
+    "writableGlobal": true,
     "global": [
       "~/.qoder/skills"
     ],
@@ -831,6 +942,8 @@
   },
   {
     "tool": "Qoder CN",
+    "cliAliases": ["qoder-cn"],
+    "writableGlobal": true,
     "global": [
       "~/.qoder-cn/skills"
     ],
@@ -845,6 +958,8 @@
   },
   {
     "tool": "Qwen Code",
+    "cliAliases": ["qwen-code"],
+    "writableGlobal": true,
     "global": [
       "~/.qwen/skills"
     ],
@@ -861,6 +976,8 @@
   },
   {
     "tool": "Replit",
+    "cliAliases": ["replit"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/agents/skills"
     ],
@@ -873,6 +990,8 @@
   },
   {
     "tool": "Reasonix",
+    "cliAliases": ["reasonix"],
+    "writableGlobal": true,
     "global": [
       "~/.reasonix/skills"
     ],
@@ -887,6 +1006,8 @@
   },
   {
     "tool": "Rovo Dev",
+    "cliAliases": ["rovo-dev"],
+    "writableGlobal": true,
     "global": [
       "~/.rovodev/skills"
     ],
@@ -901,6 +1022,8 @@
   },
   {
     "tool": "Roo Code",
+    "cliAliases": ["roo"],
+    "writableGlobal": true,
     "global": [
       "~/.roo/skills"
     ],
@@ -917,6 +1040,8 @@
   },
   {
     "tool": "Sarvam Code",
+    "cliAliases": ["sarvam-code"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -929,6 +1054,8 @@
   },
   {
     "tool": "Tabnine CLI",
+    "cliAliases": ["tabnine-cli"],
+    "writableGlobal": true,
     "global": [
       "~/.tabnine/agent/skills"
     ],
@@ -943,6 +1070,8 @@
   },
   {
     "tool": "Terramind",
+    "cliAliases": ["terramind"],
+    "writableGlobal": true,
     "global": [
       "~/.terramind/skills"
     ],
@@ -957,6 +1086,8 @@
   },
   {
     "tool": "Tinycloud",
+    "cliAliases": ["tinycloud"],
+    "writableGlobal": true,
     "global": [
       "~/.tinycloud/skills"
     ],
@@ -971,6 +1102,8 @@
   },
   {
     "tool": "Trae",
+    "cliAliases": ["trae"],
+    "writableGlobal": true,
     "global": [
       "~/.trae/skills"
     ],
@@ -989,6 +1122,8 @@
   },
   {
     "tool": "Trae CN",
+    "cliAliases": ["trae-cn"],
+    "writableGlobal": true,
     "global": [
       "~/.trae-cn/skills"
     ],
@@ -1005,6 +1140,8 @@
   },
   {
     "tool": "Warp",
+    "cliAliases": ["warp"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -1021,6 +1158,8 @@
   },
   {
     "tool": "Windsurf",
+    "cliAliases": ["windsurf"],
+    "writableGlobal": true,
     "global": [
       "~/.codeium/windsurf/skills"
     ],
@@ -1039,6 +1178,8 @@
   },
   {
     "tool": "Zed",
+    "cliAliases": ["zed"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -1055,6 +1196,8 @@
   },
   {
     "tool": "ZCode",
+    "cliAliases": ["zcode"],
+    "writableGlobal": true,
     "global": [
       "~/.zcode/skills"
     ],
@@ -1067,6 +1210,8 @@
   },
   {
     "tool": "Zencoder",
+    "cliAliases": ["zencoder"],
+    "writableGlobal": true,
     "global": [
       "~/.zencoder/skills"
     ],
@@ -1081,6 +1226,8 @@
   },
   {
     "tool": "Zenflow",
+    "cliAliases": ["zenflow"],
+    "writableGlobal": true,
     "global": [
       "~/.zencoder/skills"
     ],
@@ -1095,6 +1242,8 @@
   },
   {
     "tool": "Neovate",
+    "cliAliases": ["neovate"],
+    "writableGlobal": true,
     "global": [
       "~/.neovate/skills"
     ],
@@ -1109,6 +1258,8 @@
   },
   {
     "tool": "Pochi",
+    "cliAliases": ["pochi"],
+    "writableGlobal": true,
     "global": [
       "~/.pochi/skills"
     ],
@@ -1123,6 +1274,7 @@
   },
   {
     "tool": "PromptScript",
+    "cliAliases": ["promptscript"],
     "global": [],
     "project": [
       ".agents/skills"
@@ -1133,6 +1285,8 @@
   },
   {
     "tool": "AdaL",
+    "cliAliases": ["adal"],
+    "writableGlobal": true,
     "global": [
       "~/.adal/skills"
     ],
@@ -1147,6 +1301,8 @@
   },
   {
     "tool": "Universal",
+    "cliAliases": ["universal"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/agents/skills"
     ],
@@ -1159,6 +1315,8 @@
   },
   {
     "tool": "Agent Skills",
+    "cliAliases": ["agent-skills"],
+    "writableGlobal": true,
     "global": [
       "~/.agents/skills"
     ],
@@ -1371,6 +1529,8 @@
   },
   {
     "tool": "QoderWork",
+    "cliAliases": ["qoderwork"],
+    "writableGlobal": true,
     "global": [
       "~/.qoderwork/skills"
     ],
@@ -1387,6 +1547,8 @@
   },
   {
     "tool": "Devin / Windsurf",
+    "cliAliases": ["devin-windsurf"],
+    "writableGlobal": true,
     "global": [
       "$CONFIG/devin/skills"
     ],
@@ -1435,6 +1597,8 @@
   },
   {
     "tool": "VS Code",
+    "cliAliases": ["vscode"],
+    "writableGlobal": true,
     "global": [
       "~/.copilot/skills",
       "~/.claude/skills",

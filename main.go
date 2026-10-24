@@ -1,16 +1,21 @@
 package main
 
 import (
+	"context"
+	"crypto/sha256"
 	"embed"
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+	"skillview/internal/cli"
+	"skillview/internal/launch"
+	"strings"
 
 	"github.com/wailsapp/wails/v3/pkg/application"
 	"github.com/wailsapp/wails/v3/pkg/events"
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	appservice "skillview/internal/app"
-	"skillview/internal/cache"
 	"skillview/internal/library"
 	"skillview/internal/locale"
 	"skillview/internal/translation"
@@ -25,41 +30,33 @@ func init() {
 	application.RegisterEvent[updates.Status]("skillview:update")
 	application.RegisterEvent[library.ScanProgress]("skillview:scan")
 	application.RegisterEvent[translation.Progress]("skillview:translation")
+	application.RegisterEvent[bool]("skillview:activated")
 }
 
 func main() {
 	// Helpers must run before opening user settings, cache, or Skill sources.
 	updater.HandleHelperMode()
-	dataDir := os.Getenv("SKILLVIEW_DATA_DIR")
-	if dataDir == "" {
-		base, err := os.UserConfigDir()
-		if err != nil {
-			log.Fatal(err)
-		}
-		dataDir = filepath.Join(base, "SkillView")
+	args := os.Args[1:]
+	if len(args) > 0 && !strings.HasPrefix(args[0], "-psn_") || filepath.Base(os.Args[0]) == "skillview" {
+		os.Exit(cli.Run(context.Background(), args, os.Stdout, os.Stderr, cli.Options{}))
+	}
+	dataDir, err := launch.DataDirectory()
+	if err != nil {
+		log.Fatal(err)
 	}
 	home, err := os.UserHomeDir()
 	if err != nil {
 		log.Fatal(err)
 	}
-	candidates := library.DefaultSources(home)
 	fixtureRoot := os.Getenv("SKILLVIEW_SOURCE")
-	if fixtureRoot != "" {
-		candidates = []library.Source{}
-	}
-	lib, err := library.New(dataDir, candidates)
+	session, err := library.Open(dataDir, home, fixtureRoot, os.Getenv("SKILLVIEW_FIXTURE_EDIT") == "1")
 	if err != nil {
 		log.Fatal(err)
 	}
-	if fixtureRoot != "" {
-		archiveRoot, archiveErr := filepath.Abs(filepath.Join(dataDir, "archive"))
-		if archiveErr != nil {
-			log.Fatal(archiveErr)
-		}
-		lib.SetArchiveDirectory(archiveRoot)
-		if _, err := lib.AddSource(fixtureRoot, os.Getenv("SKILLVIEW_FIXTURE_EDIT") == "1"); err != nil {
-			log.Fatal(err)
-		}
+	defer session.Close()
+	lib := session.Library
+	if session.CacheError != nil {
+		log.Print("Local cache unavailable; using original files.")
 	}
 	var app *application.App
 	var window *application.WebviewWindow
@@ -81,14 +78,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	store, cacheErr := cache.Open(dataDir)
-	if cacheErr == nil {
-		defer store.Close()
-		lib.SetCache(store)
-		translator.SetCache(store)
-	} else {
-		log.Print("Local cache unavailable; using original files.")
-	}
+	translator.SetCache(session.Cache)
 	updateLanguage := func(language string) {
 		menu := application.NewMenu()
 		appMenu := menu.AddSubmenu("SkillView")
@@ -128,7 +118,17 @@ func main() {
 		Services:   []application.Service{application.NewService(service)},
 		Assets:     application.AssetOptions{Handler: application.AssetFileServerFS(assets)},
 		ShouldQuit: service.ShouldQuit,
-		Mac:        application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: true},
+		SingleInstance: &application.SingleInstanceOptions{
+			UniqueID: fmt.Sprintf("%s-%x", launch.BundleID, sha256.Sum256([]byte(dataDir))),
+			OnSecondInstanceLaunch: func(application.SecondInstanceData) {
+				if window != nil {
+					window.Show()
+					window.Focus()
+					app.Event.Emit("skillview:activated", true)
+				}
+			},
+		},
+		Mac: application.MacOptions{ApplicationShouldTerminateAfterLastWindowClosed: true},
 	})
 	updateManager, err = updates.New(app.Updater, fixtureRoot != "", func(status updates.Status) { app.Event.Emit("skillview:update", status) }, dataDir)
 	if err != nil {
@@ -150,6 +150,9 @@ func main() {
 		if !service.ShouldQuit() {
 			event.Cancel()
 		}
+	})
+	app.Event.OnApplicationEvent(events.Mac.ApplicationDidBecomeActive, func(*application.ApplicationEvent) {
+		app.Event.Emit("skillview:activated", true)
 	})
 	updateLanguage(lib.Settings().Language)
 	if err := app.Run(); err != nil {

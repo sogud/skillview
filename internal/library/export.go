@@ -15,6 +15,11 @@ import (
 func (l *Library) Export(id, path, revision, destination, text string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if len(text) > maxTextBytes || !utf8.ValidString(text) || strings.ContainsRune(text, 0) {
 		return fmt.Errorf("save requires UTF-8 text smaller than 2 MiB")
 	}

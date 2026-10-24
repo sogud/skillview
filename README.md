@@ -17,6 +17,7 @@ Apple Silicon. macOS 13+ declared; the minimum version remains unverified. Ad-ho
 - [Archive and restore Skills](docs/archive.md). Archived folders stay in `~/.agents/.skillview-archive/`.
 - English/Chinese interface, light/dark themes, accent color and reading size.
 - Signed downloads and [in-app updates](docs/updates.md).
+- A shared [CLI](docs/cli.md): `skillview app`, `list`, `scan` and local Skill management.
 
 Folders are read-only until you allow editing in Settings. Changes apply to the selected original copy. Skill scripts and plugin hooks are never executed. Translation sends the selected document to your chosen provider only when requested; API keys stay in macOS Keychain. No telemetry or cloud sync.
 

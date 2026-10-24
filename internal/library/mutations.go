@@ -25,6 +25,11 @@ func randomName(prefix string) (string, error) {
 func (l *Library) Save(id, path, expectedRevision, text string) (SaveResult, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return SaveResult{}, err
+	}
+	defer release()
 	if len(text) > maxTextBytes || !utf8.ValidString(text) || strings.ContainsRune(text, 0) {
 		return SaveResult{}, fmt.Errorf("save requires UTF-8 text smaller than 2 MiB")
 	}
@@ -155,6 +160,11 @@ func (l *Library) Save(id, path, expectedRevision, text string) (SaveResult, err
 func (l *Library) Create(sourceID, name, description string) (string, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return "", err
+	}
+	defer release()
 	if !validName.MatchString(name) || len(name) > 64 {
 		return "", fmt.Errorf("name must use lowercase letters, numbers, and single hyphens (up to 64 characters)")
 	}

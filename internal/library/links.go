@@ -61,6 +61,9 @@ func inspectLinkAt(parent *os.File, name, path string) (TrashPreview, error) {
 func (l *Library) PlanLinkTrash(id, sourceID, path string) (TrashPreview, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if err := l.reloadPreferences(); err != nil {
+		return TrashPreview{}, err
+	}
 	return l.planLinkTrash(id, sourceID, path)
 }
 
@@ -99,6 +102,11 @@ func (l *Library) planLinkTrash(id, sourceID, path string) (TrashPreview, error)
 func (l *Library) TrashLink(id, sourceID, path, expected string) (TrashReceipt, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return TrashReceipt{}, err
+	}
+	defer release()
 	preview, err := l.planLinkTrash(id, sourceID, path)
 	if err != nil {
 		return TrashReceipt{}, err

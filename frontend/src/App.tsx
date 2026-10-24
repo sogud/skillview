@@ -209,6 +209,10 @@ export default function App() {
     const onFocus = async () => {
       if (!currentState.current.saving) {
         const state = currentState.current
+        try {
+          const cached = await api.CachedCatalog()
+          if (mounted.current && !currentState.current.saving) setCatalog(cached)
+        } catch { /* The current document and draft remain available. */ }
         if (!state.selected || !state.document || state.draft) return
         const sequence = readSequence.current
         try {
@@ -236,8 +240,10 @@ export default function App() {
       }
     }
     window.addEventListener('focus', onFocus)
+    const unsubscribe = Events.On('skillview:activated', onFocus)
     return () => {
       window.removeEventListener('focus', onFocus)
+      unsubscribe()
     }
   }, [message])
 

@@ -66,6 +66,11 @@ func (l *Library) CreateResource(id, path, text string) (Document, error) {
 func (l *Library) ImportResource(id, path string, data []byte) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if err := resourcePath(path); err != nil {
 		return err
 	}
@@ -127,6 +132,11 @@ func (l *Library) ImportResource(id, path string, data []byte) error {
 func (l *Library) RenameResource(id, path, newPath, expected string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if err := resourcePath(path); err != nil {
 		return err
 	}
@@ -199,6 +209,9 @@ func (l *Library) RenameResource(id, path, newPath, expected string) error {
 func (l *Library) PlanTrash(id, path string) (TrashPreview, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	if err := l.reloadPreferences(); err != nil {
+		return TrashPreview{}, err
+	}
 	return l.planTrash(id, path)
 }
 func (l *Library) planTrash(id, path string) (TrashPreview, error) {
@@ -306,6 +319,11 @@ func (l *Library) planTrash(id, path string) (TrashPreview, error) {
 func (l *Library) Trash(id, path, expected string) (TrashReceipt, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return TrashReceipt{}, err
+	}
+	defer release()
 	preview, err := l.planTrash(id, path)
 	if err != nil {
 		return TrashReceipt{}, err
@@ -408,6 +426,11 @@ func ReadImport(path string) ([]byte, error) {
 func (l *Library) UndoTrash(id string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
 	index := -1
 	var receipt TrashReceipt
 	for i, item := range l.prefs.RecentTrash {

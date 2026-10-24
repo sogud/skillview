@@ -34,6 +34,7 @@ export function Settings(props: SettingsProps) {
   const { t, error: message } = useLocale()
   const [recentTrash, setRecentTrash] = useState<api.TrashReceipt[]>([])
   const [cacheMessage, setCacheMessage] = useState('')
+  const [cliMessage, setCliMessage] = useState('')
   const [diagnostics, setDiagnostics] = useState<string | null>(null)
   useEffect(() => {
     if (props.openDiagnostics)
@@ -269,6 +270,10 @@ export function Settings(props: SettingsProps) {
                 </button>
               </div>
             )}
+            <button onClick={() => void api.InstallCLI().then((path) => setCliMessage(t('Command installed: {path}', { path }))).catch((failure) => setError(message(failure)))}>
+              {t('Install command line')}
+            </button>
+            {cliMessage && <p className="quiet-note" role="status">{cliMessage}</p>}
             <div className="about">
               <Folder size={25} strokeWidth={1.3} />
               <strong>SkillView</strong>
