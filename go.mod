@@ -13,8 +13,8 @@ require (
 	github.com/wailsapp/wails/v3 v3.0.0-beta.27
 	github.com/yuin/goldmark v1.7.17
 	golang.org/x/mod v0.41.0
-	golang.org/x/net v0.60.0
-	golang.org/x/sys v0.48.0
+	golang.org/x/net v0.62.0
+	golang.org/x/sys v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -30,5 +30,5 @@ require (
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tidwall/pretty v1.2.1 // indirect
 	github.com/tidwall/sjson v1.2.5 // indirect
-	golang.org/x/text v0.42.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 )

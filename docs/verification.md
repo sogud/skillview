@@ -16,6 +16,10 @@ and malformed input. Existing frontend checks and race-enabled library and
 translation checks pass. Credentials and their storage are unchanged; no real
 Skill or key was used for this acceptance.
 
+The release binary scan identified GO-2026-6860 and GO-2026-6866 in
+`golang.org/x/net` v0.60.0. The release updates it to the fixed v0.62.0, including
+its required `x/sys` v0.49.0 and `x/text` v0.43.0 dependencies.
+
 Native window inspection was interrupted by an unavailable computer-use
 connection and timed out again after reconnection. The native binary built and
 its isolated bundle passed strict signature verification, but native pointer
