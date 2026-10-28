@@ -8,6 +8,7 @@ import * as translation$0 from "../translation/models.js";
 export interface FeedbackConfiguration {
     "enabled": boolean;
     "destination": string;
+    "dsn": string;
     "aiError"?: translation$0.ResponseDiagnostic | null;
 }
 
@@ -35,6 +36,7 @@ export interface FeedbackSubmission {
     "schema_version": number;
     "project_id": string;
     "event_id": string;
+    "error_event_id"?: string;
     "kind": string;
     "name": string;
     "timestamp": string;

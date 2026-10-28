@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import * as api from './api'
 import { Modal } from './components'
 import { useLocale } from './locales'
@@ -20,16 +20,23 @@ export function FeedbackDialog({
   const [preview, setPreview] = useState<Preview | null>(null)
   const [destination, setDestination] = useState('')
   const [busy, setBusy] = useState(false)
+  const [dsn, setDSN] = useState('')
+  const pending = useRef<ReturnType<typeof api.SendFeedback> | null>(null)
+  const mounted = useRef(true)
   const [error, setError] = useState('')
   const [receipt, setReceipt] = useState('')
 
   useEffect(() => {
     let active = true
+    mounted.current = true
     void api
       .FeedbackConfiguration()
       .then((config) => {
         if (!active) return
-        if (config.enabled) setDestination(config.destination)
+        if (config.enabled) {
+          setDestination(config.destination)
+          setDSN(config.dsn)
+        }
         setHasAIError(Boolean(config.aiError))
         setIncludeAIError(initialIncludeAIError && Boolean(config.aiError))
         setReady(true)
@@ -39,6 +46,8 @@ export function FeedbackDialog({
       })
     return () => {
       active = false
+      mounted.current = false
+      pending.current?.cancel()
     }
   }, [])
 
@@ -63,22 +72,23 @@ export function FeedbackDialog({
     setBusy(true)
     setError('')
     try {
-      const result = await api.SendFeedback(preview)
-      setReceipt(result.event_id)
+      const { buildFeedbackEnvelopes } = await import('./feedback-sentry')
+      const envelopes = await buildFeedbackEnvelopes(dsn, preview)
+      if (!mounted.current) return
+      const request = api.SendFeedback(preview, envelopes)
+      pending.current = request
+      const result = await request
+      if (mounted.current) setReceipt(result.event_id)
     } catch (failure) {
-      setError(errorMessage(failure))
+      if (mounted.current) setError(errorMessage(failure))
     } finally {
-      setBusy(false)
+      pending.current = null
+      if (mounted.current) setBusy(false)
     }
   }
 
   return (
-    <Modal
-      title={t('Send feedback')}
-      onClose={() => {
-        if (!busy) onClose()
-      }}
-    >
+    <Modal title={t('Send feedback')} onClose={onClose}>
       <div className="modal-body feedback-body">
         <p className="quiet-note">
           {t(
@@ -148,9 +158,7 @@ export function FeedbackDialog({
         )}
       </div>
       <div className="modal-actions">
-        <button disabled={busy} onClick={onClose}>
-          {t('Close')}
-        </button>
+        <button onClick={onClose}>{t('Close')}</button>
         {!receipt && (
           <button
             disabled={busy || !ready || !message.trim()}

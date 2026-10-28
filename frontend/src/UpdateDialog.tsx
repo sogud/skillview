@@ -32,7 +32,7 @@ export function UpdateDialog({
     ? Math.min(100, Math.round((status.written / status.total) * 100))
     : null
   return (
-    <Modal title={t('SkillView updates')} onClose={onClose}>
+    <Modal className="update-dialog" title={t('SkillView updates')} onClose={onClose}>
       <div className="modal-body update-body">
         <p className="quiet-note">
           {t('Version {version}', { version: status?.version ?? '…' })}

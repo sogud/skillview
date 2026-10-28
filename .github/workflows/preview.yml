@@ -49,7 +49,7 @@ jobs:
           go test -race ./internal/library ./internal/translation ./internal/cache ./internal/watch
           go test -race ./internal/locale ./internal/updates ./internal/app ./internal/network ./internal/cli ./internal/launch
           go vet ./internal/library ./internal/translation ./internal/app ./internal/updates ./internal/network ./internal/cli ./internal/launch
-          node --test frontend/src/skill-groups.test.mjs frontend/src/file-tree.test.mjs frontend/src/locales.test.mjs
+          node --test frontend/src/skill-groups.test.mjs frontend/src/file-tree.test.mjs frontend/src/locales.test.mjs frontend/src/feedback-sentry.test.mjs
 
       - name: Build and package local preview
         run: bash script/package.sh

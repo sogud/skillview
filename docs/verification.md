@@ -1,3 +1,13 @@
+## 0.1.7 manual feedback and update dialog
+
+The actual pinned Sentry JS 8.55.0 SDK generated one synthetic AI error and linked feedback; the native transport received commit receipts and subsequent read-only SQLite checks confirmed IDs, release and association. Identical retries did not add records. An isolated native App submitted a locally redacted synthetic report; its visible receipt matched the stored row. A separate slow loopback endpoint caused a bounded error; explicit retry reused the ID, and closing during retry returned to normal document reading. No real service/network configuration or installed App was changed.
+
+Focused tests cover fixed diagnostic/redaction boundaries, rejection of ambient private fields, partial delivery/deduplication, DNS failure, connection refusal, timeout/cancellation, 429 cooldown, 5xx, unauthorized/redirect responses and malformed/oversized receipts. Ten Go/race packages, focused vet, nine frontend tests, 18 × 490 locale key/placeholder checks, bindings and production builds passed. Runtime govulncheck and production npm audit reported no known vulnerabilities at this check. These do not prove absence of defects.
+
+Update-dialog-only layout now has 18px horizontal/bottom footer padding, a fixed header/footer and one scrolling body. Actual synthetic browser rendering was checked at 420×480 for German long text and Arabic RTL, with 18px body/20px button text stress, and at 900×650. Buttons stayed inside the dialog and long notes scrolled without moving the footer. This is a browser layout stress check, not macOS system text-size acceptance. The parent's screenshot description supplied the original symptom; the worker inspected local rendered UI, not that original image.
+
+No automatic behavior/error collection, screenshots, native crash symbolication or private content was sent. The backend has one configured project, no guaranteed uptime and no autostart. Pattern redaction cannot recognize arbitrary private prose. Native-speaker review, all-screen/all-size coverage, OS permission prompts, minimum macOS and Apple notarization remain unverified. Update-dialog changes apply after installing this version.
+
 ## 0.1.6 update and Wails migration checks
 
 Wails Go, frontend runtime and CLI are pinned to 3.0.0. The unchanged 18-language dictionary and regenerated bindings passed coverage/placeholder, matching, persistence, TypeScript and frontend tests. Updated runtime Go/race checks cover app, locale, library, translation, network and updates; updater tests cover transient/persistent missing manifests, recovery, unsigned or mismatched metadata, tampered downloads, wrong keys and range resumption.

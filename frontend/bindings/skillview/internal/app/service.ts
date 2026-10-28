@@ -178,11 +178,12 @@ export function Scan(): $CancellablePromise<library$0.Catalog> {
 }
 
 /**
- * SendFeedback sends exactly the reviewed payload once. The caller retains it
- * across retries, including event_id and timestamp. No background queue is used.
+ * SendFeedback accepts only SDK envelopes for the locally reviewed report.
+ * One report in flight, zero waiting queue/disk spool, zero automatic retries.
+ * The caller retains stable IDs for explicit retries, including partial delivery.
  */
-export function SendFeedback(submission: $models.FeedbackSubmission): $CancellablePromise<$models.FeedbackReceipt> {
-    return $Call.ByID(3157188355, submission);
+export function SendFeedback(submission: $models.FeedbackSubmission, envelopes: string[] | null): $CancellablePromise<$models.FeedbackReceipt> {
+    return $Call.ByID(3157188355, submission, envelopes);
 }
 
 export function SetAccentColor(color: string): $CancellablePromise<void> {

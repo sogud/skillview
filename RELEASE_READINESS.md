@@ -17,7 +17,7 @@ See [verification](docs/verification.md) for the practical limits of the observe
 2. Verify the declared macOS 13 minimum on real hardware, or raise the minimum to the oldest accepted OS. Local native acceptance is on macOS 27, Apple Silicon. Intel support requires a separate build and native acceptance.
 3. Accept storage and retrieval through real macOS Keychain and configured AI/Google Cloud providers using authorized accounts. The no-key Google endpoint is unofficial: an earlier synthetic document succeeded, while a later native attempt reported a connection failure.
 4. Review remaining Wails v3 and native-library risks, and refresh runtime dependency checks for each release. Automated scans cover known advisories, not every defect. Resource rename reports affected Markdown links and leaves their edits to the user.
-5. Accept a complete in-app upgrade between published versions, including download progress, save/discard/cancel before restart, replacement, relaunch and preservation of settings/originals. Alpha.2's checks cover signed staging, native update UI and a separate disposable helper replacement; they do not certify this whole user flow. Keep a secure backup of the update signing key. See [updates and publishing](docs/updates.md).
+5. A published 0.1.4 → 0.1.6 upgrade passed on an isolated App copy: signed download, unsaved-draft cancel, save, helper replacement, relaunch and settings preservation. This does not certify every old installation/environment or the discard branch. Keep a secure backup of the update signing key and validate each release's signature. See [updates and publishing](docs/updates.md).
 
 ## Packaging
 

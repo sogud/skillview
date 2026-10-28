@@ -54,10 +54,12 @@ export function IconButton({
 }
 
 export function Modal({
+  className,
   title,
   children,
   onClose,
 }: {
+  className?: string
   title: string
   children: ReactNode
   onClose: () => void
@@ -76,6 +78,7 @@ export function Modal({
   }, [])
   return (
     <dialog
+      className={className}
       ref={ref}
       aria-label={title}
       onCancel={(event) => {

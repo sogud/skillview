@@ -11,10 +11,12 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"reflect"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"skillview/internal/translation"
@@ -38,6 +40,7 @@ type FeedbackSubmission struct {
 	SchemaVersion int                 `json:"schema_version"`
 	ProjectID     string              `json:"project_id"`
 	EventID       string              `json:"event_id"`
+	ErrorEventID  string              `json:"error_event_id,omitempty"`
 	Kind          string              `json:"kind"`
 	Name          string              `json:"name"`
 	Timestamp     string              `json:"timestamp"`
@@ -55,6 +58,7 @@ type FeedbackReceipt struct {
 type FeedbackConfiguration struct {
 	Enabled     bool                            `json:"enabled"`
 	Destination string                          `json:"destination"`
+	DSN         string                          `json:"dsn"`
 	AIError     *translation.ResponseDiagnostic `json:"aiError,omitempty"`
 }
 
@@ -76,27 +80,34 @@ func redactFeedback(text string) string {
 	return strings.TrimSpace(text)
 }
 
-func feedbackDestination() (string, error) {
-	raw := strings.TrimSpace(os.Getenv("SKILLVIEW_FEEDBACK_ENDPOINT"))
-	if raw == "" || os.Getenv("SKILLVIEW_FEEDBACK_PROJECT_KEY") == "" {
-		return "", fmt.Errorf("Feedback is not configured in this build.")
+// Public ingestion-only DSN. No administrator credential is compiled into the app.
+// SKILLVIEW_FEEDBACK_DSN is an explicit development/deployment override; empty disables.
+func feedbackDSN() (string, string, string, error) {
+	raw, present := os.LookupEnv("SKILLVIEW_FEEDBACK_DSN")
+	if !present {
+		raw = defaultFeedbackDSN
 	}
-	endpoint, err := url.Parse(raw)
-	if err != nil || endpoint.Host == "" || endpoint.User != nil || endpoint.RawQuery != "" || endpoint.Fragment != "" || (endpoint.Path != "" && endpoint.Path != "/") {
-		return "", fmt.Errorf("Feedback configuration is invalid.")
+	if raw == "" {
+		return "", "", "", fmt.Errorf("Feedback is not configured in this build.")
 	}
-	loopback := endpoint.Hostname() == "127.0.0.1" || endpoint.Hostname() == "::1" || endpoint.Hostname() == "localhost"
-	if endpoint.Scheme != "https" && !(endpoint.Scheme == "http" && loopback) {
-		return "", fmt.Errorf("Feedback configuration is invalid.")
+	u, err := url.Parse(raw)
+	if err != nil || u.User == nil || u.Host == "" || u.RawQuery != "" || u.Fragment != "" || u.Path != "/1" {
+		return "", "", "", fmt.Errorf("Feedback configuration is invalid.")
 	}
-	return strings.TrimRight(endpoint.String(), "/"), nil
+	_, password := u.User.Password()
+	key := u.User.Username()
+	loopback := u.Hostname() == "127.0.0.1" || u.Hostname() == "::1" || u.Hostname() == "localhost"
+	if password || !feedbackID.MatchString(key) || (u.Scheme != "https" && !(u.Scheme == "http" && loopback)) {
+		return "", "", "", fmt.Errorf("Feedback configuration is invalid.")
+	}
+	return raw, u.Scheme + "://" + u.Host, key, nil
 }
 
 func (s *Service) FeedbackConfiguration() FeedbackConfiguration {
-	destination, err := feedbackDestination()
+	dsn, destination, _, err := feedbackDSN()
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return FeedbackConfiguration{Enabled: err == nil, Destination: destination, AIError: s.translationDiagnostic}
+	return FeedbackConfiguration{Enabled: err == nil, Destination: destination, DSN: dsn, AIError: s.translationDiagnostic}
 }
 
 // PreviewFeedback is entirely local. Do not add network requests here.
@@ -125,6 +136,10 @@ func (s *Service) PreviewFeedback(input FeedbackInput) (FeedbackSubmission, erro
 		if diagnostic == nil {
 			return FeedbackSubmission{}, fmt.Errorf("No AI response diagnostic is available. Review a general report instead.")
 		}
+		if _, err := rand.Read(id[:]); err != nil {
+			return FeedbackSubmission{}, fmt.Errorf("Could not prepare feedback.")
+		}
+		result.ErrorEventID = hex.EncodeToString(id[:])
 		result.Kind = "error"
 		result.Name = "ai_translation_error"
 		result.ErrorCode = "SV_AI_RESPONSE_FORMAT"
@@ -133,52 +148,148 @@ func (s *Service) PreviewFeedback(input FeedbackInput) (FeedbackSubmission, erro
 	return result, nil
 }
 
-// SendFeedback sends exactly the reviewed payload once. The caller retains it
-// across retries, including event_id and timestamp. No background queue is used.
-func (s *Service) SendFeedback(ctx context.Context, submission FeedbackSubmission) (FeedbackReceipt, error) {
-	destination, err := feedbackDestination()
+// Expected payloads are also the native privacy boundary: SDK-added user data,
+// URLs, breadcrumbs, stacks, sessions, attachments and trace metadata are rejected.
+func feedbackEvents(p FeedbackSubmission) []map[string]any {
+	stamp, _ := time.Parse(time.RFC3339, p.Timestamp)
+	common := func(id string) map[string]any {
+		return map[string]any{
+			"event_id": id, "timestamp": stamp.Unix(), "release": p.Release,
+			"environment": "production", "platform": "javascript",
+		}
+	}
+	var events []map[string]any
+	if d := p.Diagnostics.AIResponse; d != nil {
+		e := common(p.ErrorEventID)
+		e["level"] = "error"
+		e["exception"] = map[string]any{"values": []any{map[string]any{
+			"type":  "SV_AI_RESPONSE_FORMAT",
+			"value": fmt.Sprintf("category=%s; finish_reason=%s; truncation=%s", d.Category, d.FinishReason, d.Truncation),
+		}}}
+		events = append(events, e)
+	}
+	e := common(p.EventID)
+	e["type"], e["level"] = "feedback", "info"
+	f := map[string]any{"message": p.Message + "\n\nOS: " + p.Diagnostics.OS + "; Arch: " + p.Diagnostics.Arch}
+	if p.ErrorEventID != "" {
+		f["associated_event_id"] = p.ErrorEventID
+	}
+	e["contexts"] = map[string]any{"feedback": f}
+	return append(events, e)
+}
+
+func validateFeedback(p FeedbackSubmission, envelopes []string) error {
+	valid := p.Kind == "feedback" && p.Name == "user_feedback" && p.ErrorCode == "" && p.Diagnostics.AIResponse == nil && p.ErrorEventID == ""
+	valid = valid || (p.Kind == "error" && p.Name == "ai_translation_error" && p.ErrorCode == "SV_AI_RESPONSE_FORMAT" && p.Diagnostics.AIResponse != nil && p.Diagnostics.AIResponse.Valid() && feedbackID.MatchString(p.ErrorEventID) && p.ErrorEventID != p.EventID)
+	_, timestampErr := time.Parse(time.RFC3339, p.Timestamp)
+	invalid := func() error { return fmt.Errorf("Feedback changed. Review it again before sending.") }
+	if !valid || !feedbackID.MatchString(p.EventID) || p.SchemaVersion != 1 || p.ProjectID != "skillview" || timestampErr != nil || p.Release != updates.Version() || p.Message == "" || len(p.Message) > 8000 || redactFeedback(p.Message) != p.Message || p.Diagnostics.OS != runtime.GOOS || p.Diagnostics.Arch != runtime.GOARCH {
+		return invalid()
+	}
+	expected := feedbackEvents(p)
+	if len(envelopes) != len(expected) {
+		return invalid()
+	}
+	for i, wire := range envelopes {
+		if len(wire) > 32768 {
+			return invalid()
+		}
+		lines := strings.Split(wire, "\n")
+		if len(lines) != 3 {
+			return invalid()
+		}
+		kind := "event"
+		if expected[i]["type"] == "feedback" {
+			kind = "feedback"
+		}
+		want := []any{map[string]any{"event_id": expected[i]["event_id"], "sent_at": p.Timestamp}, map[string]any{"type": kind}, expected[i]}
+		for j := range lines {
+			var got, canonical any
+			b, _ := json.Marshal(want[j])
+			_ = json.Unmarshal(b, &canonical)
+			if json.Unmarshal([]byte(lines[j]), &got) != nil || !reflect.DeepEqual(got, canonical) {
+				return invalid()
+			}
+		}
+	}
+	return nil
+}
+
+var feedbackSendMu sync.Mutex
+var feedbackRetryAfter time.Time // guarded by feedbackSendMu; no timer or background retry
+const feedbackTimeout = 6 * time.Second
+
+// SendFeedback accepts only SDK envelopes for the locally reviewed report.
+// One report in flight, zero waiting queue/disk spool, zero automatic retries.
+// The caller retains stable IDs for explicit retries, including partial delivery.
+func (s *Service) SendFeedback(ctx context.Context, submission FeedbackSubmission, envelopes []string) (FeedbackReceipt, error) {
+	_, destination, key, err := feedbackDSN()
 	if err != nil {
 		return FeedbackReceipt{}, err
 	}
-	validKind := submission.Kind == "feedback" && submission.Name == "user_feedback" && submission.ErrorCode == "" && submission.Diagnostics.AIResponse == nil
-	validKind = validKind || (submission.Kind == "error" && submission.Name == "ai_translation_error" && submission.ErrorCode == "SV_AI_RESPONSE_FORMAT" && submission.Diagnostics.AIResponse != nil && submission.Diagnostics.AIResponse.Valid())
-	_, timestampErr := time.Parse(time.RFC3339, submission.Timestamp)
-	if !validKind || !feedbackID.MatchString(submission.EventID) || submission.SchemaVersion != 1 || submission.ProjectID != "skillview" ||
-		timestampErr != nil || submission.Release != updates.Version() || submission.Message == "" || len(submission.Message) > 8000 ||
-		redactFeedback(submission.Message) != submission.Message || submission.Diagnostics.OS != runtime.GOOS || submission.Diagnostics.Arch != runtime.GOARCH {
-		return FeedbackReceipt{}, fmt.Errorf("Feedback changed. Review it again before sending.")
+	if err := validateFeedback(submission, envelopes); err != nil {
+		return FeedbackReceipt{}, err
 	}
-	body, err := json.Marshal(submission)
+	if !feedbackSendMu.TryLock() {
+		return FeedbackReceipt{}, fmt.Errorf("Too many reports. Try again later.")
+	}
+	defer feedbackSendMu.Unlock()
+	if time.Now().Before(feedbackRetryAfter) {
+		return FeedbackReceipt{}, fmt.Errorf("Too many reports. Try again later.")
+	}
+	ctx, cancel := context.WithTimeout(ctx, feedbackTimeout)
+	defer cancel()
+	transport := &http.Transport{Proxy: http.ProxyFromEnvironment, MaxConnsPerHost: 1, MaxIdleConns: 1, TLSHandshakeTimeout: 3 * time.Second, ResponseHeaderTimeout: 4 * time.Second}
+	defer transport.CloseIdleConnections()
+	client := &http.Client{Transport: transport, Timeout: feedbackTimeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	duplicate := true
+	for _, body := range envelopes {
+		wasDuplicate, err := postFeedback(ctx, client, destination, key, body)
+		if err != nil {
+			return FeedbackReceipt{}, err
+		}
+		duplicate = duplicate && wasDuplicate
+	}
+	return FeedbackReceipt{EventID: submission.EventID, Duplicate: duplicate}, nil
+}
+
+func postFeedback(ctx context.Context, client *http.Client, destination, key, body string) (bool, error) {
+	unknown := func() error { return fmt.Errorf("Delivery could not be confirmed. Retry keeps the same report ID.") }
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, destination+"/api/1/envelope/", strings.NewReader(body))
 	if err != nil {
-		return FeedbackReceipt{}, fmt.Errorf("Could not prepare feedback.")
+		return false, fmt.Errorf("Feedback configuration is invalid.")
 	}
-	request, err := http.NewRequestWithContext(ctx, http.MethodPost, destination+"/api/v1/ingest", bytes.NewReader(body))
-	if err != nil {
-		return FeedbackReceipt{}, fmt.Errorf("Feedback configuration is invalid.")
-	}
-	request.Header.Set("Content-Type", "application/json")
-	// This is a public, write-only project key, never an administrator credential.
-	request.Header.Set("X-Project-Key", os.Getenv("SKILLVIEW_FEEDBACK_PROJECT_KEY"))
-	client := &http.Client{Timeout: 15 * time.Second, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	request.Header.Set("Content-Type", "application/x-sentry-envelope")
+	request.Header.Set("X-Sentry-Auth", "Sentry sentry_version=7,sentry_key="+key+",sentry_client=skillview/"+updates.Version())
 	response, err := client.Do(request)
 	if err != nil {
-		return FeedbackReceipt{}, fmt.Errorf("Delivery could not be confirmed. Retry keeps the same report ID.")
+		return false, unknown()
 	}
 	defer response.Body.Close()
 	if response.StatusCode == http.StatusTooManyRequests {
 		seconds, _ := strconv.Atoi(response.Header.Get("Retry-After"))
-		if seconds > 0 && seconds <= 3600 {
-			return FeedbackReceipt{}, fmt.Errorf("Too many reports. Retry after %d seconds.", seconds)
+		if seconds < 1 || seconds > 3600 {
+			seconds = 60
 		}
-		return FeedbackReceipt{}, fmt.Errorf("Too many reports. Try again later.")
+		feedbackRetryAfter = time.Now().Add(time.Duration(seconds) * time.Second)
+		return false, fmt.Errorf("Too many reports. Retry after %d seconds.", seconds)
 	}
-	if response.StatusCode != http.StatusCreated && response.StatusCode != http.StatusOK {
-		return FeedbackReceipt{}, fmt.Errorf("Feedback was not accepted (HTTP %d).", response.StatusCode)
+	if response.StatusCode != http.StatusOK {
+		return false, fmt.Errorf("Feedback was not accepted (HTTP %d).", response.StatusCode)
 	}
-	var receipt FeedbackReceipt
-	decoder := json.NewDecoder(io.LimitReader(response.Body, 4096))
-	if err := decoder.Decode(&receipt); err != nil || receipt.EventID != submission.EventID {
-		return FeedbackReceipt{}, fmt.Errorf("Delivery could not be confirmed. Retry keeps the same report ID.")
+	var receipt struct {
+		Accepted   int            `json:"accepted"`
+		Duplicates int            `json:"duplicates"`
+		Skipped    map[string]int `json:"skipped"`
 	}
-	return receipt, nil
+	b, err := io.ReadAll(io.LimitReader(response.Body, 4097))
+	if err != nil || len(b) > 4096 {
+		return false, unknown()
+	}
+	decoder := json.NewDecoder(bytes.NewReader(b))
+	decoder.DisallowUnknownFields()
+	if decoder.Decode(&receipt) != nil || decoder.Decode(new(any)) != io.EOF || receipt.Accepted < 0 || receipt.Duplicates < 0 || receipt.Accepted+receipt.Duplicates != 1 || len(receipt.Skipped) != 0 {
+		return false, unknown()
+	}
+	return receipt.Duplicates == 1, nil
 }
