@@ -115,7 +115,7 @@ func (m *Manager) Check(ctx context.Context) Status {
 	release, err := m.updater.Check(ctx)
 	if err != nil {
 		m.log.write("check_failed", diagnosticReason(err))
-		status.State, status.Message = "error", checkErrorMessage(err)
+		status = Status{Version: Version(), State: "error", Message: checkErrorMessage(err)}
 	} else if release == nil {
 		status = Status{Version: Version(), State: "up-to-date"}
 	} else {

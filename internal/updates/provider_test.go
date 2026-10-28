@@ -35,19 +35,21 @@ func (testHost) OpenWindow(updater.WindowOptions) updater.WindowHandle {
 func (testHost) Quit() { panic("unexpected restart") }
 
 type releaseFixture struct {
-	server          *httptest.Server
-	public          ed25519.PublicKey
-	private         ed25519.PrivateKey
-	version         string
-	manifestVersion string
-	zip             []byte
-	download        []byte
-	unsigned        bool
-	missingManifest bool
-	malformed       bool
-	rateLimited     bool
-	cutoff          bool
-	downloadCount   int
+	server               *httptest.Server
+	public               ed25519.PublicKey
+	private              ed25519.PrivateKey
+	version              string
+	manifestVersion      string
+	zip                  []byte
+	download             []byte
+	unsigned             bool
+	missingManifest      bool
+	missingFirstManifest bool
+	manifestRequests     int
+	malformed            bool
+	rateLimited          bool
+	cutoff               bool
+	downloadCount        int
 }
 
 func newReleaseFixture(t *testing.T) *releaseFixture {
@@ -96,7 +98,8 @@ func (f *releaseFixture) handle(w http.ResponseWriter, r *http.Request) {
 	case r.URL.Path == "/releases.atom":
 		_, _ = fmt.Fprintf(w, `<feed xmlns="http://www.w3.org/2005/Atom"><entry><link href="%s/releases/tag/v%s"/></entry></feed>`, f.server.URL, f.version)
 	case strings.HasSuffix(r.URL.Path, "/manifest.json"):
-		if f.missingManifest {
+		f.manifestRequests++
+		if f.missingManifest || (f.missingFirstManifest && f.manifestRequests == 1) {
 			http.NotFound(w, r)
 			return
 		}
@@ -218,7 +221,7 @@ func TestTamperedOrWrongKeyUpdateNeverBecomesReady(t *testing.T) {
 	}
 }
 
-func TestMissingManifestIsManualOnlyAndUnsignedManifestIsRejected(t *testing.T) {
+func TestMissingOrInvalidManifestFailsClosed(t *testing.T) {
 	for _, mode := range []string{"missing", "unsigned", "malformed", "version mismatch"} {
 		t.Run(mode, func(t *testing.T) {
 			f := newReleaseFixture(t)
@@ -228,15 +231,11 @@ func TestMissingManifestIsManualOnlyAndUnsignedManifestIsRejected(t *testing.T) 
 			}
 			u := fixtureUpdater(t, f, f.public)
 			release, err := u.Check(context.Background())
-			if mode == "missing" {
-				if err != nil || release == nil || hasSignature(release) {
-					t.Fatalf("manual release: %#v %v", release, err)
-				}
-				if err := u.DownloadAndInstall(context.Background()); err == nil {
-					t.Fatal("unsigned download allowed")
-				}
-			} else if err == nil {
-				t.Fatal("invalid manifest accepted")
+			if err == nil || release != nil {
+				t.Fatal("missing or invalid manifest accepted")
+			}
+			if u.DownloadedPath() != "" || u.State() == updater.StateReady {
+				t.Fatal("invalid release staged")
 			}
 		})
 	}
@@ -273,18 +272,41 @@ func TestCancelledCheckKeepsCurrentApp(t *testing.T) {
 	}
 }
 
-func TestManualReleaseCannotDownloadThroughProvider(t *testing.T) {
+func TestUnsignedReleaseCannotDownloadThroughProvider(t *testing.T) {
+	p := &releaseProvider{}
+	for _, release := range []*updater.Release{nil, {Version: "0.1.0"}} {
+		if err := p.Download(context.Background(), release, io.Discard, func(int64, int64) {}); err == nil {
+			t.Fatal("unsigned release downloaded")
+		}
+	}
+}
+
+func TestTransientMissingManifestRecoversThroughManager(t *testing.T) {
+	f := newReleaseFixture(t)
+	f.missingFirstManifest = true
+	u := fixtureUpdater(t, f, f.public)
+	m := &Manager{updater: u, fixture: true, status: Status{Version: fixtureCurrentVersion, State: "idle"}}
+	status := m.Check(context.Background())
+	if f.manifestRequests != 2 || status.State != "available" || status.Latest != f.version || status.Message != "Updates cannot be installed in a preview window." {
+		t.Fatalf("manifest retry lost signature: requests=%d status=%#v", f.manifestRequests, status)
+	}
+	if u.DownloadedPath() != "" {
+		t.Fatal("check downloaded automatically")
+	}
+}
+
+func TestPersistentMissingManifestIsRetryableCheckError(t *testing.T) {
 	f := newReleaseFixture(t)
 	f.missingManifest = true
-	p, err := newProvider(f.server.Client(), f.server.URL, true)
-	if err != nil {
-		t.Fatal(err)
+	u := fixtureUpdater(t, f, f.public)
+	m := &Manager{updater: u, fixture: true, status: Status{Version: fixtureCurrentVersion, State: "idle"}}
+	status := m.Check(context.Background())
+	if f.manifestRequests != 2 || status.State != "error" || status.CanInstall || status.Message != invalidReleaseMessage {
+		t.Fatalf("missing manifest incorrectly classified: %#v", status)
 	}
-	release, err := p.Check(context.Background(), updater.CheckRequest{CurrentVersion: fixtureCurrentVersion, Platform: "darwin", Arch: "arm64"})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if err := p.Download(context.Background(), release, io.Discard, func(int64, int64) {}); err == nil {
-		t.Fatal("unsigned release downloaded")
+	f.missingManifest = false
+	status = m.Check(context.Background())
+	if status.State != "available" || status.Message != "Updates cannot be installed in a preview window." {
+		t.Fatalf("retry did not recover signed update: %#v", status)
 	}
 }

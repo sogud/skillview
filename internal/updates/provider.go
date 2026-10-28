@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/wailsapp/wails/v3/pkg/updater"
 	"github.com/wailsapp/wails/v3/pkg/updater/providers/endpoint"
@@ -87,7 +88,7 @@ func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (
 	}
 	assetURL, _ := release.Metadata["github.asset.url"].(string)
 	manifestURL := strings.TrimSuffix(assetURL, "/"+release.Artifact.Filename) + "/manifest.json"
-	manifest, err := endpoint.New(endpoint.Config{URL: manifestURL, HTTPClient: p.client})
+	manifest, err := endpoint.New(endpoint.Config{URL: manifestURL, HTTPClient: p.client, Headers: map[string]string{"Cache-Control": "no-cache"}})
 	if err != nil {
 		return nil, err
 	}
@@ -96,9 +97,30 @@ func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (
 		return nil, err
 	}
 	if signed == nil {
-		// Earlier releases did not ship a manifest. Show the release, but offer
-		// only its manual download link rather than accepting an unsigned ZIP.
-		return release, nil
+		// GitHub can expose release metadata before a cached manifest request
+		// becomes available. An absent manifest does not prove the release is
+		// intentionally unsigned. Retry once, then fail closed with a retryable
+		// check error instead of permanently labelling it manual-only.
+		if p.log != nil {
+			p.log("manifest_retry", "reason=missing_or_stale")
+		}
+		timer := time.NewTimer(250 * time.Millisecond)
+		defer timer.Stop()
+		select {
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		case <-timer.C:
+		}
+		signed, err = manifest.Check(ctx, req)
+		if err != nil {
+			return nil, err
+		}
+		if signed == nil {
+			if p.log != nil {
+				p.log("manifest_unavailable", "reason=missing_or_stale")
+			}
+			return nil, errors.New(invalidReleaseMessage)
+		}
 	}
 	if signed.Version != release.Version || signed.Artifact.Filename != release.Artifact.Filename ||
 		signed.Metadata["endpoint.artifact.url"] != assetURL || !hasSignature(signed) {
@@ -113,6 +135,9 @@ func (p *releaseProvider) Check(ctx context.Context, req updater.CheckRequest) (
 }
 
 func hasSignature(release *updater.Release) bool {
+	if release == nil {
+		return false
+	}
 	v := release.Verification
 	return v != nil && v.DigestAlgo == "sha512" && len(v.Digest) == sha512.Size &&
 		v.SignatureAlgo == "ed25519ph" && len(v.Signature) == ed25519.SignatureSize

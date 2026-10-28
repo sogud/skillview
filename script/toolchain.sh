@@ -3,6 +3,7 @@ set -euo pipefail
 
 PROJECT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TOOLS_DIR="$PROJECT_DIR/runtime/toolchain"
+WAILS_VERSION=v3.0.0
 export SKILLVIEW_TMP_DIR="${SKILLVIEW_TMP_DIR:-$PROJECT_DIR/tmp}"
 export GOPATH="$PROJECT_DIR/runtime/go"
 export GOCACHE="$SKILLVIEW_TMP_DIR/go-cache"
@@ -37,8 +38,8 @@ ensure_go() {
 
 ensure_wails() {
   ensure_go
-  if [[ ! -x "$GOBIN/wails3" ]]; then
-    go install github.com/wailsapp/wails/v3/cmd/wails3@v3.0.0-beta.27
+  if [[ ! -x "$GOBIN/wails3" ]] || [[ "$("$GOBIN/wails3" version 2>&1)" != "$WAILS_VERSION" ]]; then
+    go install "github.com/wailsapp/wails/v3/cmd/wails3@$WAILS_VERSION"
   fi
 }
 

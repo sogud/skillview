@@ -1,3 +1,13 @@
+## 0.1.6 update and Wails migration checks
+
+Wails Go, frontend runtime and CLI are pinned to 3.0.0. The unchanged 18-language dictionary and regenerated bindings passed coverage/placeholder, matching, persistence, TypeScript and frontend tests. Updated runtime Go/race checks cover app, locale, library, translation, network and updates; updater tests cover transient/persistent missing manifests, recovery, unsigned or mismatched metadata, tampered downloads, wrong keys and range resumption.
+
+Public 0.1.5 checks through the old beta.27 provider, Updater and Manager retained the signed manifest. Internal signature loss was not reproduced. The reproducible classification flaw was that a missing manifest became a manual-only release. A missing or stale manifest now retries once with cache revalidation, then fails closed as a retryable check error. A failed recheck clears a stale install offer. Wails 3.0 stages beside the target, removing the old requirement that the App and system temporary directory share a volume.
+
+Wails 3.0 includes the macOS child-frame control-channel fix for [GHSA-vfcr-9mmf-hc6m](https://github.com/wailsapp/wails/security/advisories/GHSA-vfcr-9mmf-hc6m), which affects beta.27. SkillView already skips raw HTML in Markdown and embeds no iframe; this reduces the exposed content path but does not justify retaining the old framework. The package is a desktop build, not Wails server mode. Go 1.27.3 and Vite 8.3.4 remain pinned. See the [official release](https://github.com/wailsapp/wails/releases/tag/v3.0.0) for security fixes and remaining limitations.
+
+Native package and public release evidence is recorded for the exact release separately. Ad-hoc signing is not Apple notarization; minimum-OS, all-screen/all-size, OS permission prompts and native-speaker review remain outside this acceptance. Feedback submission is still unconfigured and disabled.
+
 # Verification
 
 ## Interface languages and manual report preparation (0.1.5)

@@ -68,3 +68,18 @@ func TestBundleValidationRejectsMissingOrNonAppPayload(t *testing.T) {
 		t.Fatal("missing app accepted")
 	}
 }
+
+func TestFailedRecheckClearsPreviousInstallOffer(t *testing.T) {
+	f := newReleaseFixture(t)
+	f.missingManifest = true
+	u := fixtureUpdater(t, f, f.public)
+	m := &Manager{updater: u, fixture: true, status: Status{Version: fixtureCurrentVersion, State: "available", Latest: f.version, CanInstall: true}}
+	status := m.Check(context.Background())
+	if status.State != "error" || status.CanInstall || status.Latest != "" || status.ReleaseURL != "" {
+		t.Fatalf("failed check retained stale install offer: %#v", status)
+	}
+	m.Download(context.Background())
+	if f.downloadCount != 0 {
+		t.Fatal("failed recheck allowed download")
+	}
+}

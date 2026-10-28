@@ -21,9 +21,9 @@ func TestRateLimitedAPIUsesFeedWithTheSameSignatureVerification(t *testing.T) {
 			}
 			u := fixtureUpdater(t, f, f.public)
 			release, err := u.Check(context.Background())
-			if mode == "unsigned" {
+			if mode == "unsigned" || mode == "missing" {
 				if err == nil || release != nil {
-					t.Fatal("feed accepted unsigned manifest")
+					t.Fatal("feed accepted missing or unsigned manifest")
 				}
 				return
 			}

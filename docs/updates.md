@@ -14,7 +14,7 @@ Updates and translation use macOS HTTP/HTTPS proxy settings, or explicit proxy e
 
 Preview builds receive preview and stable releases. Stable builds receive stable releases only. Versions follow semantic version ordering, including `alpha.2` → `alpha.3` → `0.1.0`; an equal or older version is not offered.
 
-Install the app in `/Applications` or another writable directory on the same volume as macOS's temporary directory. The pinned Wails helper cannot rename an update across volumes; SkillView checks this before allowing in-app installation. Read-only, translocated and external-volume installations can use **View on GitHub** for a manual download. A failed download or verification never replaces the running app.
+Install the app in `/Applications` or another writable directory. Starting in 0.1.6, Wails 3.0 stages updates beside the installed app, so an external volume no longer has to match macOS's temporary volume. Read-only and translocated installations still need a writable destination. Earlier clients retain their original volume restriction and may need one manual move or upgrade. A failed download or verification never replaces the running app.
 
 ### Interrupted downloads and diagnostics
 
@@ -50,7 +50,7 @@ The private update key must remain outside the repository and build artifacts. B
 4. Commit and tag the reviewed source as `v0.1.0-alpha.5`. Publish a GitHub **prerelease** with the reviewed ZIP, its checksum, build information and **manifest.json** together. Use the corresponding stable tag and a regular release when stable acceptance is complete. Never reuse a published tag or replace its ZIP with different bytes.
 5. Download the published assets independently and verify them. An already-installed previous version must discover the new release, download it, preserve/cancel unsaved edits correctly, replace the bundle and reopen with the new version. A package test alone does not confirm this complete installation path.
 
-The built-in provider checks up to the ten most recent releases. Publishing a draft does not offer an update. A release without a manifest shows a manual download link; a malformed manifest or unsigned artifact is refused.
+The built-in provider checks up to the ten most recent releases. Publishing a draft does not offer an update. From 0.1.6, a missing or stale manifest is retried once with cache revalidation, then reported as a retryable verification error; it is never treated as permission to install unsigned content. Malformed, mismatched or unsigned manifests are refused. Earlier clients can display a manual-only message when a manifest request temporarily returns no result; checking again can recover once the signed manifest is reachable.
 
 ## Isolated acceptance
 
