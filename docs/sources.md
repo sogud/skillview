@@ -38,3 +38,10 @@ Configuration and installation are separate: the app checks installed desktop ap
 - [Wails](https://v3.wails.io/): native window, dialogs, menu bindings and WebView lifecycle.
 
 Pinned versions are in `go.mod` and `frontend/package-lock.json`. License texts are collected in `THIRD_PARTY_NOTICES.md` and included in the application bundle. No Magpie implementation code is copied into SkillView.
+
+
+## Application icon
+
+The 0.1.8 icon uses an imagegen-generated warm ivory, charcoal and sage folded-book illustration, requested by the user. The exact approved source is preserved at `build/icon-source.png` (Library `libfile_8406cc13e2488191b052159d7522ee54`; original filename `exec-ab684f65-a29c-44dd-b10d-62d5a983f95b.png`). No text or third-party brand mark was added.
+
+`script/icon.sh` uses `build/icon.swift` to place the unchanged artwork inside the existing 64/1024 inset and 192/1024 corner radius, render the ten macOS iconset PNGs (16–1024 px), and generate `tmp/AppIcon.icns`. The original opaque square source is not used directly as the Dock icon. `script/build.sh` copies the ICNS into the App's resources; `build/Info.plist` refers to `AppIcon`.

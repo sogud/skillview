@@ -1,6 +1,10 @@
 import AppKit
 
 let destination = CommandLine.arguments[1]
+guard CommandLine.arguments.count == 3,
+      let source = NSImage(contentsOfFile: CommandLine.arguments[2]) else {
+    fatalError("Expected iconset destination and source PNG")
+}
 let sizes = [(16, "16x16"), (32, "16x16@2x"), (32, "32x32"), (64, "32x32@2x"), (128, "128x128"), (256, "128x128@2x"), (256, "256x256"), (512, "256x256@2x"), (512, "512x512"), (1024, "512x512@2x")]
 
 for (size, filename) in sizes {
@@ -9,18 +13,13 @@ for (size, filename) in sizes {
     NSGraphicsContext.saveGraphicsState()
     NSGraphicsContext.current = context
     context.cgContext.scaleBy(x: CGFloat(size) / 1024, y: CGFloat(size) / 1024)
-    NSColor(calibratedRed: 0.21, green: 0.44, blue: 0.86, alpha: 1).setFill()
-    NSBezierPath(roundedRect: NSRect(x: 64, y: 64, width: 896, height: 896), xRadius: 192, yRadius: 192).fill()
-    NSColor.white.setFill()
-    for x in [242.0, 522.0] {
-        NSBezierPath(roundedRect: NSRect(x: x, y: 280, width: 260, height: 444), xRadius: 34, yRadius: 34).fill()
-    }
-    NSColor(calibratedRed: 0.75, green: 0.84, blue: 1, alpha: 1).setFill()
-    for x in [286.0, 566.0] {
-        for y in [426.0, 500.0, 574.0] {
-            NSBezierPath(roundedRect: NSRect(x: x, y: y, width: 172, height: 16), xRadius: 8, yRadius: 8).fill()
-        }
-    }
+    // Standard macOS padding and rounded mask; preserve the source artwork.
+    let bounds = NSRect(x: 64, y: 64, width: 896, height: 896)
+    context.cgContext.clear(CGRect(x: 0, y: 0, width: 1024, height: 1024))
+    context.imageInterpolation = .high
+    context.cgContext.setShouldAntialias(true)
+    NSBezierPath(roundedRect: bounds, xRadius: 192, yRadius: 192).addClip()
+    source.draw(in: bounds, from: .zero, operation: .copy, fraction: 1)
     NSGraphicsContext.restoreGraphicsState()
     try bitmap.representation(using: .png, properties: [:])!.write(to: URL(fileURLWithPath: destination).appendingPathComponent("icon_\(filename).png"))
 }

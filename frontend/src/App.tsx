@@ -11,6 +11,7 @@ import {
   Download,
   ArchiveRestore,
   MessageSquare,
+  Ellipsis,
 } from 'lucide-react'
 import * as api from './api'
 import type {
@@ -39,14 +40,24 @@ import { resolveLocalLink } from './local-link'
 import { groupSkills, selectCopy, type SkillGroup } from './skill-groups'
 
 export default function App() {
-  const { t, error: message, language, setLanguage } = useLocale()
+  const { t, error: message, language, setLanguage, direction } = useLocale()
   const [view, setView] = useState<'skills' | 'plugins'>('skills')
   const plugins = useRef<PluginsHandle>(null)
+  const [toolbarSearch, setToolbarSearch] = useState<HTMLDivElement | null>(
+    null,
+  )
+  const [toolbarActions, setToolbarActions] = useState<HTMLDivElement | null>(
+    null,
+  )
+  const [actionsOpen, setActionsOpen] = useState(false)
+  const actions = useRef<HTMLDivElement>(null)
+  const actionsTrigger = useRef<HTMLButtonElement>(null)
   const [verified, setVerified] = useState(false)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
   const [query, setQuery] = useState('')
   const [agentFilter, setAgentFilter] = useState('')
   const [translationVersion, setTranslationVersion] = useState(0)
+  const [translationDisplayVersion, setTranslationDisplayVersion] = useState(0)
   const [selected, setSelected] = useState<Skill | null>(null)
   const [document, setDocument] = useState<Document | null>(null)
   const [resources, setResources] = useState<Resource[]>([])
@@ -62,7 +73,10 @@ export default function App() {
   )
   const [theme, setTheme] = useState('system')
   const [accentColor, setAccentColor] = useState('')
-  const [readerLayout, setReaderLayout] = useState({ fontSize: 14, width: 244 })
+  const [readerLayout, setReaderLayout] = useState({
+    fontSize: 14,
+    width: 244,
+  })
   const [feedbackOpen, setFeedbackOpen] = useState<
     'general' | 'translation' | null
   >(null)
@@ -93,6 +107,36 @@ export default function App() {
   const currentState = useRef({ draft, saving, selected, document })
   currentState.current = { draft, saving, selected, document }
   const dirty = !!draft && draft.text !== draft.base.text
+
+  useEffect(() => {
+    if (!actionsOpen) return
+    function closeOutside(event: PointerEvent) {
+      if (
+        event.target instanceof Node &&
+        !actions.current?.contains(event.target)
+      )
+        setActionsOpen(false)
+    }
+    window.document.addEventListener('pointerdown', closeOutside)
+    return () =>
+      window.document.removeEventListener('pointerdown', closeOutside)
+  }, [actionsOpen])
+  useEffect(() => setActionsOpen(false), [view])
+  useEffect(() => {
+    if (!actionsOpen) return
+    const frame = requestAnimationFrame(() =>
+      actions.current
+        ?.querySelector<HTMLButtonElement>('[role="menuitem"]:not(:disabled)')
+        ?.focus(),
+    )
+    return () => cancelAnimationFrame(frame)
+  }, [actionsOpen])
+
+  function closeToolbarActions() {
+    setActionsOpen(false)
+    // Focus the trigger before a dialog mounts so it can restore a visible control.
+    if (actionsOpen) actionsTrigger.current?.focus()
+  }
 
   useEffect(() => {
     return Events.On('skillview:scan', (event) =>
@@ -217,8 +261,11 @@ export default function App() {
         const state = currentState.current
         try {
           const cached = await api.CachedCatalog()
-          if (mounted.current && !currentState.current.saving) setCatalog(cached)
-        } catch { /* The current document and draft remain available. */ }
+          if (mounted.current && !currentState.current.saving)
+            setCatalog(cached)
+        } catch {
+          /* The current document and draft remain available. */
+        }
         if (!state.selected || !state.document || state.draft) return
         const sequence = readSequence.current
         try {
@@ -474,8 +521,24 @@ export default function App() {
       }}
     >
       <div className="titlebar">
+        <div className="toolbar-search" dir={direction} ref={setToolbarSearch}>
+          {view === 'skills' && !selected && (
+            <div className="search">
+              <Search size={14} />
+              <input
+                ref={search}
+                aria-label={t('Search Skills')}
+                placeholder={t('Search Skills')}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
+              <kbd>⌘F</kbd>
+            </div>
+          )}
+        </div>
         <div
           className="view-switch"
+          dir={direction}
           role="tablist"
           aria-label={t('Library view')}
         >
@@ -483,6 +546,7 @@ export default function App() {
             <button
               key={mode}
               id={`${mode}-tab`}
+              title={t(mode === 'skills' ? 'Skills' : 'Plugins')}
               role="tab"
               aria-selected={view === mode}
               aria-controls={`${mode}-view`}
@@ -505,35 +569,147 @@ export default function App() {
             </button>
           ))}
         </div>
-        <div className="window-actions">
-          {!!updateStatus?.latest && (
-            <button
-              className="update-badge"
-              title={t(
-                updateStatus.state === 'ready'
-                  ? 'Restart to update'
-                  : 'Update available',
-              )}
-              aria-label={t(
-                updateStatus.state === 'ready'
-                  ? 'Restart to update'
-                  : 'Update available',
-              )}
-              onClick={openUpdates}
-            >
-              <Download size={17} />
-            </button>
+        <div
+          className={`window-actions${actionsOpen ? ' open' : ''}`}
+          dir={direction}
+          ref={actions}
+          onKeyDown={(event) => {
+            if (
+              actionsOpen &&
+              ['ArrowDown', 'ArrowUp', 'Home', 'End'].includes(event.key)
+            ) {
+              event.preventDefault()
+              const items = Array.from(
+                event.currentTarget.querySelectorAll<HTMLButtonElement>(
+                  '[role="menuitem"]:not(:disabled)',
+                ),
+              )
+              const current = items.indexOf(
+                window.document.activeElement as HTMLButtonElement,
+              )
+              const next =
+                event.key === 'Home'
+                  ? 0
+                  : event.key === 'End'
+                    ? items.length - 1
+                    : (current +
+                        (event.key === 'ArrowDown' ? 1 : -1) +
+                        items.length) %
+                      items.length
+              items[next]?.focus()
+            }
+            if (event.key === 'Escape' && actionsOpen) {
+              event.preventDefault()
+              event.stopPropagation()
+              setActionsOpen(false)
+              actionsTrigger.current?.focus()
+            }
+          }}
+          onBlur={(event) => {
+            if (!event.currentTarget.contains(event.relatedTarget))
+              setActionsOpen(false)
+          }}
+        >
+          {view === 'skills' && !selected && (
+            <IconButton
+              icon={Plus}
+              label={t('New Skill')}
+              onClick={() => request(() => setCreating(true))}
+              disabled={scanning || saving}
+            />
           )}
-          <IconButton
-            icon={MessageSquare}
-            label={t('Send feedback')}
-            onClick={() => setFeedbackOpen('general')}
-          />
-          <IconButton
-            icon={SettingsIcon}
-            label={t('Settings')}
-            onClick={() => setSettings('general')}
-          />
+          <button
+            type="button"
+            className={`icon-button toolbar-overflow${updateStatus?.latest ? ' has-update' : ''}`}
+            ref={actionsTrigger}
+            aria-label={
+              updateStatus?.latest
+                ? `${t('More actions')} · ${t('Update available')}`
+                : t('More actions')
+            }
+            title={
+              updateStatus?.latest
+                ? `${t('More actions')} · ${t('Update available')}`
+                : t('More actions')
+            }
+            aria-haspopup="menu"
+            aria-expanded={actionsOpen}
+            aria-controls="toolbar-actions"
+            onKeyDown={(event) => {
+              if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault()
+                setActionsOpen(true)
+              }
+            }}
+            onClick={() => setActionsOpen((open) => !open)}
+          >
+            <Ellipsis size={16} />
+          </button>
+          <div
+            className="toolbar-action-items"
+            id="toolbar-actions"
+            role="menu"
+            aria-label={t('More actions')}
+            onClick={(event) => {
+              if ((event.target as HTMLElement).closest('button'))
+                closeToolbarActions()
+            }}
+          >
+            <div className="toolbar-view-actions" ref={setToolbarActions}>
+              {view === 'skills' && !selected && (
+                <>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => {
+                      void refresh().catch(fail)
+                    }}
+                    disabled={scanning}
+                  >
+                    <RotateCw size={16} />
+                    <span>{t('Rescan folders')}</span>
+                  </button>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={() => request(() => setArchivesOpen(true))}
+                    disabled={scanning || saving}
+                  >
+                    <ArchiveRestore size={16} />
+                    <span>{t('Archived Skills')}</span>
+                  </button>
+                </>
+              )}
+            </div>
+            {!!updateStatus?.latest && (
+              <button type="button" role="menuitem" onClick={openUpdates}>
+                <Download size={16} />
+                <span>
+                  {t(
+                    updateStatus.state === 'ready'
+                      ? 'Restart to update'
+                      : 'Update available',
+                  )}
+                </span>
+              </button>
+            )}
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => setFeedbackOpen('general')}
+            >
+              <MessageSquare size={16} />
+              <span>{t('Send feedback')}</span>
+            </button>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => setSettings('general')}
+            >
+              <SettingsIcon size={16} />
+              <span>{t('Settings')}</span>
+            </button>
+          </div>
         </div>
       </div>
       <div className="shell">
@@ -550,39 +726,6 @@ export default function App() {
               hidden={!!selected}
               aria-label={t('Skills library')}
             >
-              <div className="library-toolbar">
-                <div className="search">
-                  <Search size={14} />
-                  <input
-                    ref={search}
-                    aria-label={t('Search Skills')}
-                    placeholder={t('Search Skills')}
-                    value={query}
-                    onChange={(event) => setQuery(event.target.value)}
-                  />
-                  <kbd>⌘F</kbd>
-                </div>
-                <IconButton
-                  icon={RotateCw}
-                  label={t('Rescan folders')}
-                  onClick={() => {
-                    void refresh().catch(fail)
-                  }}
-                  disabled={scanning}
-                />
-                <IconButton
-                  icon={Plus}
-                  label={t('New Skill')}
-                  onClick={() => request(() => setCreating(true))}
-                  disabled={scanning || saving}
-                />
-                <IconButton
-                  icon={ArchiveRestore}
-                  label={t('Archived Skills')}
-                  onClick={() => request(() => setArchivesOpen(true))}
-                  disabled={scanning || saving}
-                />
-              </div>
               <AgentTabs
                 agents={catalog?.agents ?? []}
                 groups={groups}
@@ -649,8 +792,12 @@ export default function App() {
                       {query
                         ? t('Try a Skill name or a word from its description.')
                         : verified
-                          ? t('Scan folders or restore a Skill from the archive.')
-                          : t('Scanning only starts when you click Scan folders.')}
+                          ? t(
+                              'Scan folders or restore a Skill from the archive.',
+                            )
+                          : t(
+                              'Scanning only starts when you click Scan folders.',
+                            )}
                     </p>
                     {!query && !scanning && (
                       <button
@@ -663,7 +810,9 @@ export default function App() {
                       </button>
                     )}
                     {!query && !scanning && verified && (
-                      <button onClick={() => request(() => setArchivesOpen(true))}>
+                      <button
+                        onClick={() => request(() => setArchivesOpen(true))}
+                      >
                         {t('Archived Skills')}
                       </button>
                     )}
@@ -694,6 +843,7 @@ export default function App() {
                   })
                 }
                 translationVersion={translationVersion}
+                translationDisplayVersion={translationDisplayVersion}
                 fontSize={readerLayout.fontSize}
                 explorerWidth={readerLayout.width}
                 onLayoutChange={(fontSize, width) => {
@@ -778,6 +928,9 @@ export default function App() {
             <Plugins
               ref={plugins}
               active={view === 'plugins'}
+              toolbarSearch={toolbarSearch}
+              toolbarActions={toolbarActions}
+              onToolbarAction={closeToolbarActions}
               fontSize={readerLayout.fontSize}
               explorerWidth={readerLayout.width}
             />
@@ -840,7 +993,10 @@ export default function App() {
               .then(() => setLanguage(value))
               .catch(fail)
           }}
-          onTranslationSaved={() => setTranslationVersion((value) => value + 1)}
+          onTranslationSaved={(invalidate = true) => {
+            setTranslationDisplayVersion((value) => value + 1)
+            if (invalidate) setTranslationVersion((value) => value + 1)
+          }}
           catalog={catalog}
           onTab={setSettings}
           onTheme={(value) => {

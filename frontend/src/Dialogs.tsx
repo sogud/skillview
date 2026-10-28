@@ -18,7 +18,7 @@ type SettingsProps = {
   tab: SettingsTab
   language: string
   onLanguage: (language: string) => void
-  onTranslationSaved: () => void
+  onTranslationSaved: (invalidate?: boolean) => void
   theme: string
   accentColor: string
   onAccentColor: (color: string) => void
@@ -646,9 +646,14 @@ const targetLanguages = [
   ['ru', 'Русский'],
 ]
 
-function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
+function TranslationSettingsForm({
+  onSaved,
+}: {
+  onSaved: (invalidate: boolean) => void
+}) {
   const { t, error: message } = useLocale()
   const [settings, setSettings] = useState<TranslationSettings | null>(null)
+  const savedSettings = useRef<TranslationSettings | null>(null)
   const [aiKey, setAIKey] = useState('')
   const [providerKey, setProviderKey] = useState('')
   const [clearAI, setClearAI] = useState(false)
@@ -672,7 +677,10 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
     void api
       .GetTranslationSettings()
       .then((value) => {
-        if (active) setSettings(value)
+        if (active) {
+          savedSettings.current = value
+          setSettings(value)
+        }
       })
       .catch((failure) => {
         if (active) setError(message(failure))
@@ -697,13 +705,31 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
         providerKey,
         clearProvider,
       )
+      const previous = savedSettings.current
+      const invalidate =
+        !previous ||
+        !!aiKey ||
+        !!providerKey ||
+        clearAI ||
+        clearProvider ||
+        (
+          [
+            'provider',
+            'targetLanguage',
+            'baseUrl',
+            'model',
+            'libreUrl',
+          ] as const
+        ).some((key) => previous[key] !== settings[key])
       setAIKey('')
       setProviderKey('')
       setClearAI(false)
       setClearProvider(false)
-      setSettings(await api.GetTranslationSettings())
+      const next = await api.GetTranslationSettings()
+      savedSettings.current = next
+      setSettings(next)
       setSaved(true)
-      onSaved()
+      onSaved(invalidate)
       if (testConnection) {
         setTesting(true)
         const request = api.TestTranslationConnection()
@@ -780,6 +806,26 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
             }))}
           />
         </label>
+        <label className="field">
+          {t('Translation display')}
+          <Select
+            label={t('Translation display')}
+            value={settings.displayMode || 'immersive'}
+            onChange={(displayMode) => {
+              setSettings({ ...settings, displayMode })
+              setSaved(false)
+            }}
+            options={[
+              { value: 'immersive', label: t('Immersive bilingual') },
+              { value: 'translation', label: t('Translation only') },
+            ]}
+          />
+        </label>
+        <p className="quiet-note">
+          {t(
+            'Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.',
+          )}
+        </p>
         {settings.provider === 'youdao' && (
           <p className="quiet-note">
             {t(

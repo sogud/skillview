@@ -153,39 +153,11 @@ h1 {
     0 0 0 1px var(--line);
   background: #fff;
 }
-.window-bar {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  height: 33px;
-  padding: 0 14px;
-  border-bottom: 1px solid var(--line);
-  position: relative;
-}
-.window-bar > span {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ff6059;
-}
-.window-bar > span:nth-child(2) {
-  background: #ffbd2e;
-}
-.window-bar > span:nth-child(3) {
-  background: #28c840;
-}
-.window-bar p {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  color: var(--muted);
-  font-size: 11px;
-}
 .product > img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 0 0 12px 12px;
+  border-radius: 12px;
 }
 figcaption {
   position: absolute;

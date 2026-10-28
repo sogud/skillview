@@ -65,6 +65,14 @@ func TestAIKeepsMarkdownCodeLinksAndCaches(t *testing.T) {
 	if err != nil || !again.Cached || calls.Load() != 1 {
 		t.Fatalf("cache: %+v %v %d", again, err, calls.Load())
 	}
+	settings.DisplayMode = "translation"
+	if err := s.Update(settings, "", "", false, false); err != nil {
+		t.Fatal(err)
+	}
+	again, err = s.Translate(context.Background(), body, "revision")
+	if err != nil || !again.Cached || calls.Load() != 1 || again.Text != result.Text {
+		t.Fatalf("display change repeated or changed translation: cached=%v calls=%d err=%v", again.Cached, calls.Load(), err)
+	}
 	settings.TargetLanguage = "en"
 	_ = s.Update(settings, "", "", false, false)
 	_, err = s.Translate(context.Background(), body, "revision")
@@ -164,5 +172,61 @@ func TestAIResponseSizeIsBoundedAndNotCached(t *testing.T) {
 	result, err := s.Translate(context.Background(), "# Hello", "r")
 	if err == nil || result.Text != "" || len(s.cache) != 0 {
 		t.Fatal("oversized response accepted or cached", result, err)
+	}
+}
+
+func TestDisplayModeDefaultsPersistenceAndValidation(t *testing.T) {
+	dir := t.TempDir()
+	s, err := New(dir, NewMemoryKeys())
+	if err != nil {
+		t.Fatal(err)
+	}
+	settings, err := s.Settings()
+	if err != nil || settings.DisplayMode != "immersive" {
+		t.Fatalf("default mode: %s %v", settings.DisplayMode, err)
+	}
+	settings.DisplayMode = "translation"
+	if err := s.Update(settings, "", "", false, false); err != nil {
+		t.Fatal(err)
+	}
+	reopened, err := New(dir, NewMemoryKeys())
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved, err := reopened.Settings()
+	if err != nil || saved.DisplayMode != "translation" {
+		t.Fatalf("reopened mode: %s %v", saved.DisplayMode, err)
+	}
+	settings.DisplayMode = "invalid"
+	if err := s.Update(settings, "", "", false, false); err == nil {
+		t.Fatal("invalid display mode accepted")
+	}
+	current, _ := s.Settings()
+	if current.DisplayMode != "translation" {
+		t.Fatal("invalid mode changed active settings")
+	}
+	// Existing on-disk settings have no display field; corrupt/unknown modes
+	// also fall back without changing provider, target language or key data.
+	for _, legacy := range []string{`{"provider":"google","targetLanguage":"ja"}`, `{"provider":"google","targetLanguage":"ja","displayMode":"future"}`} {
+		if err := os.WriteFile(filepath.Join(dir, "translation.json"), []byte(legacy), 0600); err != nil {
+			t.Fatal(err)
+		}
+		old, err := New(dir, NewMemoryKeys())
+		if err != nil {
+			t.Fatal(err)
+		}
+		loaded, err := old.Settings()
+		if err != nil || loaded.DisplayMode != "immersive" || loaded.Provider != "google" || loaded.TargetLanguage != "ja" {
+			t.Fatal("legacy settings compatibility", loaded.DisplayMode, err)
+		}
+	}
+	// Old callers omit the field; they keep the original immersive behavior.
+	settings.DisplayMode = ""
+	if err := s.Update(settings, "", "", false, false); err != nil {
+		t.Fatal(err)
+	}
+	current, _ = s.Settings()
+	if current.DisplayMode != "immersive" {
+		t.Fatal("old caller compatibility")
 	}
 }

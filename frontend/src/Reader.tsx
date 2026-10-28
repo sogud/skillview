@@ -65,6 +65,7 @@ type ReaderProps = {
   explorerWidth: number
   onLayoutChange: (fontSize: number, width: number) => void
   translationVersion: number
+  translationDisplayVersion: number
   onConfigureTranslation: () => void
   onReportTranslation: () => void
   onNewResource: () => void
@@ -101,6 +102,19 @@ export function Reader(props: ReaderProps) {
   const { skill, document: doc, draft } = props
   const [translation, setTranslation] = useState<TranslationResult | null>(null)
   const [translated, setTranslated] = useState(false)
+  const [displayMode, setDisplayMode] = useState('immersive')
+  useEffect(() => {
+    let active = true
+    void api
+      .GetTranslationSettings()
+      .then((settings) => {
+        if (active) setDisplayMode(settings.displayMode || 'immersive')
+      })
+      .catch(() => {})
+    return () => {
+      active = false
+    }
+  }, [props.translationDisplayVersion])
   const [translating, setTranslating] = useState(false)
   const [progress, setProgress] = useState<TranslationProgress | null>(null)
   const [elapsed, setElapsed] = useState(0)
@@ -218,6 +232,7 @@ export function Reader(props: ReaderProps) {
     try {
       const settings = await api.GetTranslationSettings()
       if (current !== sequence.current) return
+      setDisplayMode(settings.displayMode || 'immersive')
       if (
         (settings.provider === 'ai' && !settings.model.trim()) ||
         (settings.provider === 'libretranslate' && !settings.libreUrl.trim())
@@ -492,7 +507,8 @@ export function Reader(props: ReaderProps) {
                       : translated
                         ? 'Show original'
                         : translation
-                          ? doc?.kind === 'markdown'
+                          ? doc?.kind === 'markdown' &&
+                            displayMode === 'immersive'
                             ? 'Show bilingual translation'
                             : 'Show translation'
                           : 'Translate document',
@@ -724,12 +740,38 @@ export function Reader(props: ReaderProps) {
                 {translated && translation ? (
                   doc.kind === 'markdown' ? (
                     <Markdown
-                      text={doc.body}
-                      translation={translation}
+                      text={
+                        displayMode === 'translation'
+                          ? translation.text
+                          : doc.body
+                      }
+                      translation={
+                        displayMode === 'translation' ? undefined : translation
+                      }
                       onLink={props.onLink}
                     />
                   ) : (
-                    <pre className="raw-file">{translation.text}</pre>
+                    <div className="plain-translation">
+                      {displayMode !== 'translation' && (
+                        <section aria-label={t('Original')}>
+                          <h3>{t('Original')}</h3>
+                          <pre className="raw-file" dir="auto">
+                            {doc.body}
+                          </pre>
+                        </section>
+                      )}
+                      <section
+                        aria-label={t('Translation')}
+                        lang={translation.targetLanguage}
+                      >
+                        {displayMode !== 'translation' && (
+                          <h3>{t('Translation')}</h3>
+                        )}
+                        <pre className="raw-file" dir="auto">
+                          {translation.text}
+                        </pre>
+                      </section>
+                    </div>
                   )
                 ) : doc.kind === 'image' ? (
                   <img

@@ -489,7 +489,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Find and read Agent Skills stored in your Documents folder.",
     "Find and read Agent Skills stored in your Downloads folder.": "Find and read Agent Skills stored in your Downloads folder.",
     "Find and read Agent Skills stored on your Desktop.": "Find and read Agent Skills stored on your Desktop.",
-    "Find and read Agent Skills stored on your connected drives.": "Find and read Agent Skills stored on your connected drives."
+    "Find and read Agent Skills stored on your connected drives.": "Find and read Agent Skills stored on your connected drives.",
+    "Translation display": "Translation display",
+    "Immersive bilingual": "Immersive bilingual",
+    "Translation only": "Translation only",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.",
+    "unknown translation display mode": "unknown translation display mode",
+    "More actions": "More actions"
   },
   "zh-CN": {
     "Skills": "技能",
@@ -981,7 +987,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "查找并读取“文稿”文件夹中的 Agent 技能。",
     "Find and read Agent Skills stored in your Downloads folder.": "查找并读取“下载”文件夹中的 Agent 技能。",
     "Find and read Agent Skills stored on your Desktop.": "查找并读取桌面上的 Agent 技能。",
-    "Find and read Agent Skills stored on your connected drives.": "查找并读取已连接磁盘中的 Agent 技能。"
+    "Find and read Agent Skills stored on your connected drives.": "查找并读取已连接磁盘中的 Agent 技能。",
+    "Translation display": "翻译显示方式",
+    "Immersive bilingual": "沉浸式对照",
+    "Translation only": "全文译文",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "沉浸式按 Markdown 段落结构对照；普通文本先显示原文，再显示译文。全文译文隐藏原文。切换时复用当前译文。",
+    "unknown translation display mode": "未知的翻译显示方式",
+    "More actions": "更多操作"
   },
   "zh-TW": {
     "Skills": "技能",
@@ -1473,7 +1485,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "尋找並讀取「文件」資料夾中的 Agent 技能。",
     "Find and read Agent Skills stored in your Downloads folder.": "尋找並讀取「下載項目」資料夾中的 Agent 技能。",
     "Find and read Agent Skills stored on your Desktop.": "尋找並讀取桌面上的 Agent 技能。",
-    "Find and read Agent Skills stored on your connected drives.": "尋找並讀取已連接磁碟中的 Agent 技能。"
+    "Find and read Agent Skills stored on your connected drives.": "尋找並讀取已連接磁碟中的 Agent 技能。",
+    "Translation display": "翻譯顯示方式",
+    "Immersive bilingual": "沉浸式對照",
+    "Translation only": "全文譯文",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "沉浸式依 Markdown 段落結構對照；純文字先顯示原文，再顯示譯文。全文譯文隱藏原文。切換時沿用目前的譯文。",
+    "unknown translation display mode": "未知的翻譯顯示方式",
+    "More actions": "更多操作"
   },
   "ja": {
     "Skills": "スキル",
@@ -1965,7 +1983,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "「書類」フォルダに保存されているエージェントのスキルを検索して読み取ります。",
     "Find and read Agent Skills stored in your Downloads folder.": "「ダウンロード」フォルダに保存されているエージェントのスキルを検索して読み取ります。",
     "Find and read Agent Skills stored on your Desktop.": "デスクトップに保存されているエージェントのスキルを検索して読み取ります。",
-    "Find and read Agent Skills stored on your connected drives.": "接続したドライブに保存されているエージェントのスキルを検索して読み取ります。"
+    "Find and read Agent Skills stored on your connected drives.": "接続したドライブに保存されているエージェントのスキルを検索して読み取ります。",
+    "Translation display": "翻訳の表示方法",
+    "Immersive bilingual": "原文と訳文を併記",
+    "Translation only": "訳文のみ",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "併記モードでは Markdown のブロックごとに原文と訳文を表示します。プレーンテキストは原文の後に訳文を表示します。「訳文のみ」では原文を非表示にします。切り替え時は現在の訳文を再利用します。",
+    "unknown translation display mode": "不明な翻訳表示方法です",
+    "More actions": "その他の操作"
   },
   "ko": {
     "Skills": "스킬",
@@ -2457,7 +2481,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "문서 폴더에 저장된 에이전트 스킬을 찾아 읽습니다.",
     "Find and read Agent Skills stored in your Downloads folder.": "다운로드 폴더에 저장된 에이전트 스킬을 찾아 읽습니다.",
     "Find and read Agent Skills stored on your Desktop.": "데스크탑에 저장된 에이전트 스킬을 찾아 읽습니다.",
-    "Find and read Agent Skills stored on your connected drives.": "연결된 드라이브에 저장된 에이전트 스킬을 찾아 읽습니다."
+    "Find and read Agent Skills stored on your connected drives.": "연결된 드라이브에 저장된 에이전트 스킬을 찾아 읽습니다.",
+    "Translation display": "번역 표시 방식",
+    "Immersive bilingual": "원문과 번역 함께 보기",
+    "Translation only": "번역만 보기",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "함께 보기에서는 Markdown 블록별로 원문과 번역을 표시합니다. 일반 텍스트는 원문 다음에 번역을 표시합니다. 번역만 보기에서는 원문을 숨깁니다. 전환 시 현재 번역을 재사용합니다.",
+    "unknown translation display mode": "알 수 없는 번역 표시 방식입니다",
+    "More actions": "추가 작업"
   },
   "fr": {
     "Skills": "Skills",
@@ -2949,7 +2979,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Rechercher et lire les Skills d’Agents stockés dans votre dossier Documents.",
     "Find and read Agent Skills stored in your Downloads folder.": "Rechercher et lire les Skills d’Agents stockés dans votre dossier Téléchargements.",
     "Find and read Agent Skills stored on your Desktop.": "Rechercher et lire les Skills d’Agents stockés sur votre Bureau.",
-    "Find and read Agent Skills stored on your connected drives.": "Rechercher et lire les Skills d’Agents stockés sur vos disques connectés."
+    "Find and read Agent Skills stored on your connected drives.": "Rechercher et lire les Skills d’Agents stockés sur vos disques connectés.",
+    "Translation display": "Affichage de la traduction",
+    "Immersive bilingual": "Original et traduction",
+    "Translation only": "Traduction seule",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Le mode bilingue associe les blocs Markdown ; le texte brut affiche l’original puis la traduction. Le mode traduction seule masque l’original. Changer de mode réutilise la traduction actuelle.",
+    "unknown translation display mode": "mode d’affichage de la traduction inconnu",
+    "More actions": "Autres actions"
   },
   "de": {
     "Skills": "Skills",
@@ -3441,7 +3477,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Agent-Skills im Ordner „Dokumente“ suchen und lesen.",
     "Find and read Agent Skills stored in your Downloads folder.": "Agent-Skills im Ordner „Downloads“ suchen und lesen.",
     "Find and read Agent Skills stored on your Desktop.": "Agent-Skills auf deinem Schreibtisch suchen und lesen.",
-    "Find and read Agent Skills stored on your connected drives.": "Agent-Skills auf deinen verbundenen Laufwerken suchen und lesen."
+    "Find and read Agent Skills stored on your connected drives.": "Agent-Skills auf deinen verbundenen Laufwerken suchen und lesen.",
+    "Translation display": "Übersetzungsanzeige",
+    "Immersive bilingual": "Original und Übersetzung",
+    "Translation only": "Nur Übersetzung",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Die zweisprachige Ansicht ordnet Markdown-Blöcke einander zu. Bei Klartext folgt die Übersetzung auf das Original. „Nur Übersetzung“ blendet das Original aus. Beim Wechsel wird die vorhandene Übersetzung wiederverwendet.",
+    "unknown translation display mode": "unbekannter Anzeigemodus für Übersetzungen",
+    "More actions": "Weitere Aktionen"
   },
   "es": {
     "Skills": "Habilidades",
@@ -3933,7 +3975,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Buscar y leer habilidades de agentes guardadas en tu carpeta Documentos.",
     "Find and read Agent Skills stored in your Downloads folder.": "Buscar y leer habilidades de agentes guardadas en tu carpeta Descargas.",
     "Find and read Agent Skills stored on your Desktop.": "Buscar y leer habilidades de agentes guardadas en tu Escritorio.",
-    "Find and read Agent Skills stored on your connected drives.": "Buscar y leer habilidades de agentes guardadas en tus unidades conectadas."
+    "Find and read Agent Skills stored on your connected drives.": "Buscar y leer habilidades de agentes guardadas en tus unidades conectadas.",
+    "Translation display": "Visualización de la traducción",
+    "Immersive bilingual": "Original y traducción",
+    "Translation only": "Solo traducción",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "El modo bilingüe empareja los bloques Markdown; en texto plano, la traducción aparece después del original. «Solo traducción» oculta el original. Al cambiar de modo se reutiliza la traducción actual.",
+    "unknown translation display mode": "modo de visualización de la traducción desconocido",
+    "More actions": "Más acciones"
   },
   "pt-BR": {
     "Skills": "Habilidades",
@@ -4425,7 +4473,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Buscar e ler habilidades de agentes salvas na pasta Documentos.",
     "Find and read Agent Skills stored in your Downloads folder.": "Buscar e ler habilidades de agentes salvas na pasta Downloads.",
     "Find and read Agent Skills stored on your Desktop.": "Buscar e ler habilidades de agentes salvas na Mesa.",
-    "Find and read Agent Skills stored on your connected drives.": "Buscar e ler habilidades de agentes salvas nas unidades conectadas."
+    "Find and read Agent Skills stored on your connected drives.": "Buscar e ler habilidades de agentes salvas nas unidades conectadas.",
+    "Translation display": "Exibição da tradução",
+    "Immersive bilingual": "Original e tradução",
+    "Translation only": "Somente tradução",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "O modo bilíngue combina os blocos Markdown; em texto simples, a tradução aparece após o original. Somente tradução oculta o original. A troca de modo reutiliza a tradução atual.",
+    "unknown translation display mode": "modo de exibição da tradução desconhecido",
+    "More actions": "Mais ações"
   },
   "it": {
     "Skills": "Competenze",
@@ -4917,7 +4971,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Trova e leggi le competenze degli agenti nella cartella Documenti.",
     "Find and read Agent Skills stored in your Downloads folder.": "Trova e leggi le competenze degli agenti nella cartella Download.",
     "Find and read Agent Skills stored on your Desktop.": "Trova e leggi le competenze degli agenti sulla Scrivania.",
-    "Find and read Agent Skills stored on your connected drives.": "Trova e leggi le competenze degli agenti nelle unità collegate."
+    "Find and read Agent Skills stored on your connected drives.": "Trova e leggi le competenze degli agenti nelle unità collegate.",
+    "Translation display": "Visualizzazione della traduzione",
+    "Immersive bilingual": "Originale e traduzione",
+    "Translation only": "Solo traduzione",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "La modalità bilingue abbina i blocchi Markdown; per il testo semplice, la traduzione segue l’originale. Solo traduzione nasconde l’originale. Il cambio di modalità riutilizza la traduzione attuale.",
+    "unknown translation display mode": "modalità di visualizzazione della traduzione sconosciuta",
+    "More actions": "Altre azioni"
   },
   "ru": {
     "Skills": "Навыки",
@@ -5409,7 +5469,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Находить и читать навыки агентов, хранящиеся в папке «Документы».",
     "Find and read Agent Skills stored in your Downloads folder.": "Находить и читать навыки агентов, хранящиеся в папке «Загрузки».",
     "Find and read Agent Skills stored on your Desktop.": "Находить и читать навыки агентов, хранящиеся на Рабочем столе.",
-    "Find and read Agent Skills stored on your connected drives.": "Находить и читать навыки агентов, хранящиеся на подключённых дисках."
+    "Find and read Agent Skills stored on your connected drives.": "Находить и читать навыки агентов, хранящиеся на подключённых дисках.",
+    "Translation display": "Отображение перевода",
+    "Immersive bilingual": "Оригинал и перевод",
+    "Translation only": "Только перевод",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Двуязычный режим сопоставляет блоки Markdown; для обычного текста перевод отображается после оригинала. Режим «Только перевод» скрывает оригинал. При переключении используется уже готовый перевод.",
+    "unknown translation display mode": "неизвестный режим отображения перевода",
+    "More actions": "Другие действия"
   },
   "ar": {
     "Skills": "المهارات",
@@ -5901,7 +5967,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "البحث عن مهارات الوكلاء المخزنة في مجلد «المستندات» وقراءتها.",
     "Find and read Agent Skills stored in your Downloads folder.": "البحث عن مهارات الوكلاء المخزنة في مجلد «التنزيلات» وقراءتها.",
     "Find and read Agent Skills stored on your Desktop.": "البحث عن مهارات الوكلاء المخزنة على سطح المكتب وقراءتها.",
-    "Find and read Agent Skills stored on your connected drives.": "البحث عن مهارات الوكلاء المخزنة على محركات الأقراص المتصلة وقراءتها."
+    "Find and read Agent Skills stored on your connected drives.": "البحث عن مهارات الوكلاء المخزنة على محركات الأقراص المتصلة وقراءتها.",
+    "Translation display": "طريقة عرض الترجمة",
+    "Immersive bilingual": "النص الأصلي والترجمة",
+    "Translation only": "الترجمة فقط",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "يعرض الوضع الثنائي كتل Markdown الأصلية مع ترجمتها؛ أما النص العادي فتظهر ترجمته بعد النص الأصلي. يخفي وضع «الترجمة فقط» النص الأصلي. يعيد التبديل استخدام الترجمة الحالية.",
+    "unknown translation display mode": "طريقة عرض الترجمة غير معروفة",
+    "More actions": "إجراءات إضافية"
   },
   "hi": {
     "Skills": "स्किल",
@@ -6393,7 +6465,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "अपने Documents फ़ोल्डर में रखे एजेंट स्किल खोजें और पढ़ें।",
     "Find and read Agent Skills stored in your Downloads folder.": "अपने Downloads फ़ोल्डर में रखे एजेंट स्किल खोजें और पढ़ें।",
     "Find and read Agent Skills stored on your Desktop.": "अपने Desktop पर रखे एजेंट स्किल खोजें और पढ़ें।",
-    "Find and read Agent Skills stored on your connected drives.": "अपनी कनेक्ट की गई ड्राइव में रखे एजेंट स्किल खोजें और पढ़ें।"
+    "Find and read Agent Skills stored on your connected drives.": "अपनी कनेक्ट की गई ड्राइव में रखे एजेंट स्किल खोजें और पढ़ें।",
+    "Translation display": "अनुवाद दिखाने का तरीका",
+    "Immersive bilingual": "मूल पाठ और अनुवाद",
+    "Translation only": "केवल अनुवाद",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "द्विभाषी मोड में Markdown के खंडों के साथ उनका अनुवाद दिखता है। सादे पाठ में मूल के बाद अनुवाद दिखता है। केवल अनुवाद मोड मूल पाठ छिपाता है। मोड बदलने पर मौजूदा अनुवाद का ही उपयोग होता है।",
+    "unknown translation display mode": "अनुवाद दिखाने का तरीका अज्ञात है",
+    "More actions": "अन्य कार्रवाइयाँ"
   },
   "id": {
     "Skills": "Skill",
@@ -6885,7 +6963,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Cari dan baca Skill Agen yang tersimpan di folder Documents Anda.",
     "Find and read Agent Skills stored in your Downloads folder.": "Cari dan baca Skill Agen yang tersimpan di folder Downloads Anda.",
     "Find and read Agent Skills stored on your Desktop.": "Cari dan baca Skill Agen yang tersimpan di Desktop Anda.",
-    "Find and read Agent Skills stored on your connected drives.": "Cari dan baca Skill Agen yang tersimpan di drive yang terhubung."
+    "Find and read Agent Skills stored on your connected drives.": "Cari dan baca Skill Agen yang tersimpan di drive yang terhubung.",
+    "Translation display": "Tampilan terjemahan",
+    "Immersive bilingual": "Teks asli dan terjemahan",
+    "Translation only": "Hanya terjemahan",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Mode dwibahasa memasangkan blok Markdown; untuk teks biasa, terjemahan ditampilkan setelah teks asli. Hanya terjemahan menyembunyikan teks asli. Pergantian mode menggunakan kembali terjemahan saat ini.",
+    "unknown translation display mode": "mode tampilan terjemahan tidak dikenal",
+    "More actions": "Tindakan lainnya"
   },
   "vi": {
     "Skills": "Kỹ năng",
@@ -7377,7 +7461,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Tìm và đọc kỹ năng của tác nhân được lưu trong thư mục Documents của bạn.",
     "Find and read Agent Skills stored in your Downloads folder.": "Tìm và đọc kỹ năng của tác nhân được lưu trong thư mục Downloads của bạn.",
     "Find and read Agent Skills stored on your Desktop.": "Tìm và đọc kỹ năng của tác nhân được lưu trên Desktop của bạn.",
-    "Find and read Agent Skills stored on your connected drives.": "Tìm và đọc kỹ năng của tác nhân được lưu trên các ổ đĩa đã kết nối."
+    "Find and read Agent Skills stored on your connected drives.": "Tìm và đọc kỹ năng của tác nhân được lưu trên các ổ đĩa đã kết nối.",
+    "Translation display": "Cách hiển thị bản dịch",
+    "Immersive bilingual": "Bản gốc và bản dịch",
+    "Translation only": "Chỉ bản dịch",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Chế độ song ngữ ghép các khối Markdown; với văn bản thuần, bản dịch xuất hiện sau bản gốc. Chế độ chỉ bản dịch ẩn bản gốc. Khi chuyển chế độ, bản dịch hiện tại được dùng lại.",
+    "unknown translation display mode": "chế độ hiển thị bản dịch không xác định",
+    "More actions": "Thao tác khác"
   },
   "th": {
     "Skills": "สกิล",
@@ -7869,7 +7959,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "ค้นหาและอ่านสกิลของเอเจนต์ที่เก็บไว้ในโฟลเดอร์ Documents ของคุณ",
     "Find and read Agent Skills stored in your Downloads folder.": "ค้นหาและอ่านสกิลของเอเจนต์ที่เก็บไว้ในโฟลเดอร์ Downloads ของคุณ",
     "Find and read Agent Skills stored on your Desktop.": "ค้นหาและอ่านสกิลของเอเจนต์ที่เก็บไว้บน Desktop ของคุณ",
-    "Find and read Agent Skills stored on your connected drives.": "ค้นหาและอ่านสกิลของเอเจนต์ที่เก็บไว้ในไดรฟ์ที่เชื่อมต่อของคุณ"
+    "Find and read Agent Skills stored on your connected drives.": "ค้นหาและอ่านสกิลของเอเจนต์ที่เก็บไว้ในไดรฟ์ที่เชื่อมต่อของคุณ",
+    "Translation display": "รูปแบบการแสดงคำแปล",
+    "Immersive bilingual": "ต้นฉบับและคำแปล",
+    "Translation only": "คำแปลเท่านั้น",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "โหมดสองภาษาจะแสดงบล็อก Markdown คู่กับคำแปล สำหรับข้อความธรรมดาจะแสดงต้นฉบับก่อนแล้วตามด้วยคำแปล โหมดคำแปลเท่านั้นจะซ่อนต้นฉบับ การสลับโหมดจะใช้คำแปลเดิม",
+    "unknown translation display mode": "ไม่รู้จักรูปแบบการแสดงคำแปล",
+    "More actions": "การดำเนินการเพิ่มเติม"
   },
   "tr": {
     "Skills": "Beceriler",
@@ -8361,7 +8457,13 @@
     "Find and read Agent Skills stored in your Documents folder.": "Belgeler klasörünüzdeki Ajan Becerilerini bul ve oku.",
     "Find and read Agent Skills stored in your Downloads folder.": "İndirilenler klasörünüzdeki Ajan Becerilerini bul ve oku.",
     "Find and read Agent Skills stored on your Desktop.": "Masaüstünüzdeki Ajan Becerilerini bul ve oku.",
-    "Find and read Agent Skills stored on your connected drives.": "Bağlı sürücülerinizdeki Ajan Becerilerini bul ve oku."
+    "Find and read Agent Skills stored on your connected drives.": "Bağlı sürücülerinizdeki Ajan Becerilerini bul ve oku.",
+    "Translation display": "Çeviri görünümü",
+    "Immersive bilingual": "Özgün metin ve çeviri",
+    "Translation only": "Yalnızca çeviri",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "İki dilli görünüm Markdown bloklarını eşleştirir; düz metinde çeviri özgün metnin ardından gösterilir. Yalnızca çeviri görünümü özgün metni gizler. Görünüm değiştirildiğinde mevcut çeviri yeniden kullanılır.",
+    "unknown translation display mode": "bilinmeyen çeviri görünümü",
+    "More actions": "Diğer işlemler"
   },
   "nl": {
     "Skills": "Skills",
@@ -8853,6 +8955,12 @@
     "Find and read Agent Skills stored in your Documents folder.": "Agent-Skills in je map Documenten zoeken en lezen.",
     "Find and read Agent Skills stored in your Downloads folder.": "Agent-Skills in je map Downloads zoeken en lezen.",
     "Find and read Agent Skills stored on your Desktop.": "Agent-Skills op je bureaublad zoeken en lezen.",
-    "Find and read Agent Skills stored on your connected drives.": "Agent-Skills op je aangesloten schijven zoeken en lezen."
+    "Find and read Agent Skills stored on your connected drives.": "Agent-Skills op je aangesloten schijven zoeken en lezen.",
+    "Translation display": "Vertaalweergave",
+    "Immersive bilingual": "Origineel en vertaling",
+    "Translation only": "Alleen vertaling",
+    "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "De tweetalige weergave koppelt Markdown-blokken aan hun vertaling; bij platte tekst volgt de vertaling op het origineel. Alleen vertaling verbergt het origineel. Bij omschakelen wordt de bestaande vertaling hergebruikt.",
+    "unknown translation display mode": "onbekende vertaalweergave",
+    "More actions": "Meer acties"
   }
 }

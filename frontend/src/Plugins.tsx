@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import {
   useEffect,
   useImperativeHandle,
@@ -28,11 +29,17 @@ export type PluginsHandle = { command: (name: string) => void }
 
 export function Plugins({
   active,
+  toolbarSearch,
+  toolbarActions,
+  onToolbarAction,
   fontSize,
   explorerWidth,
   ref,
 }: {
   active: boolean
+  toolbarSearch: HTMLDivElement | null
+  toolbarActions: HTMLDivElement | null
+  onToolbarAction: () => void
   fontSize: number
   explorerWidth: number
   ref: Ref<PluginsHandle>
@@ -124,25 +131,39 @@ export function Plugins({
         />
       ) : (
         <>
-          <div className="library-toolbar">
-            <div className="search">
-              <Search size={16} />
-              <input
-                ref={search}
-                value={query}
-                placeholder={t('Search installed plugins')}
-                aria-label={t('Search installed plugins')}
-                onChange={(event) => setQuery(event.target.value)}
-              />
-              <kbd>⌘F</kbd>
-            </div>
-            <IconButton
-              icon={RotateCw}
-              label={t('Refresh installed plugins')}
-              disabled={loading}
-              onClick={() => void refresh()}
-            />
-          </div>
+          {active &&
+            toolbarSearch &&
+            createPortal(
+              <div className="search">
+                <Search size={14} />
+                <input
+                  ref={search}
+                  value={query}
+                  placeholder={t('Search installed plugins')}
+                  aria-label={t('Search installed plugins')}
+                  onChange={(event) => setQuery(event.target.value)}
+                />
+                <kbd>⌘F</kbd>
+              </div>,
+              toolbarSearch,
+            )}
+          {active &&
+            toolbarActions &&
+            createPortal(
+              <button
+                type="button"
+                role="menuitem"
+                disabled={loading}
+                onClick={() => {
+                  onToolbarAction()
+                  void refresh()
+                }}
+              >
+                <RotateCw size={16} />
+                <span>{t('Refresh installed plugins')}</span>
+              </button>,
+              toolbarActions,
+            )}
           <div
             className="agent-tabs plugin-agent-tabs"
             role="group"
@@ -198,8 +219,10 @@ export function Plugins({
                     >
                       <Package size={18} className="skill-glyph" />
                       <div className="skill-info">
-                        <span className="skill-name">
-                          {plugin.name}{' '}
+                        <span className="plugin-title-row">
+                          <span className="skill-name" title={plugin.name}>
+                            {plugin.name}
+                          </span>
                           <small className="plugin-version">
                             {plugin.version}
                           </small>
@@ -208,19 +231,24 @@ export function Plugins({
                               {t('Disabled')}
                             </small>
                           )}
+                          {!agent && (
+                            <span className="plugin-platform">
+                              <AgentIcon
+                                name={plugin.agent}
+                                icon={plugin.icon}
+                                size={13}
+                              />
+                              {plugin.agent}
+                            </span>
+                          )}
                         </span>
-                        <span className="skill-description">
+                        <span
+                          className="skill-description"
+                          title={plugin.description}
+                        >
                           {plugin.description}
                         </span>
                       </div>
-                      <span className="plugin-platform">
-                        <AgentIcon
-                          name={plugin.agent}
-                          icon={plugin.icon}
-                          size={18}
-                        />
-                        {plugin.agent}
-                      </span>
                     </button>
                   </li>
                 ))}

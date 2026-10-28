@@ -118,7 +118,9 @@ export function SkillsList(props: Props) {
                 <FileText className="skill-glyph" size={16} />
                 <div className="skill-info">
                   <span className="skill-name">
-                    {group.name}
+                    <span className="skill-title" dir="auto" title={group.name}>
+                      {group.name}
+                    </span>
                     {group.versions.length > 1 && (
                       <small
                         className="version-label"
@@ -189,7 +191,7 @@ export function AgentTabs({
   value: string
   onChange: (agent: string) => void
 }) {
-  const { t } = useLocale()
+  const { t, direction } = useLocale()
   const tabs = [{ name: '', label: t('All'), icon: '' }]
   for (const agent of agents) {
     if (agent.installed)
@@ -223,7 +225,7 @@ export function AgentTabs({
                 : event.key === 'End'
                   ? tabs.length - 1
                   : (index +
-                      (event.key === 'ArrowRight' ? 1 : -1) +
+                      (event.key === 'ArrowRight' ? 1 : -1) * (direction === 'rtl' ? -1 : 1) +
                       tabs.length) %
                     tabs.length
             onChange(tabs[next].name)

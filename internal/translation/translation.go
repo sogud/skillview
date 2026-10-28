@@ -31,6 +31,7 @@ import (
 )
 
 type Settings struct {
+	DisplayMode    string `json:"displayMode"`
 	Provider       string `json:"provider"`
 	TargetLanguage string `json:"targetLanguage"`
 	BaseURL        string `json:"baseUrl"`
@@ -83,7 +84,7 @@ type Service struct {
 }
 
 func New(dataDir string, keys KeyStore) (*Service, error) {
-	s := &Service{dataDir: dataDir, keys: keys, settings: Settings{Provider: "google", TargetLanguage: "zh-CN", BaseURL: "https://api.openai.com/v1"}, client: newHTTPClient(), googleURL: "https://translate.googleapis.com/translate_a/single", cloudURL: "https://translation.googleapis.com/language/translate/v2", youdaoURL: "https://dict.youdao.com", cache: map[string]Result{}}
+	s := &Service{dataDir: dataDir, keys: keys, settings: Settings{DisplayMode: "immersive", Provider: "google", TargetLanguage: "zh-CN", BaseURL: "https://api.openai.com/v1"}, client: newHTTPClient(), googleURL: "https://translate.googleapis.com/translate_a/single", cloudURL: "https://translation.googleapis.com/language/translate/v2", youdaoURL: "https://dict.youdao.com", cache: map[string]Result{}}
 	// Only Youdao receives this fresh anonymous session. Browser cookies and
 	// cookies from Google, AI and custom services are never imported or shared.
 	s.youdaoClient = newHTTPClient()
@@ -95,6 +96,11 @@ func New(dataDir string, keys KeyStore) (*Service, error) {
 		}
 	} else if !os.IsNotExist(err) {
 		return nil, err
+	}
+	// Old settings omit this presentation preference; unknown persisted values
+	// also fall back to the original immersive reader.
+	if s.settings.DisplayMode != "translation" {
+		s.settings.DisplayMode = "immersive"
 	}
 	// Keep old API keys, but retire the paid provider from the active choices.
 	if s.settings.Provider == "google-cloud" {
@@ -126,6 +132,12 @@ func (s *Service) Settings() (Settings, error) {
 }
 
 func (s *Service) Update(settings Settings, aiKey, googleKey string, clearAI, clearGoogle bool, additional ...KeyChange) (err error) {
+	if settings.DisplayMode == "" {
+		settings.DisplayMode = "immersive"
+	}
+	if settings.DisplayMode != "immersive" && settings.DisplayMode != "translation" {
+		return fmt.Errorf("unknown translation display mode")
+	}
 	if settings.Provider != "google" && settings.Provider != "google-cloud" && settings.Provider != "ai" && settings.Provider != "libretranslate" && settings.Provider != "youdao" {
 		return fmt.Errorf("unknown translation provider")
 	}
@@ -216,8 +228,14 @@ func (s *Service) Update(settings Settings, aiKey, googleKey string, clearAI, cl
 	if err = os.Rename(file.Name(), filepath.Join(s.dataDir, "translation.json")); err != nil {
 		return err
 	}
+	previous := s.settings
+	previous.DisplayMode = settings.DisplayMode
+	// Display changes reuse both in-memory and disk translations. Keys and
+	// provider settings still invalidate the in-memory results as before.
+	if previous != settings || len(previousKeys) != 0 {
+		s.cache = map[string]Result{}
+	}
 	s.settings = settings
-	s.cache = map[string]Result{}
 	return nil
 }
 

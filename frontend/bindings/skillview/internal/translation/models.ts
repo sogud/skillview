@@ -29,6 +29,7 @@ export interface Result {
 }
 
 export interface Settings {
+    "displayMode": string;
     "provider": string;
     "targetLanguage": string;
     "baseUrl": string;

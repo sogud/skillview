@@ -143,7 +143,7 @@ func main() {
 	app.Event.On(updater.EventInstalling, func(*application.CustomEvent) { updateManager.Stage("extracting") })
 	window = app.Window.NewWithOptions(application.WebviewWindowOptions{
 		Name: "library", Title: "Skills", Width: 900, Height: 560, MinWidth: 760, MinHeight: 480,
-		Mac:              application.MacWindow{TitleBar: application.MacTitleBarHiddenInset, InvisibleTitleBarHeight: 38, Backdrop: application.MacBackdropNormal},
+		Mac:              application.MacWindow{TitleBar: application.MacTitleBarHiddenInsetUnified, InvisibleTitleBarHeight: 54, Backdrop: application.MacBackdropNormal},
 		BackgroundColour: application.NewRGB(243, 244, 247), URL: "/",
 	})
 	window.RegisterHook(events.Common.WindowClosing, func(event *application.WindowEvent) {
