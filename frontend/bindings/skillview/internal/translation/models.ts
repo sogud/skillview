@@ -9,6 +9,16 @@ export interface Progress {
     "targetLanguage": string;
 }
 
+/**
+ * ResponseDiagnostic contains only fixed categories. It never retains provider
+ * responses, prompts, document text, endpoint URLs, model names or API keys.
+ */
+export interface ResponseDiagnostic {
+    "category": string;
+    "finish_reason": string;
+    "truncation": string;
+}
+
 export interface Result {
     "text": string;
     "provider": string;

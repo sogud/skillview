@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"skillview/internal/cache"
+	"skillview/internal/locale"
 	"strings"
 	"sync"
 )
@@ -158,8 +159,12 @@ func (l *Library) SetLanguage(language string) error {
 		return err
 	}
 	defer release()
-	if language != "system" && language != "en" && language != "zh-CN" {
-		return fmt.Errorf("unknown interface language")
+	if language != "system" {
+		canonical, ok := locale.Match(language)
+		if !ok {
+			return fmt.Errorf("unknown interface language")
+		}
+		language = canonical
 	}
 	previous := l.prefs.Language
 	l.prefs.Language = language

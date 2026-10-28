@@ -64,6 +64,7 @@ export const remarkBilingual: Plugin<[Options], Root> = function (options) {
             hName: 'span',
             hProperties: {
               className: ['bilingual-translation'],
+              dir: 'auto',
               lang: options.language,
             },
           },

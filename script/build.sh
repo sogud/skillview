@@ -27,10 +27,9 @@ info['SkillViewReleaseVersion'] = version
 path.write_bytes(plistlib.dumps(info))
 PY
 cp LICENSE "$APP_BUNDLE/Contents/Resources/License.txt"
-for LANGUAGE_DIR in build/*.lproj; do
-  plutil -lint "$LANGUAGE_DIR/InfoPlist.strings"
-  mkdir -p "$APP_BUNDLE/Contents/Resources/$(basename "$LANGUAGE_DIR")"
-  cp "$LANGUAGE_DIR/InfoPlist.strings" "$APP_BUNDLE/Contents/Resources/$(basename "$LANGUAGE_DIR")/InfoPlist.strings"
+python3 script/localizations.py "$APP_BUNDLE/Contents/Resources"
+for LANGUAGE_FILE in "$APP_BUNDLE"/Contents/Resources/*.lproj/InfoPlist.strings; do
+  plutil -lint "$LANGUAGE_FILE"
 done
 bash script/icon.sh
 cp "$SKILLVIEW_TMP_DIR/AppIcon.icns" "$APP_BUNDLE/Contents/Resources/AppIcon.icns"

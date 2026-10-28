@@ -240,7 +240,7 @@ strong {
   align-items: center;
   gap: 7px;
   color: var(--secondary);
-  padding-left: 5px;
+  padding-inline-start: 5px;
 }
 .search input {
   border: 0;
@@ -310,7 +310,7 @@ kbd {
   align-items: center;
   width: 100%;
   padding: 5px 4px;
-  text-align: left;
+  text-align: start;
   min-width: 0;
   min-height: 64px;
 }
@@ -353,7 +353,7 @@ kbd {
 }
 .skill-description {
   display: block;
-  padding-right: 75px;
+  padding-inline-end: 75px;
   margin-top: 5px;
   white-space: nowrap;
   overflow: hidden;
@@ -363,7 +363,7 @@ kbd {
 }
 .skill-origins {
   position: absolute;
-  right: 4px;
+  inset-inline-end: 4px;
   bottom: 5px;
   display: flex;
   align-items: center;
@@ -373,7 +373,7 @@ kbd {
 .logo-stack {
   display: flex;
   align-items: center;
-  padding-left: 5px;
+  padding-inline-start: 5px;
 }
 .platform-logo {
   display: flex;
@@ -381,7 +381,7 @@ kbd {
   justify-content: center;
   width: 22px;
   height: 22px;
-  margin-left: -8px;
+  margin-inline-start: -8px;
   box-shadow: 0 0 0 1px var(--border);
   border: 2px solid var(--surface);
   border-radius: 50%;
@@ -424,7 +424,7 @@ kbd {
   margin-bottom: 18px;
 }
 .empty-library > button + button {
-  margin-left: 8px;
+  margin-inline-start: 8px;
 }
 .reader {
   flex: 1;
@@ -580,7 +580,7 @@ kbd {
   font-size: 10px;
   font-weight: 400;
   color: var(--secondary);
-  margin-left: 6px;
+  margin-inline-start: 6px;
 }
 .plugin-platform {
   display: flex;
@@ -641,7 +641,7 @@ kbd {
 }
 .unsaved {
   color: var(--accent);
-  padding-left: 6px;
+  padding-inline-start: 6px;
   font-size: 9px;
 }
 .reader-tools {
@@ -759,7 +759,7 @@ kbd {
 }
 .markdown td,
 .markdown th {
-  text-align: left;
+  text-align: start;
   padding: 5px;
   border-bottom: 1px solid var(--border);
 }
@@ -1392,7 +1392,7 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: 5px;
-  padding-left: 6px;
+  padding-inline-start: 6px;
 }
 .link-entry span {
   flex: 1;
@@ -1415,7 +1415,7 @@ dialog::backdrop {
 
 .translation-actions {
   display: inline-flex;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 .translation-note {
   display: flex;
@@ -1437,12 +1437,11 @@ dialog::backdrop {
   white-space: nowrap;
 }
 .reader-back {
-  margin-right: 6px;
+  margin-inline-end: 6px;
 }
 .reader-content > * {
   max-width: 780px;
-  margin-left: auto;
-  margin-right: auto;
+  margin-inline: auto;
 }
 .reader .skill-intro {
   font-size: var(--reader-font-size, 14px);
@@ -1596,7 +1595,7 @@ dialog::backdrop {
   justify-content: space-between;
   color: var(--secondary);
   font-size: 11px;
-  padding-left: 8px;
+  padding-inline-start: 8px;
   margin-top: 8px;
 }
 .explorer-copy {
@@ -1613,7 +1612,7 @@ dialog::backdrop {
   justify-content: flex-end;
 }
 .explorer-links {
-  padding-left: 8px;
+  padding-inline-start: 8px;
   font-size: 11px;
 }
 .tree-row {
@@ -1631,7 +1630,7 @@ dialog::backdrop {
   gap: 5px;
   width: 100%;
   padding: 4px 8px;
-  text-align: left;
+  text-align: start;
   font-size: 12px;
   border-radius: 4px;
   min-width: 0;
@@ -1709,7 +1708,7 @@ dialog::backdrop {
   padding: 8px 10px;
   font-weight: 400;
   font-size: 12px;
-  text-align: left;
+  text-align: start;
 }
 .select-trigger > span {
   overflow: hidden;
@@ -1866,7 +1865,7 @@ dialog::backdrop {
   display: flex;
   align-items: center;
   gap: 1px;
-  margin-left: auto;
+  margin-inline-start: auto;
   font-variant-numeric: tabular-nums;
 }
 .reading-size .icon-button {
@@ -1912,7 +1911,7 @@ dialog::backdrop {
     padding: 6px 10px;
   }
   .reader-tools {
-    margin-left: auto;
+    margin-inline-start: auto;
   }
   .filename {
     flex-basis: 140px;
@@ -1931,3 +1930,24 @@ dialog::backdrop {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
 }
+
+.feedback-body { display: grid; gap: 12px; }
+.feedback-body textarea { width: 100%; box-sizing: border-box; resize: vertical; }
+.feedback-toggle { display: flex; align-items: center; gap: 8px; }
+.feedback-preview { white-space: pre-wrap; overflow-wrap: anywhere; max-height: 260px; overflow: auto; font-size: 12px; }
+
+/* UI direction follows the selected locale; source syntax and paths do not. */
+.path, .trash-path, .filename, pre, code, .cm-editor, .file-tree,
+input[type="url"], input[type="password"], .feedback-preview {
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
+}
+[dir="rtl"] .reader-back > svg,
+[dir="rtl"] .disclosure:not([open]) > summary > svg {
+  transform: scaleX(-1);
+}
+[dir="rtl"] .disclosure-body { padding: 2px 18px 4px 0; }
+.modal-tabs { flex-wrap: wrap; }
+.modal-actions { flex-wrap: wrap; }
+.field > span, .quiet-note, .form-error { overflow-wrap: anywhere; }

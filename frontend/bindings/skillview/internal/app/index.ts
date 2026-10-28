@@ -5,3 +5,11 @@ import * as Service from "./service.js";
 export {
     Service
 };
+
+export type {
+    FeedbackConfiguration,
+    FeedbackDiagnostics,
+    FeedbackInput,
+    FeedbackReceipt,
+    FeedbackSubmission
+} from "./models.js";

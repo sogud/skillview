@@ -1,4 +1,5 @@
 import { useLocale } from './locales'
+import { languages } from './locale-core'
 import { Virtuoso } from 'react-virtuoso'
 import { useEffect, useRef, useState } from 'react'
 import { FolderPlus, Link, Folder } from 'lucide-react'
@@ -178,8 +179,7 @@ export function Settings(props: SettingsProps) {
                 onChange={props.onLanguage}
                 options={[
                   { value: 'system', label: t('Follow system') },
-                  { value: 'en', label: 'English' },
-                  { value: 'zh-CN', label: '简体中文' },
+                  ...languages.map(({ id, name }) => ({ value: id, label: name })),
                 ]}
               />
             </label>
@@ -580,6 +580,7 @@ export function CreateDialog({
                   value: source.id,
                   label: source.name,
                   description: source.resolvedPath,
+                  descriptionDirection: 'ltr' as const,
                 }))}
               />
             </label>
@@ -811,6 +812,7 @@ function TranslationSettingsForm({ onSaved }: { onSaved: () => void }) {
               {t('Model')}
               <input
                 required
+                dir="ltr"
                 value={settings.model}
                 onChange={(event) =>
                   setSettings({ ...settings, model: event.target.value })

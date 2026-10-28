@@ -10,6 +10,7 @@ import {
   X,
   Download,
   ArchiveRestore,
+  MessageSquare,
 } from 'lucide-react'
 import * as api from './api'
 import type {
@@ -23,6 +24,7 @@ import type {
 import { Plugins, type PluginsHandle } from './Plugins'
 import { ArchiveSkillDialog, ArchivedSkillsDialog } from './ArchiveDialogs'
 import { UpdateDialog } from './UpdateDialog'
+import { FeedbackDialog } from './FeedbackDialog'
 import { IconButton, Modal } from './components'
 import {
   CreateDialog,
@@ -61,6 +63,9 @@ export default function App() {
   const [theme, setTheme] = useState('system')
   const [accentColor, setAccentColor] = useState('')
   const [readerLayout, setReaderLayout] = useState({ fontSize: 14, width: 244 })
+  const [feedbackOpen, setFeedbackOpen] = useState<
+    'general' | 'translation' | null
+  >(null)
   const [settings, setSettings] = useState<SettingsTab | null>(null)
   const [updateStatus, setUpdateStatus] = useState<UpdateInfo | null>(null)
   const [updatesOpen, setUpdatesOpen] = useState(false)
@@ -455,6 +460,7 @@ export default function App() {
         if (
           event.key === 'Escape' &&
           !settings &&
+          !feedbackOpen &&
           !updatesOpen &&
           !creating &&
           !conflict &&
@@ -518,6 +524,11 @@ export default function App() {
               <Download size={17} />
             </button>
           )}
+          <IconButton
+            icon={MessageSquare}
+            label={t('Send feedback')}
+            onClick={() => setFeedbackOpen('general')}
+          />
           <IconButton
             icon={SettingsIcon}
             label={t('Settings')}
@@ -690,6 +701,7 @@ export default function App() {
                   void api.SetReaderLayout(fontSize, width).catch(fail)
                 }}
                 onConfigureTranslation={() => setSettings('translation')}
+                onReportTranslation={() => setFeedbackOpen('translation')}
                 onNewResource={() =>
                   request(() => setResourceAction({ kind: 'new' }))
                 }
@@ -800,6 +812,12 @@ export default function App() {
             onClick={() => setNotice(null)}
           />
         </div>
+      )}
+      {feedbackOpen && (
+        <FeedbackDialog
+          initialIncludeAIError={feedbackOpen === 'translation'}
+          onClose={() => setFeedbackOpen(null)}
+        />
       )}
       {settings && (
         <Settings

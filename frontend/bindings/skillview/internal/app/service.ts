@@ -15,6 +15,10 @@ import * as translation$0 from "../translation/models.js";
 // @ts-ignore: Unused imports
 import * as updates$0 from "../updates/models.js";
 
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore: Unused imports
+import * as $models from "./models.js";
+
 export function ArchiveSkill(id: string, token: string): $CancellablePromise<library$0.ArchiveEntry> {
     return $Call.ByID(807154857, id, token);
 }
@@ -67,6 +71,10 @@ export function ExportTranslation(id: string, path: string, result: translation$
     return $Call.ByID(2559751975, id, path, result);
 }
 
+export function FeedbackConfiguration(): $CancellablePromise<$models.FeedbackConfiguration> {
+    return $Call.ByID(2243383185);
+}
+
 export function InstallCLI(): $CancellablePromise<string> {
     return $Call.ByID(1724087297);
 }
@@ -97,6 +105,13 @@ export function Plugins(): $CancellablePromise<library$0.PluginCatalog> {
 
 export function Preferences(): $CancellablePromise<library$0.Preferences> {
     return $Call.ByID(1733517212);
+}
+
+/**
+ * PreviewFeedback is entirely local. Do not add network requests here.
+ */
+export function PreviewFeedback(input: $models.FeedbackInput): $CancellablePromise<$models.FeedbackSubmission> {
+    return $Call.ByID(3028349425, input);
 }
 
 export function Quit(): $CancellablePromise<void> {
@@ -160,6 +175,14 @@ export function Save(id: string, path: string, revision: string, text: string): 
 
 export function Scan(): $CancellablePromise<library$0.Catalog> {
     return $Call.ByID(413026995);
+}
+
+/**
+ * SendFeedback sends exactly the reviewed payload once. The caller retains it
+ * across retries, including event_id and timestamp. No background queue is used.
+ */
+export function SendFeedback(submission: $models.FeedbackSubmission): $CancellablePromise<$models.FeedbackReceipt> {
+    return $Call.ByID(3157188355, submission);
 }
 
 export function SetAccentColor(color: string): $CancellablePromise<void> {

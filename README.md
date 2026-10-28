@@ -15,7 +15,7 @@ Apple Silicon. macOS 13+ declared; the minimum version remains unverified. Ad-ho
 - Browse installed Claude Code and Codex [plugins](docs/plugins.md).
 - Translate with Google, Youdao, self-hosted LibreTranslate or compatible AI. Completed translations are cached.
 - [Archive and restore Skills](docs/archive.md). Archived folders stay in `~/.agents/.skillview-archive/`.
-- English/Chinese interface, light/dark themes, accent color and reading size.
+- [18 interface languages](docs/localization.md), including Arabic RTL, plus light/dark themes, accent color and reading size.
 - Signed downloads and [in-app updates](docs/updates.md).
 - A shared [CLI](docs/cli.md): `skillview app`, `list`, `scan` and local Skill management.
 

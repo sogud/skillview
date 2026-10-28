@@ -9,7 +9,7 @@ import {
 import { createPortal } from 'react-dom'
 import { Check, ChevronDown } from 'lucide-react'
 
-type Option = { value: string; label: string; description?: string }
+type Option = { value: string; label: string; description?: string; descriptionDirection?: 'ltr' | 'rtl' | 'auto' }
 
 export function Select({
   label,
@@ -105,7 +105,7 @@ export function Select({
           }
         }}
       >
-        <span>{options[selected]?.label ?? label}</span>
+        <span><bdi>{options[selected]?.label ?? label}</bdi></span>
         <ChevronDown size={14} />
       </button>
       {open &&
@@ -180,8 +180,8 @@ export function Select({
                 onClick={() => choose(index)}
               >
                 <span>
-                  <span>{option.label}</span>
-                  {option.description && <small>{option.description}</small>}
+                  <bdi>{option.label}</bdi>
+                  {option.description && <small dir={option.descriptionDirection ?? 'auto'}>{option.description}</small>}
                 </span>
                 {option.value === value && <Check size={14} />}
               </div>

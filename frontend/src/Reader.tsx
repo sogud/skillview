@@ -66,6 +66,7 @@ type ReaderProps = {
   onLayoutChange: (fontSize: number, width: number) => void
   translationVersion: number
   onConfigureTranslation: () => void
+  onReportTranslation: () => void
   onNewResource: () => void
   onImportResource: () => void
   onRenameResource: (resource: Resource) => void
@@ -96,7 +97,7 @@ type ReaderProps = {
 }
 
 export function Reader(props: ReaderProps) {
-  const { t, error: translationErrorMessage } = useLocale()
+  const { t, error: translationErrorMessage, direction } = useLocale()
   const { skill, document: doc, draft } = props
   const [translation, setTranslation] = useState<TranslationResult | null>(null)
   const [translated, setTranslated] = useState(false)
@@ -335,6 +336,7 @@ export function Reader(props: ReaderProps) {
                         )
                         .join(' · ') || t('Local files'),
                     description: copy.path,
+                    descriptionDirection: 'ltr' as const,
                   }))}
                   onChange={(id) => {
                     const copy = props.copies.find((copy) => copy.id === id)
@@ -362,7 +364,7 @@ export function Reader(props: ReaderProps) {
                       className="link-entry"
                     >
                       <Link size={12} />
-                      <span title={entry.path}>{entry.path}</span>
+                      <span dir="ltr" title={entry.path}>{entry.path}</span>
                       <IconButton
                         icon={Trash2}
                         label={t('Remove link ({path})', { path: entry.path })}
@@ -412,7 +414,7 @@ export function Reader(props: ReaderProps) {
             onPointerMove={(event) => {
               if (drag.current)
                 setWidth(
-                  resize(drag.current.width + event.clientX - drag.current.x),
+                  resize(drag.current.width + (event.clientX - drag.current.x) * (direction === 'rtl' ? -1 : 1)),
                 )
             }}
             onPointerUp={() => {
@@ -442,6 +444,7 @@ export function Reader(props: ReaderProps) {
               else
                 next +=
                   (event.key === 'ArrowRight' ? 1 : -1) *
+                  (direction === 'rtl' ? -1 : 1) *
                   (event.shiftKey ? 40 : 16)
               saveWidth(resize(next))
             }}
@@ -587,6 +590,9 @@ export function Reader(props: ReaderProps) {
             <div className="translation-error" role="alert">
               <AlertCircle size={14} />
               <span>{translationError}</span>
+              <button onClick={props.onReportTranslation}>
+                {t('Report this issue')}
+              </button>
               {!translation && (
                 <button
                   onClick={() => {
@@ -682,7 +688,7 @@ export function Reader(props: ReaderProps) {
             ) : doc ? (
               <>
                 {doc.path === 'SKILL.md' && (
-                  <div className="skill-intro">
+                  <div className="skill-intro" dir="auto">
                     {!translated && !props.raw && !/^\s*#\s/.test(doc.body) && (
                       <>
                         <h1>{skill.name}</h1>

@@ -3,6 +3,7 @@
 
 export type {
     Progress,
+    ResponseDiagnostic,
     Result,
     Settings
 } from "./models.js";

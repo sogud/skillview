@@ -6,11 +6,17 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import messages from '../../internal/locale/messages.json'
+import {
+  preferredLocale,
+  resolveLocale,
+  localeDirection,
+  translate,
+} from './locale-core'
 import * as api from './api'
 
 type LocaleContextValue = {
   language: string
+  direction: 'ltr' | 'rtl'
   setLanguage: (language: string) => void
   t: (text: string, values?: Record<string, string | number>) => string
   error: (failure: unknown) => string
@@ -21,7 +27,9 @@ const LocaleContext = createContext<LocaleContextValue | null>(null)
 export function LocaleProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState('system')
   const [systemLanguage, setSystemLanguage] = useState(
-    navigator.language.startsWith('zh') ? 'zh-CN' : 'en',
+    preferredLocale(
+      navigator.languages.length ? navigator.languages : [navigator.language],
+    ),
   )
   useEffect(() => {
     void api
@@ -29,21 +37,14 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       .then(setSystemLanguage)
       .catch(() => {})
   }, [])
-  const resolved = language === 'system' ? systemLanguage : language
+  const resolved = resolveLocale(language, systemLanguage)
   useEffect(() => {
     document.documentElement.lang = resolved
+    document.documentElement.dir = localeDirection(resolved)
   }, [resolved])
   const t = useCallback(
-    (text: string, values: Record<string, string | number> = {}) => {
-      let translated =
-        resolved === 'zh-CN'
-          ? ((messages['zh-CN'] as Record<string, string>)[text] ?? text)
-          : text
-      for (const [key, value] of Object.entries(values)) {
-        translated = translated.replaceAll(`{${key}}`, String(value))
-      }
-      return translated
-    },
+    (text: string, values: Record<string, string | number> = {}) =>
+      translate(resolved, text, values),
     [resolved],
   )
   const error = useCallback(
@@ -51,6 +52,20 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
       const text = (
         failure instanceof Error ? failure.message : String(failure)
       ).replace(/^Error:\s*/, '')
+      const retrySeconds = text.match(
+        /^Too many reports\. Retry after (\d+) seconds\.$/,
+      )?.[1]
+      if (retrySeconds)
+        return t('Too many reports. Retry after {seconds} seconds.', {
+          seconds: Number(retrySeconds),
+        })
+      const feedbackStatus = text.match(
+        /^Feedback was not accepted \(HTTP (\d+)\)\.$/,
+      )?.[1]
+      if (feedbackStatus)
+        return t('Feedback was not accepted (HTTP {status}).', {
+          status: feedbackStatus,
+        })
       const youdaoCode = text.match(
         /^Youdao's free service rejected the translation \(code (\d+)\). Try again later or choose another provider\.$/,
       )?.[1]
@@ -83,7 +98,15 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
     [resolved, t],
   )
   return (
-    <LocaleContext.Provider value={{ language, setLanguage, t, error }}>
+    <LocaleContext.Provider
+      value={{
+        language,
+        direction: localeDirection(resolved),
+        setLanguage,
+        t,
+        error,
+      }}
+    >
       {children}
     </LocaleContext.Provider>
   )

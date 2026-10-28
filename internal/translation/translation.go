@@ -601,7 +601,7 @@ func (s *Service) ai(ctx context.Context, settings Settings, key string, texts [
 		return nil, errors.New(network.ErrorMessage(err))
 	}
 	if len(response.Choices) == 0 {
-		return nil, fmt.Errorf("AI returned an unreadable response")
+		return nil, aiResponseError("no_choices", "", "AI returned an unreadable response")
 	}
 	content := strings.TrimSpace(response.Choices[0].Message.Content)
 	if strings.HasPrefix(content, "```") {
@@ -613,7 +613,10 @@ func (s *Service) ai(ctx context.Context, settings Settings, key string, texts [
 		Translations []string `json:"translations"`
 	}
 	if json.Unmarshal([]byte(content), &result) != nil {
-		return nil, fmt.Errorf("AI did not return the requested translation format; try another model")
+		return nil, aiResponseError("invalid_format", response.Choices[0].FinishReason, "AI did not return the requested translation format; try another model")
+	}
+	if err := validateTranslations(result.Translations, len(texts)); err != nil {
+		return nil, aiResponseError("incomplete_translations", response.Choices[0].FinishReason, err.Error())
 	}
 	return result.Translations, nil
 }

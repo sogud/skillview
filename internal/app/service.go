@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -29,13 +30,15 @@ type Native struct {
 }
 
 type Service struct {
-	library     *library.Library
-	native      Native
-	mu          sync.Mutex
-	ready       bool
-	allowQuit   bool
-	discoveryMu sync.Mutex
-	translator  *translation.Service
+	library               *library.Library
+	native                Native
+	mu                    sync.Mutex
+	ready                 bool
+	allowQuit             bool
+	discoveryMu           sync.Mutex
+	translator            *translation.Service
+	translationDiagnostic *translation.ResponseDiagnostic
+	translationSequence   uint64
 }
 
 func New(l *library.Library, native Native, translator *translation.Service) *Service {
@@ -89,6 +92,11 @@ func (s *Service) SetTranslationSettings(settings translation.Settings, aiKey, g
 	return s.translator.Update(settings, aiKey, googleKey, clearAI, clearGoogle, changes...)
 }
 func (s *Service) Translate(ctx context.Context, id, path, revision, requestID string) (translation.Result, error) {
+	s.mu.Lock()
+	s.translationDiagnostic = nil
+	s.translationSequence++
+	sequence := s.translationSequence
+	s.mu.Unlock()
 	doc, err := s.library.Read(id, path)
 	if err != nil {
 		return translation.Result{}, err
@@ -106,6 +114,15 @@ func (s *Service) Translate(ctx context.Context, id, path, revision, requestID s
 		}
 	})
 	if err != nil {
+		var responseError *translation.AIResponseError
+		if errors.As(err, &responseError) {
+			diagnostic := responseError.Diagnostic
+			s.mu.Lock()
+			if s.translationSequence == sequence {
+				s.translationDiagnostic = &diagnostic
+			}
+			s.mu.Unlock()
+		}
 		return translation.Result{}, err
 	}
 	current, err := s.library.Read(id, path)

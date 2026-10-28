@@ -1,5 +1,13 @@
 # Verification
 
+## Interface languages and manual report preparation (0.1.5)
+
+The shared Go/TypeScript dictionary covers 18 interface languages with 490 keys each. Key and placeholder checks, 30 language-tag fixtures, native system-language reading and all-language preference persistence passed. Browser acceptance used synthetic data for Chinese settings, German long text, Arabic RTL with LTR code and paths, file-tree resizing, system-language variants, reload and English fallback. See [localization](localization.md) for exact coverage and editorial limits.
+
+Manual feedback can be reviewed locally with a fixed AI response-format diagnostic, app version and redacted user description. The default release has no feedback endpoint or project key, so submission is disabled. No documents, model responses, screenshots or logs are attached. The service is not deployed; server receipt, search, status and end-to-end delivery are unverified. See [feedback](feedback.md).
+
+New translations have not been reviewed by native speakers. Full ICU plural rules, every screen/size, native permission prompts and complete installed-app upgrade acceptance are not claimed. Release-specific packaging, signature, CI and native smoke evidence is recorded with the release.
+
 ## Reader fixes (0.1.4)
 
 Browser interaction with the production React components and synthetic service

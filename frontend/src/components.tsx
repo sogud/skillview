@@ -103,7 +103,7 @@ export function Markdown({
 }) {
   const { t } = useLocale()
   return (
-    <div className="markdown">
+    <div className="markdown" dir="auto">
       <ReactMarkdown
         skipHtml
         remarkPlugins={
