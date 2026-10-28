@@ -33,6 +33,7 @@ import {
 } from './Dialogs'
 import { Reader, type Draft } from './Reader'
 import { AgentTabs, SkillsList } from './SkillsList'
+import { resolveLocalLink } from './local-link'
 import { groupSkills, selectCopy, type SkillGroup } from './skill-groups'
 
 export default function App() {
@@ -343,11 +344,8 @@ export default function App() {
       return
     }
     try {
-      const parts = [
-        ...(document?.path.split('/').slice(0, -1) ?? []),
-        ...decodeURIComponent(url.split(/[?#]/)[0]).split('/'),
-      ]
-      if (parts.some((part) => !part || part === '.' || part === '..')) {
+      const path = resolveLocalLink(document?.path ?? 'SKILL.md', url)
+      if (path === null) {
         notify(
           t(
             'This link is outside the current Skill. Open the folder in Finder.',
@@ -356,7 +354,7 @@ export default function App() {
         )
         return
       }
-      openResource(parts.join('/'))
+      openResource(path)
     } catch (error) {
       fail(error)
     }

@@ -6,6 +6,14 @@ service. Document translation starts only after clicking Translate; original
 files, code blocks and link destinations are preserved. Failure never presents
 an incomplete translation as complete.
 
+Markdown translations appear below the corresponding original paragraphs,
+headings, list items and table cells. Code blocks appear once. Show original
+returns to the original view; showing the bilingual result again uses the same
+completed translation. Copy and export still contain only the translation.
+If a cached result has a different Markdown structure, both complete documents
+are shown separately instead of pairing unrelated passages. Plain-text resources
+continue to switch between the original and translated text.
+
 | Service | Setup |
 | --- | --- |
 | Google free web service | No key. Unofficial endpoint; access and rate limits can change. |

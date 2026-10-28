@@ -489,7 +489,9 @@ export function Reader(props: ReaderProps) {
                       : translated
                         ? 'Show original'
                         : translation
-                          ? 'Show translation'
+                          ? doc?.kind === 'markdown'
+                            ? 'Show bilingual translation'
+                            : 'Show translation'
                           : 'Translate document',
                   )}
                 </button>
@@ -715,7 +717,11 @@ export function Reader(props: ReaderProps) {
                 )}
                 {translated && translation ? (
                   doc.kind === 'markdown' ? (
-                    <Markdown text={translation.text} onLink={props.onLink} />
+                    <Markdown
+                      text={doc.body}
+                      translation={translation}
+                      onLink={props.onLink}
+                    />
                   ) : (
                     <pre className="raw-file">{translation.text}</pre>
                   )

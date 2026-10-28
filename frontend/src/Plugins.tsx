@@ -22,6 +22,7 @@ import { AgentIcon } from './AgentIcon'
 import { FileTree } from './FileTree'
 import { IconButton, Markdown } from './components'
 import { useLocale } from './locales'
+import { resolveLocalLink } from './local-link'
 
 export type PluginsHandle = { command: (name: string) => void }
 
@@ -333,16 +334,10 @@ function PluginReader({
       return
     }
     try {
-      const parts = path.split('/').slice(0, -1)
-      for (const part of decodeURIComponent(href.split(/[?#]/)[0]).split('/')) {
-        if (part === '.' || !part) continue
-        if (part === '..') {
-          if (!parts.length)
-            throw new Error(t('This link is outside the plugin.'))
-          parts.pop()
-        } else parts.push(part)
-      }
-      void read(parts.join('/'))
+      const relative = resolveLocalLink(path, href)
+      if (relative === null)
+        throw new Error(t('This link is outside the plugin.'))
+      void read(relative)
     } catch (error) {
       setFailure(message(error))
     }

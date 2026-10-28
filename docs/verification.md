@@ -1,5 +1,26 @@
 # Verification
 
+## Reader fixes (0.1.4)
+
+Browser interaction with the production React components and synthetic service
+responses verifies `./references/guide.md`, returning through `../SKILL.md`,
+and refusal of an outside-root link. A 100-file tree has its own scroll area;
+keyboard navigation reaches its last entry while the heading and controls stay
+visible. The earlier completely unscrollable native symptom was not reproduced.
+
+The same fixture verifies original/translated paragraphs, headings, nested list
+items, quotations and table cells, with one unchanged code block. Parser checks
+also cover reference links and complete-document fallback for incompatible block
+structures. Thirteen path checks cover encoded names, traversal, absolute paths
+and malformed input. Existing frontend checks and race-enabled library and
+translation checks pass. Credentials and their storage are unchanged; no real
+Skill or key was used for this acceptance.
+
+Native window inspection was interrupted by an unavailable computer-use
+connection and timed out again after reconnection. The native binary built and
+its isolated bundle passed strict signature verification, but native pointer
+interaction and a complete in-app upgrade are not accepted for this release.
+
 Local acceptance was performed on 2026-10-08–09 on an Apple Silicon Mac running macOS 27. Synthetic documents and isolated settings were used for mutation and provider checks. These checks support an experimental preview, not stable-release certification.
 
 ## Automated behavior checks

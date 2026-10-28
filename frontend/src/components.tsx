@@ -2,6 +2,7 @@ import { useLocale } from './locales'
 import { useEffect, useRef, type ReactNode } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { remarkBilingual } from './bilingual-markdown'
 import { X, ImageIcon, ChevronRight, type LucideIcon } from 'lucide-react'
 
 export function Disclosure({
@@ -94,16 +95,33 @@ export function Modal({
 export function Markdown({
   text,
   onLink,
+  translation,
 }: {
   text: string
   onLink: (url: string) => void
+  translation?: { text: string; targetLanguage: string }
 }) {
   const { t } = useLocale()
   return (
     <div className="markdown">
       <ReactMarkdown
         skipHtml
-        remarkPlugins={[remarkGfm]}
+        remarkPlugins={
+          translation
+            ? [
+                remarkGfm,
+                [
+                  remarkBilingual,
+                  {
+                    text: translation.text,
+                    language: translation.targetLanguage,
+                    originalLabel: t('Original'),
+                    translationLabel: t('Translation'),
+                  },
+                ],
+              ]
+            : [remarkGfm]
+        }
         components={{
           table: ({ children }) => (
             <div
