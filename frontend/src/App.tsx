@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Events } from '@wailsio/runtime'
 import {
   BookOpen,
+  ArrowLeft,
   Settings as SettingsIcon,
   Search,
   Plus,
@@ -522,6 +523,17 @@ export default function App() {
     >
       <div className="titlebar">
         <div className="toolbar-search" dir={direction} ref={setToolbarSearch}>
+          {view === 'skills' && selected && (
+            <button
+              className="reader-back"
+              onClick={closeReader}
+              disabled={saving}
+              title={t('Back to Skills')}
+            >
+              <ArrowLeft size={15} />
+              <span>{t('Back to Skills')}</span>
+            </button>
+          )}
           {view === 'skills' && !selected && (
             <div className="search">
               <Search size={14} />
@@ -914,7 +926,6 @@ export default function App() {
                 onReveal={() => {
                   void api.Reveal(selected.id, document?.path ?? '').catch(fail)
                 }}
-                onClose={closeReader}
               />
             )}
           </div>

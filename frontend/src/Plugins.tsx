@@ -122,13 +122,27 @@ export function Plugins({
   return (
     <div className="plugins-browser">
       {selected ? (
-        <PluginReader
-          key={selected.id}
-          plugin={selected}
-          fontSize={fontSize}
-          explorerWidth={explorerWidth}
-          onBack={() => setSelected(null)}
-        />
+        <>
+          {active &&
+            toolbarSearch &&
+            createPortal(
+              <button
+                className="reader-back"
+                onClick={() => setSelected(null)}
+                title={t('Back to Plugins')}
+              >
+                <ArrowLeft size={15} />
+                <span>{t('Back to Plugins')}</span>
+              </button>,
+              toolbarSearch,
+            )}
+          <PluginReader
+            key={selected.id}
+            plugin={selected}
+            fontSize={fontSize}
+            explorerWidth={explorerWidth}
+          />
+        </>
       ) : (
         <>
           {active &&
@@ -291,12 +305,10 @@ function PluginReader({
   plugin,
   fontSize,
   explorerWidth,
-  onBack,
 }: {
   plugin: Plugin
   fontSize: number
   explorerWidth: number
-  onBack: () => void
 }) {
   const { t, error: message } = useLocale()
   const [resources, setResources] = useState<Resource[]>([])
@@ -376,12 +388,6 @@ function PluginReader({
       aria-label={t('Plugin reader')}
       style={{ '--reader-font-size': `${fontSize}px` } as CSSProperties}
     >
-      <nav className="reader-navigation" aria-label={t('Plugin navigation')}>
-        <button className="reader-back" onClick={onBack}>
-          <ArrowLeft size={15} />
-          {t('Back to Plugins')}
-        </button>
-      </nav>
       <div className="reader-body">
         <nav
           className="file-explorer"

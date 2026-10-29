@@ -94,7 +94,6 @@ type ReaderProps = {
   onResource: (path: string) => void
   onLink: (url: string) => void
   onReveal: () => void
-  onClose: () => void
 }
 
 export function Reader(props: ReaderProps) {
@@ -303,16 +302,6 @@ export function Reader(props: ReaderProps) {
       aria-label={`${skill.name} ${t('reader')}`}
       style={{ '--reader-font-size': `${props.fontSize}px` } as CSSProperties}
     >
-      <nav className="reader-navigation" aria-label={t('Skill navigation')}>
-        <button
-          className="reader-back"
-          onClick={props.onClose}
-          disabled={props.saving}
-        >
-          <ArrowLeft size={15} />
-          {t('Back to Skills')}
-        </button>
-      </nav>
       <div className="reader-body" ref={body}>
         {explorerOpen && (
           <nav

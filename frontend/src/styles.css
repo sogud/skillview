@@ -534,13 +534,6 @@ kbd {
   flex-direction: column;
   animation: reader-in 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
-.reader-navigation {
-  display: flex;
-  align-items: center;
-  min-height: 34px;
-  padding: 0 12px;
-  flex-shrink: 0;
-}
 .view-switch {
   display: inline-flex;
   align-items: center;
@@ -1572,6 +1565,15 @@ dialog::backdrop {
 }
 .reader-back {
   margin-inline-end: 6px;
+  max-width: 100%;
+  min-width: 0;
+}
+.reader-back > svg {
+  flex-shrink: 0;
+}
+.reader-back > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .reader-content > * {
   max-width: 780px;
