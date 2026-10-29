@@ -98,6 +98,7 @@ type TrashReceipt struct {
 }
 
 type Preferences struct {
+	AutomaticErrors bool            `json:"automaticErrors"`
 	RecentTrash     []TrashReceipt  `json:"recentTrash"`
 	Sources         []Source        `json:"sources"`
 	AccentColor     string          `json:"accentColor"`

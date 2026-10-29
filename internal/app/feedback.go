@@ -23,7 +23,7 @@ import (
 	"skillview/internal/updates"
 )
 
-// Only user-requested submissions use this transport. It never reads documents,
+// This restricted transport never reads documents,
 // translation output, settings, credentials, or log files.
 type FeedbackInput struct {
 	Message        string `json:"message"`
@@ -56,10 +56,13 @@ type FeedbackReceipt struct {
 }
 
 type FeedbackConfiguration struct {
-	Enabled     bool                            `json:"enabled"`
-	Destination string                          `json:"destination"`
-	DSN         string                          `json:"dsn"`
-	AIError     *translation.ResponseDiagnostic `json:"aiError,omitempty"`
+	AutomaticErrors bool                            `json:"automaticErrors"`
+	Release         string                          `json:"release"`
+	Environment     string                          `json:"environment"`
+	Enabled         bool                            `json:"enabled"`
+	Destination     string                          `json:"destination"`
+	DSN             string                          `json:"dsn"`
+	AIError         *translation.ResponseDiagnostic `json:"aiError,omitempty"`
 }
 
 var feedbackRedactions = []*regexp.Regexp{
@@ -107,7 +110,7 @@ func (s *Service) FeedbackConfiguration() FeedbackConfiguration {
 	dsn, destination, _, err := feedbackDSN()
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	return FeedbackConfiguration{Enabled: err == nil, Destination: destination, DSN: dsn, AIError: s.translationDiagnostic}
+	return FeedbackConfiguration{Enabled: err == nil, Destination: destination, DSN: dsn, AIError: s.translationDiagnostic, AutomaticErrors: s.library.Settings().AutomaticErrors, Release: updates.Version(), Environment: automaticErrorEnvironment()}
 }
 
 // PreviewFeedback is entirely local. Do not add network requests here.
@@ -191,28 +194,35 @@ func validateFeedback(p FeedbackSubmission, envelopes []string) error {
 		return invalid()
 	}
 	for i, wire := range envelopes {
-		if len(wire) > 32768 {
+		if !matchesFeedbackEnvelope(wire, expected[i], p.Timestamp) {
 			return invalid()
-		}
-		lines := strings.Split(wire, "\n")
-		if len(lines) != 3 {
-			return invalid()
-		}
-		kind := "event"
-		if expected[i]["type"] == "feedback" {
-			kind = "feedback"
-		}
-		want := []any{map[string]any{"event_id": expected[i]["event_id"], "sent_at": p.Timestamp}, map[string]any{"type": kind}, expected[i]}
-		for j := range lines {
-			var got, canonical any
-			b, _ := json.Marshal(want[j])
-			_ = json.Unmarshal(b, &canonical)
-			if json.Unmarshal([]byte(lines[j]), &got) != nil || !reflect.DeepEqual(got, canonical) {
-				return invalid()
-			}
 		}
 	}
 	return nil
+}
+
+func matchesFeedbackEnvelope(wire string, expected map[string]any, timestamp string) bool {
+	if len(wire) > 32768 {
+		return false
+	}
+	lines := strings.Split(wire, "\n")
+	if len(lines) != 3 {
+		return false
+	}
+	kind := "event"
+	if expected["type"] == "feedback" {
+		kind = "feedback"
+	}
+	want := []any{map[string]any{"event_id": expected["event_id"], "sent_at": timestamp}, map[string]any{"type": kind}, expected}
+	for j := range lines {
+		var got, canonical any
+		b, _ := json.Marshal(want[j])
+		_ = json.Unmarshal(b, &canonical)
+		if json.Unmarshal([]byte(lines[j]), &got) != nil || !reflect.DeepEqual(got, canonical) {
+			return false
+		}
+	}
+	return true
 }
 
 var feedbackSendMu sync.Mutex
@@ -237,20 +247,28 @@ func (s *Service) SendFeedback(ctx context.Context, submission FeedbackSubmissio
 	if time.Now().Before(feedbackRetryAfter) {
 		return FeedbackReceipt{}, fmt.Errorf("Too many reports. Try again later.")
 	}
-	ctx, cancel := context.WithTimeout(ctx, feedbackTimeout)
+	duplicate, err := deliverFeedback(ctx, destination, key, envelopes, feedbackTimeout)
+	if err != nil {
+		return FeedbackReceipt{}, err
+	}
+	return FeedbackReceipt{EventID: submission.EventID, Duplicate: duplicate}, nil
+}
+
+func deliverFeedback(ctx context.Context, destination, key string, envelopes []string, timeout time.Duration) (bool, error) {
+	ctx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	transport := &http.Transport{Proxy: http.ProxyFromEnvironment, MaxConnsPerHost: 1, MaxIdleConns: 1, TLSHandshakeTimeout: 3 * time.Second, ResponseHeaderTimeout: 4 * time.Second}
 	defer transport.CloseIdleConnections()
-	client := &http.Client{Transport: transport, Timeout: feedbackTimeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
+	client := &http.Client{Transport: transport, Timeout: timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }}
 	duplicate := true
 	for _, body := range envelopes {
 		wasDuplicate, err := postFeedback(ctx, client, destination, key, body)
 		if err != nil {
-			return FeedbackReceipt{}, err
+			return false, err
 		}
 		duplicate = duplicate && wasDuplicate
 	}
-	return FeedbackReceipt{EventID: submission.EventID, Duplicate: duplicate}, nil
+	return duplicate, nil
 }
 
 func postFeedback(ctx context.Context, client *http.Client, destination, key, body string) (bool, error) {

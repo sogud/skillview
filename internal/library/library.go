@@ -151,6 +151,23 @@ func (l *Library) RemoveSource(id string) error {
 	return nil
 }
 
+func (l *Library) SetAutomaticErrors(enabled bool) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
+	previous := l.prefs.AutomaticErrors
+	l.prefs.AutomaticErrors = enabled
+	if err := l.persist(); err != nil {
+		l.prefs.AutomaticErrors = previous
+		return err
+	}
+	return nil
+}
+
 func (l *Library) SetLanguage(language string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()

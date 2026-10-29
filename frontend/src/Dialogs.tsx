@@ -21,6 +21,8 @@ type SettingsProps = {
   onTranslationSaved: (invalidate?: boolean) => void
   theme: string
   accentColor: string
+  automaticErrors: boolean
+  onAutomaticErrors: (enabled: boolean) => Promise<void>
   onAccentColor: (color: string) => void
   catalog: Catalog | null
   onTab: (tab: SettingsTab) => void
@@ -35,6 +37,7 @@ export function Settings(props: SettingsProps) {
   const { t, error: message } = useLocale()
   const [recentTrash, setRecentTrash] = useState<api.TrashReceipt[]>([])
   const [cacheMessage, setCacheMessage] = useState('')
+  const [automaticBusy, setAutomaticBusy] = useState(false)
   const [cliMessage, setCliMessage] = useState('')
   const [diagnostics, setDiagnostics] = useState<string | null>(null)
   useEffect(() => {
@@ -183,6 +186,24 @@ export function Settings(props: SettingsProps) {
                 ]}
               />
             </label>
+            <label className="checkbox">
+              <input
+                type="checkbox"
+                checked={props.automaticErrors}
+                disabled={automaticBusy}
+                aria-describedby="automatic-error-privacy"
+                onChange={(event) => {
+                  setAutomaticBusy(true)
+                  void props.onAutomaticErrors(event.target.checked)
+                    .catch((failure) => setError(message(failure)))
+                    .finally(() => setAutomaticBusy(false))
+                }}
+              />
+              {t('Automatic error reports')}
+            </label>
+            <p id="automatic-error-privacy" className="quiet-note">
+              {t('By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.')}
+            </p>
             <button
               onClick={() => {
                 void api

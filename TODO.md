@@ -1,10 +1,12 @@
 # SkillView TODO
 
-- [x] **0.1.9 更多菜单本地修复** · 2026-10-29 · Codex · 原版原生鼠标复现：下拉可见，技能列表/阅读页点击设置或反馈被空焦点目标的 blur 提前关闭；键盘可用。App.tsx 仅修正该判断。修复版原生鼠标设置/反馈/归档开关重开、插件页、返回后打开、草稿保留、外部关闭及 Escape/Tab/⌘F 通过；绑定、前端/原生构建和签名通过。无反馈提交、无安装版替换；用户已授权发布 0.1.10，最终包/CI/公开资产验证进行中。详见 [验证记录](docs/verification.md#more-menu-local-fix--2026-10-29--codex)。
+- [x] **自动错误上报（0.1.11 发布准备）** · 2026-10-29 08:34 UTC · Codex（本任务）· 默认关闭/明确同意、字段白名单、去重限频和失败隔离已接入；原生鼠标开关与开启/关闭重启恢复通过。用户批准的临时按钮触发真实 WebKit→Wails→Sentry→SQLite 链路，仅新增 1 条 synthetic 错误；关闭后在新进程触发不发送，拒连时阅读/设置正常。临时按钮、观察代码、端点进程及调试包已清除，干净构建/签名通过且产物 hash 恢复一致；18×498 键与此前相关检查保留。未提交、发布或替换安装版。见 [验收记录](docs/verification.md#automatic-errors-native-acceptance--2026-10-29-0834-utc--codex)。
+
+- [x] **0.1.9 更多菜单本地修复** · 2026-10-29 · Codex · 原版原生鼠标复现：下拉可见，技能列表/阅读页点击设置或反馈被空焦点目标的 blur 提前关闭；键盘可用。App.tsx 仅修正该判断。修复版原生鼠标设置/反馈/归档开关重开、插件页、返回后打开、草稿保留、外部关闭及 Escape/Tab/⌘F 通过；绑定、前端/原生构建和签名通过。无反馈提交、无安装版替换；已发布 [v0.1.10](https://github.com/sogud/skillview/releases/tag/v0.1.10)，提交 e52f250；构建 CI 40829552036、官网 CI 40830451540 和四项公开资产/签名验证通过。详见 [验证记录](docs/verification.md#more-menu-local-fix--2026-10-29--codex)。
 
 - [x] **0.1.9 返回按钮验证** · 2026-10-29 · Codex · 复核 dot 改动并仅恢复 App/Plugins 原格式；技能/插件返回共用标题栏左槽，移除旧导航空行。德语/阿拉伯 RTL 窄窗、切换无残留、键盘返回，以及原生标题栏点击、草稿确认/取消、⌘S/⌘F 通过。保存中禁用逻辑经源码核对，未人为延迟保存。既有更新 race 测试、前端检查、绑定及 ARM64 打包通过；[v0.1.9](https://github.com/sogud/skillview/releases/tag/v0.1.9) 已发布；准确提交构建 CI 40817209216、官网 CI 40817886287 成功，四项公开资产/签名/摘要通过，隔离 0.1.8→0.1.9 取消重启保留草稿、保存升级与设置保留通过。临时进程已清理，未替换安装 App。
 
-Updated: 2026-10-29 · Codex. Current published release: [v0.1.9](https://github.com/sogud/skillview/releases/tag/v0.1.9), commit `c881d15646df6d1f50e6237791287be8c4ac2e91`. Release, public assets, website and isolated upgrade acceptance were verified on 2026-10-29.
+Updated: 2026-10-29 · Codex. Current published release: [v0.1.10](https://github.com/sogud/skillview/releases/tag/v0.1.10), commit `e52f2501f3dcec03ddb7c2d656f49924f480b8bc`. Native menu acceptance, release/public assets and website were verified on 2026-10-29; 0.1.9 → 0.1.10 native replacement/relaunch was not rerun.
 
 ## 0.1.8 published and verified
 

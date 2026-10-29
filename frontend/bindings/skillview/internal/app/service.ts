@@ -178,6 +178,14 @@ export function Scan(): $CancellablePromise<library$0.Catalog> {
 }
 
 /**
+ * Consent and limits are rechecked natively. One shared send in flight, no queue,
+ * at most one attempt/minute and ten distinct errors per process; never retry.
+ */
+export function SendAutomaticError(report: $models.AutomaticErrorReport, envelope: string): $CancellablePromise<void> {
+    return $Call.ByID(3484163459, report, envelope);
+}
+
+/**
  * SendFeedback accepts only SDK envelopes for the locally reviewed report.
  * One report in flight, zero waiting queue/disk spool, zero automatic retries.
  * The caller retains stable IDs for explicit retries, including partial delivery.
@@ -188,6 +196,10 @@ export function SendFeedback(submission: $models.FeedbackSubmission, envelopes: 
 
 export function SetAccentColor(color: string): $CancellablePromise<void> {
     return $Call.ByID(3527685455, color);
+}
+
+export function SetAutomaticErrors(enabled: boolean): $CancellablePromise<void> {
+    return $Call.ByID(2797429858, enabled);
 }
 
 export function SetLanguage(language: string): $CancellablePromise<void> {

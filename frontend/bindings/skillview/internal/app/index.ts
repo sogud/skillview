@@ -7,6 +7,8 @@ export {
 };
 
 export type {
+    AutomaticErrorFrame,
+    AutomaticErrorReport,
     FeedbackConfiguration,
     FeedbackDiagnostics,
     FeedbackInput,

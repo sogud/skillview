@@ -30,6 +30,7 @@ type Native struct {
 }
 
 type Service struct {
+	automaticErrors       automaticErrorState
 	library               *library.Library
 	native                Native
 	mu                    sync.Mutex

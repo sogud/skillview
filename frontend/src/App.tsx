@@ -27,6 +27,7 @@ import { Plugins, type PluginsHandle } from './Plugins'
 import { ArchiveSkillDialog, ArchivedSkillsDialog } from './ArchiveDialogs'
 import { UpdateDialog } from './UpdateDialog'
 import { FeedbackDialog } from './FeedbackDialog'
+import { configureAutomaticErrors } from './automatic-errors'
 import { IconButton, Modal } from './components'
 import {
   CreateDialog,
@@ -74,6 +75,7 @@ export default function App() {
   )
   const [theme, setTheme] = useState('system')
   const [accentColor, setAccentColor] = useState('')
+  const [automaticErrors, setAutomaticErrors] = useState(false)
   const [readerLayout, setReaderLayout] = useState({
     fontSize: 14,
     width: 244,
@@ -204,6 +206,7 @@ export default function App() {
         if (mounted.current) {
           setTheme(preferences.theme || 'system')
           setAccentColor(preferences.accentColor || '')
+          setAutomaticErrors(Boolean(preferences.automaticErrors))
           setLanguage(preferences.language || 'system')
           setReaderLayout({
             fontSize: preferences.readerFontSize || 14,
@@ -227,6 +230,11 @@ export default function App() {
       readSequence.current++
     }
   }, [refresh, setLanguage])
+
+  useEffect(() => {
+    configureAutomaticErrors(automaticErrors, api.FeedbackConfiguration,
+      (report, envelope) => api.SendAutomaticError(report, envelope))
+  }, [automaticErrors])
 
   useEffect(() => {
     window.document.documentElement.dataset.theme = theme
@@ -996,6 +1004,11 @@ export default function App() {
           tab={settings}
           theme={theme}
           accentColor={accentColor}
+          automaticErrors={automaticErrors}
+          onAutomaticErrors={async (enabled) => {
+            await api.SetAutomaticErrors(enabled)
+            setAutomaticErrors(enabled)
+          }}
           onAccentColor={(value) => {
             void api
               .SetAccentColor(value)

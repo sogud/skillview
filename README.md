@@ -19,7 +19,7 @@ Apple Silicon. macOS 13+ declared; the minimum version remains unverified. Ad-ho
 - Signed downloads and [in-app updates](docs/updates.md).
 - A shared [CLI](docs/cli.md): `skillview app`, `list`, `scan` and local Skill management.
 
-Folders are read-only until you allow editing in Settings. Changes apply to the selected original copy. Skill scripts and plugin hooks are never executed. Translation sends the selected document to your chosen provider only when requested; API keys stay in macOS Keychain. No telemetry or cloud sync.
+Folders are read-only until you allow editing in Settings. Changes apply to the selected original copy. Skill scripts and plugin hooks are never executed. Translation sends the selected document to your chosen provider only when requested; API keys stay in macOS Keychain. No cloud sync. [Optional error reports](docs/feedback.md#automatic-error-reports) are off by default and require consent.
 
 ## Build
 

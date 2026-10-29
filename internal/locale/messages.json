@@ -495,7 +495,9 @@
     "Translation only": "Translation only",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.",
     "unknown translation display mode": "unknown translation display mode",
-    "More actions": "More actions"
+    "More actions": "More actions",
+    "Automatic error reports": "Automatic error reports",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time."
   },
   "zh-CN": {
     "Skills": "技能",
@@ -993,7 +995,9 @@
     "Translation only": "全文译文",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "沉浸式按 Markdown 段落结构对照；普通文本先显示原文，再显示译文。全文译文隐藏原文。切换时复用当前译文。",
     "unknown translation display mode": "未知的翻译显示方式",
-    "More actions": "更多操作"
+    "More actions": "更多操作",
+    "Automatic error reports": "自动错误上报",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "开启即同意将未捕获的前端错误类型、应用堆栈位置和版本发送至 feedback.sogud.me。不发送错误消息、文档、输入或日志。默认关闭，可随时关闭。"
   },
   "zh-TW": {
     "Skills": "技能",
@@ -1491,7 +1495,9 @@
     "Translation only": "全文譯文",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "沉浸式依 Markdown 段落結構對照；純文字先顯示原文，再顯示譯文。全文譯文隱藏原文。切換時沿用目前的譯文。",
     "unknown translation display mode": "未知的翻譯顯示方式",
-    "More actions": "更多操作"
+    "More actions": "更多操作",
+    "Automatic error reports": "自動錯誤回報",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "啟用即同意將未捕獲的前端錯誤類型、應用程式堆疊位置及版本傳送至 feedback.sogud.me。不傳送錯誤訊息、文件、輸入或日誌。預設關閉，可隨時關閉。"
   },
   "ja": {
     "Skills": "スキル",
@@ -1989,7 +1995,9 @@
     "Translation only": "訳文のみ",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "併記モードでは Markdown のブロックごとに原文と訳文を表示します。プレーンテキストは原文の後に訳文を表示します。「訳文のみ」では原文を非表示にします。切り替え時は現在の訳文を再利用します。",
     "unknown translation display mode": "不明な翻訳表示方法です",
-    "More actions": "その他の操作"
+    "More actions": "その他の操作",
+    "Automatic error reports": "エラーの自動報告",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "有効にすると、未捕捉のフロントエンドエラーの種類、アプリのスタック位置、バージョンを feedback.sogud.me に送信することに同意します。メッセージ、文書、入力内容、ログは送りません。初期状態では無効で、いつでも無効にできます。"
   },
   "ko": {
     "Skills": "스킬",
@@ -2487,7 +2495,9 @@
     "Translation only": "번역만 보기",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "함께 보기에서는 Markdown 블록별로 원문과 번역을 표시합니다. 일반 텍스트는 원문 다음에 번역을 표시합니다. 번역만 보기에서는 원문을 숨깁니다. 전환 시 현재 번역을 재사용합니다.",
     "unknown translation display mode": "알 수 없는 번역 표시 방식입니다",
-    "More actions": "추가 작업"
+    "More actions": "추가 작업",
+    "Automatic error reports": "자동 오류 보고",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "활성화하면 처리되지 않은 프런트엔드 오류 유형, 앱 스택 위치 및 버전을 feedback.sogud.me로 보내는 데 동의합니다. 메시지, 문서, 입력 내용 또는 로그는 보내지 않습니다. 기본값은 꺼짐이며 언제든 끌 수 있습니다."
   },
   "fr": {
     "Skills": "Skills",
@@ -2985,7 +2995,9 @@
     "Translation only": "Traduction seule",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Le mode bilingue associe les blocs Markdown ; le texte brut affiche l’original puis la traduction. Le mode traduction seule masque l’original. Changer de mode réutilise la traduction actuelle.",
     "unknown translation display mode": "mode d’affichage de la traduction inconnu",
-    "More actions": "Autres actions"
+    "More actions": "Autres actions",
+    "Automatic error reports": "Rapports d’erreurs automatiques",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "En activant cette option, vous acceptez d’envoyer à feedback.sogud.me les types d’erreurs non interceptées de l’interface, les positions dans la pile de l’application et la version. Aucun message, document, contenu saisi ni journal. Désactivé par défaut ; désactivable à tout moment."
   },
   "de": {
     "Skills": "Skills",
@@ -3483,7 +3495,9 @@
     "Translation only": "Nur Übersetzung",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Die zweisprachige Ansicht ordnet Markdown-Blöcke einander zu. Bei Klartext folgt die Übersetzung auf das Original. „Nur Übersetzung“ blendet das Original aus. Beim Wechsel wird die vorhandene Übersetzung wiederverwendet.",
     "unknown translation display mode": "unbekannter Anzeigemodus für Übersetzungen",
-    "More actions": "Weitere Aktionen"
+    "More actions": "Weitere Aktionen",
+    "Automatic error reports": "Automatische Fehlerberichte",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Mit dem Aktivieren stimmen Sie zu, Typen nicht abgefangener Oberflächenfehler, Positionen im App-Stack und die Version an feedback.sogud.me zu senden. Keine Meldungen, Dokumente, Eingaben oder Protokolle. Standardmäßig deaktiviert; jederzeit abschaltbar."
   },
   "es": {
     "Skills": "Habilidades",
@@ -3981,7 +3995,9 @@
     "Translation only": "Solo traducción",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "El modo bilingüe empareja los bloques Markdown; en texto plano, la traducción aparece después del original. «Solo traducción» oculta el original. Al cambiar de modo se reutiliza la traducción actual.",
     "unknown translation display mode": "modo de visualización de la traducción desconocido",
-    "More actions": "Más acciones"
+    "More actions": "Más acciones",
+    "Automatic error reports": "Informes automáticos de errores",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Al activar esta opción, aceptas enviar a feedback.sogud.me los tipos de errores no capturados de la interfaz, las posiciones de la pila de la aplicación y la versión. Sin mensajes, documentos, entradas ni registros. Desactivado por defecto; puedes desactivarlo cuando quieras."
   },
   "pt-BR": {
     "Skills": "Habilidades",
@@ -4479,7 +4495,9 @@
     "Translation only": "Somente tradução",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "O modo bilíngue combina os blocos Markdown; em texto simples, a tradução aparece após o original. Somente tradução oculta o original. A troca de modo reutiliza a tradução atual.",
     "unknown translation display mode": "modo de exibição da tradução desconhecido",
-    "More actions": "Mais ações"
+    "More actions": "Mais ações",
+    "Automatic error reports": "Relatórios automáticos de erros",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Ao ativar, você concorda em enviar a feedback.sogud.me os tipos de erros não tratados da interface, as posições da pilha do aplicativo e a versão. Sem mensagens, documentos, entradas ou logs. Desativado por padrão; pode ser desativado a qualquer momento."
   },
   "it": {
     "Skills": "Competenze",
@@ -4977,7 +4995,9 @@
     "Translation only": "Solo traduzione",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "La modalità bilingue abbina i blocchi Markdown; per il testo semplice, la traduzione segue l’originale. Solo traduzione nasconde l’originale. Il cambio di modalità riutilizza la traduzione attuale.",
     "unknown translation display mode": "modalità di visualizzazione della traduzione sconosciuta",
-    "More actions": "Altre azioni"
+    "More actions": "Altre azioni",
+    "Automatic error reports": "Segnalazioni automatiche degli errori",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Attivando questa opzione, acconsenti a inviare a feedback.sogud.me i tipi di errori non gestiti dell’interfaccia, le posizioni nello stack dell’app e la versione. Nessun messaggio, documento, input o registro. Disattivata per impostazione predefinita; disattivabile in qualsiasi momento."
   },
   "ru": {
     "Skills": "Навыки",
@@ -5475,7 +5495,9 @@
     "Translation only": "Только перевод",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Двуязычный режим сопоставляет блоки Markdown; для обычного текста перевод отображается после оригинала. Режим «Только перевод» скрывает оригинал. При переключении используется уже готовый перевод.",
     "unknown translation display mode": "неизвестный режим отображения перевода",
-    "More actions": "Другие действия"
+    "More actions": "Другие действия",
+    "Automatic error reports": "Автоматические отчёты об ошибках",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Включая эту функцию, вы соглашаетесь отправлять на feedback.sogud.me типы необработанных ошибок интерфейса, позиции в стеке приложения и версию. Сообщения, документы, введённые данные и журналы не отправляются. По умолчанию выключено; можно отключить в любой момент."
   },
   "ar": {
     "Skills": "المهارات",
@@ -5973,7 +5995,9 @@
     "Translation only": "الترجمة فقط",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "يعرض الوضع الثنائي كتل Markdown الأصلية مع ترجمتها؛ أما النص العادي فتظهر ترجمته بعد النص الأصلي. يخفي وضع «الترجمة فقط» النص الأصلي. يعيد التبديل استخدام الترجمة الحالية.",
     "unknown translation display mode": "طريقة عرض الترجمة غير معروفة",
-    "More actions": "إجراءات إضافية"
+    "More actions": "إجراءات إضافية",
+    "Automatic error reports": "تقارير الأخطاء التلقائية",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "بتفعيل هذا الخيار، توافق على إرسال أنواع أخطاء الواجهة غير المعالجة ومواضع مكدس التطبيق والإصدار إلى feedback.sogud.me. لا تُرسل الرسائل أو المستندات أو المدخلات أو السجلات. معطّل افتراضيًا ويمكن إيقافه في أي وقت."
   },
   "hi": {
     "Skills": "स्किल",
@@ -6471,7 +6495,9 @@
     "Translation only": "केवल अनुवाद",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "द्विभाषी मोड में Markdown के खंडों के साथ उनका अनुवाद दिखता है। सादे पाठ में मूल के बाद अनुवाद दिखता है। केवल अनुवाद मोड मूल पाठ छिपाता है। मोड बदलने पर मौजूदा अनुवाद का ही उपयोग होता है।",
     "unknown translation display mode": "अनुवाद दिखाने का तरीका अज्ञात है",
-    "More actions": "अन्य कार्रवाइयाँ"
+    "More actions": "अन्य कार्रवाइयाँ",
+    "Automatic error reports": "स्वचालित त्रुटि रिपोर्ट",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "इसे चालू करके आप अनियंत्रित फ़्रंटएंड त्रुटियों के प्रकार, ऐप स्टैक के स्थान और संस्करण को feedback.sogud.me पर भेजने की सहमति देते हैं। संदेश, दस्तावेज़, इनपुट या लॉग नहीं भेजे जाते। डिफ़ॉल्ट रूप से बंद है; कभी भी बंद कर सकते हैं।"
   },
   "id": {
     "Skills": "Skill",
@@ -6969,7 +6995,9 @@
     "Translation only": "Hanya terjemahan",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Mode dwibahasa memasangkan blok Markdown; untuk teks biasa, terjemahan ditampilkan setelah teks asli. Hanya terjemahan menyembunyikan teks asli. Pergantian mode menggunakan kembali terjemahan saat ini.",
     "unknown translation display mode": "mode tampilan terjemahan tidak dikenal",
-    "More actions": "Tindakan lainnya"
+    "More actions": "Tindakan lainnya",
+    "Automatic error reports": "Laporan kesalahan otomatis",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Dengan mengaktifkan ini, Anda menyetujui pengiriman jenis kesalahan antarmuka yang tidak tertangani, lokasi stack aplikasi, dan versi ke feedback.sogud.me. Tanpa pesan, dokumen, masukan, atau log. Nonaktif secara default; dapat dinonaktifkan kapan saja."
   },
   "vi": {
     "Skills": "Kỹ năng",
@@ -7467,7 +7495,9 @@
     "Translation only": "Chỉ bản dịch",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "Chế độ song ngữ ghép các khối Markdown; với văn bản thuần, bản dịch xuất hiện sau bản gốc. Chế độ chỉ bản dịch ẩn bản gốc. Khi chuyển chế độ, bản dịch hiện tại được dùng lại.",
     "unknown translation display mode": "chế độ hiển thị bản dịch không xác định",
-    "More actions": "Thao tác khác"
+    "More actions": "Thao tác khác",
+    "Automatic error reports": "Báo cáo lỗi tự động",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Khi bật, bạn đồng ý gửi loại lỗi giao diện chưa được xử lý, vị trí ngăn xếp ứng dụng và phiên bản đến feedback.sogud.me. Không gửi thông báo lỗi, tài liệu, dữ liệu nhập hay nhật ký. Mặc định tắt; có thể tắt bất cứ lúc nào."
   },
   "th": {
     "Skills": "สกิล",
@@ -7965,7 +7995,9 @@
     "Translation only": "คำแปลเท่านั้น",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "โหมดสองภาษาจะแสดงบล็อก Markdown คู่กับคำแปล สำหรับข้อความธรรมดาจะแสดงต้นฉบับก่อนแล้วตามด้วยคำแปล โหมดคำแปลเท่านั้นจะซ่อนต้นฉบับ การสลับโหมดจะใช้คำแปลเดิม",
     "unknown translation display mode": "ไม่รู้จักรูปแบบการแสดงคำแปล",
-    "More actions": "การดำเนินการเพิ่มเติม"
+    "More actions": "การดำเนินการเพิ่มเติม",
+    "Automatic error reports": "รายงานข้อผิดพลาดอัตโนมัติ",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "เมื่อเปิดใช้ คุณยินยอมให้ส่งประเภทข้อผิดพลาดของส่วนติดต่อที่ไม่ได้จัดการ ตำแหน่งสแต็กของแอป และเวอร์ชันไปยัง feedback.sogud.me ไม่ส่งข้อความ เอกสาร ข้อมูลที่ป้อน หรือบันทึก ปิดไว้โดยค่าเริ่มต้นและปิดได้ทุกเมื่อ"
   },
   "tr": {
     "Skills": "Beceriler",
@@ -8463,7 +8495,9 @@
     "Translation only": "Yalnızca çeviri",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "İki dilli görünüm Markdown bloklarını eşleştirir; düz metinde çeviri özgün metnin ardından gösterilir. Yalnızca çeviri görünümü özgün metni gizler. Görünüm değiştirildiğinde mevcut çeviri yeniden kullanılır.",
     "unknown translation display mode": "bilinmeyen çeviri görünümü",
-    "More actions": "Diğer işlemler"
+    "More actions": "Diğer işlemler",
+    "Automatic error reports": "Otomatik hata raporları",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Bu seçeneği etkinleştirerek yakalanmamış arayüz hatası türlerini, uygulama yığını konumlarını ve sürümü feedback.sogud.me adresine göndermeyi kabul edersiniz. Mesaj, belge, girdi veya günlük gönderilmez. Varsayılan olarak kapalıdır; istediğiniz zaman kapatabilirsiniz."
   },
   "nl": {
     "Skills": "Skills",
@@ -8961,6 +8995,8 @@
     "Translation only": "Alleen vertaling",
     "Immersive mode pairs Markdown blocks; plain text shows the original followed by the translation. Translation only hides the original. Switching reuses the current translation.": "De tweetalige weergave koppelt Markdown-blokken aan hun vertaling; bij platte tekst volgt de vertaling op het origineel. Alleen vertaling verbergt het origineel. Bij omschakelen wordt de bestaande vertaling hergebruikt.",
     "unknown translation display mode": "onbekende vertaalweergave",
-    "More actions": "Meer acties"
+    "More actions": "Meer acties",
+    "Automatic error reports": "Automatische foutrapporten",
+    "By enabling this, you agree to send uncaught frontend error types, app stack locations and version to feedback.sogud.me. No messages, documents, input or logs. Off by default; turn off at any time.": "Door dit in te schakelen, stem je ermee in typen niet-afgevangen interfacefouten, posities in de appstack en de versie naar feedback.sogud.me te sturen. Geen berichten, documenten, invoer of logboeken. Standaard uit; op elk moment uit te schakelen."
   }
 }

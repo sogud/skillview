@@ -100,6 +100,7 @@ export interface PluginCatalog {
 }
 
 export interface Preferences {
+    "automaticErrors": boolean;
     "recentTrash": TrashReceipt[] | null;
     "sources": Source[] | null;
     "accentColor": string;

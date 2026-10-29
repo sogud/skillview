@@ -44,7 +44,7 @@ func TestAllInterfaceDictionariesAndPlaceholders(t *testing.T) {
 		t.Fatalf("want 18 languages, metadata=%d dictionaries=%d", len(languages), len(messages))
 	}
 	base := messages["en"]
-	if len(base) != 496 {
+	if len(base) != 498 {
 		t.Fatalf("source key count = %d", len(base))
 	}
 	placeholder := regexp.MustCompile(`\{\w+\}`)

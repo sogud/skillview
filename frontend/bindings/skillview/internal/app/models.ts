@@ -5,7 +5,29 @@
 // @ts-ignore: Unused imports
 import * as translation$0 from "../translation/models.js";
 
+/**
+ * No error messages, function names, source text, URLs or filesystem paths.
+ */
+export interface AutomaticErrorFrame {
+    "filename": string;
+    "lineno": number;
+    "colno": number;
+}
+
+export interface AutomaticErrorReport {
+    "event_id": string;
+    "timestamp": string;
+    "release": string;
+    "environment": string;
+    "source": string;
+    "error_type": string;
+    "frames": AutomaticErrorFrame[] | null;
+}
+
 export interface FeedbackConfiguration {
+    "automaticErrors": boolean;
+    "release": string;
+    "environment": string;
     "enabled": boolean;
     "destination": string;
     "dsn": string;
@@ -19,7 +41,7 @@ export interface FeedbackDiagnostics {
 }
 
 /**
- * Only user-requested submissions use this transport. It never reads documents,
+ * This restricted transport never reads documents,
  * translation output, settings, credentials, or log files.
  */
 export interface FeedbackInput {
