@@ -618,7 +618,12 @@ export default function App() {
             }
           }}
           onBlur={(event) => {
-            if (!event.currentTarget.contains(event.relatedTarget))
+            // WebKit can blur to the document before a menu button's click.
+            // Outside pointer presses already close the menu above.
+            if (
+              event.relatedTarget &&
+              !event.currentTarget.contains(event.relatedTarget)
+            )
               setActionsOpen(false)
           }}
         >
