@@ -8,6 +8,30 @@ Read, translate and manage local Agent Skills and plugins on macOS.
 
 Apple Silicon. macOS 13+ declared; the minimum version remains unverified. Ad-hoc signed, not Apple notarized. If macOS blocks the app, see [Apple’s guidance](https://support.apple.com/en-us/102445).
 
+## Install
+
+Apple Silicon, macOS 13+. Run in Terminal:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/sogud/skillview/main/install.sh | sh
+```
+
+The script downloads the newest release, verifies its SHA-256 checksum and installs `SkillView.app` into `/Applications` (or `~/Applications`). Install a specific version with `curl -fsSL … | VERSION=v0.1.10 sh`; uninstall with `curl -fsSL … | sh -s -- --uninstall` (settings are kept). You can [read the script](install.sh) first.
+
+<details>
+<summary>Manual install / “Apple could not verify…”</summary>
+
+SkillView is ad-hoc signed but not notarized by Apple, so a browser download is blocked on first launch.
+
+1. Download `SkillView-<version>-macos-arm64.zip` from [Releases](https://github.com/sogud/skillview/releases), unzip it and move `SkillView.app` to Applications.
+2. Either run:
+   ```sh
+   xattr -dr com.apple.quarantine /Applications/SkillView.app
+   ```
+3. Or open the app once, then go to **System Settings → Privacy & Security**, find *“SkillView” was blocked…* and click **Open Anyway**, then confirm with your password.
+
+</details>
+
 ## Features
 
 - Browse installed Agents’ Skills. Shared copies appear once with their Agent logos.
