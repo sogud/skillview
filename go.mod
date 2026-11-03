@@ -32,3 +32,5 @@ require (
 	github.com/tidwall/sjson v1.2.5 // indirect
 	golang.org/x/text v0.43.0 // indirect
 )
+
+require github.com/sogud/translate-kit v0.1.0

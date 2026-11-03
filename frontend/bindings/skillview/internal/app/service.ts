@@ -79,6 +79,14 @@ export function InstallCLI(): $CancellablePromise<string> {
     return $Call.ByID(1724087297);
 }
 
+export function LocationAction(id: string, sourceID: string, path: string, chainIndex: number, nodeIndex: number, copyPath: boolean): $CancellablePromise<void> {
+    return $Call.ByID(2826870727, id, sourceID, path, chainIndex, nodeIndex, copyPath);
+}
+
+export function Locations(id: string, sourceID: string, path: string): $CancellablePromise<library$0.LocationReport> {
+    return $Call.ByID(2356949482, id, sourceID, path);
+}
+
 export function OpenLink(raw: string): $CancellablePromise<void> {
     return $Call.ByID(1382672430, raw);
 }
@@ -204,6 +212,10 @@ export function SetAutomaticErrors(enabled: boolean): $CancellablePromise<void> 
 
 export function SetLanguage(language: string): $CancellablePromise<void> {
     return $Call.ByID(2405167788, language);
+}
+
+export function SetLibraryLayout(layout: string): $CancellablePromise<void> {
+    return $Call.ByID(3696815899, layout);
 }
 
 export function SetReaderLayout(fontSize: number, explorerWidth: number): $CancellablePromise<void> {

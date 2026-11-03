@@ -46,6 +46,23 @@ func fixtureSkill(t *testing.T, path, name, description string) {
 	}
 }
 
+func TestCLIVersionDoesNotNeedAppOrInitializeData(t *testing.T) {
+	options := cliFixture(t)
+	options.Version = "1.2.3-fixture"
+	for _, command := range []string{"version", "--version"} {
+		if code, out, err := invoke(t, options, command); code != 0 || out != options.Version+"\n" {
+			t.Fatalf("%d %s %s", code, out, err)
+		}
+	}
+	options.Version = ""
+	if code, out, err := invoke(t, options, "version"); code != 0 || out != "dev\n" {
+		t.Fatalf("%d %s %s", code, out, err)
+	}
+	if _, err := os.Stat(options.DataDir); !os.IsNotExist(err) {
+		t.Fatal("version opened user data")
+	}
+}
+
 func TestCLIScanCacheGroupingAndExplicitArchive(t *testing.T) {
 	options := cliFixture(t)
 	root := filepath.Join(options.Home, ".agents", "skills")

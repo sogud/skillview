@@ -2168,3 +2168,79 @@ input[type='password'],
   white-space: normal;
   overflow-wrap: anywhere;
 }
+
+/* Shared library layouts and filesystem metadata, scoped away from plugins. */
+.library-controls { display: flex; align-items: flex-start; gap: 12px; }
+.library-controls .agent-tabs { flex: 1; min-width: 0; }
+.layout-switch { display: flex; gap: 2px; flex-shrink: 0; padding: 2px; border: 1px solid var(--border); border-radius: 7px; }
+.layout-switch button { display: flex; padding: 5px 7px; color: var(--secondary); }
+.layout-switch button[aria-pressed='true'] { background: var(--selected); color: var(--text); }
+.skills-layout.list .skill-row { grid-template-columns: minmax(0, 1fr) 154px; min-height: 64px; border-bottom: 1px solid var(--border); border-radius: 0; gap: 12px; }
+.skills-layout.list .skill-select { grid-template-columns: 18px minmax(0, 1fr) auto; min-height: 60px; gap: 8px; }
+.skills-layout.list .skill-glyph { align-self: start; margin-top: 9px; }
+.skills-layout.list .skill-origins { position: static; align-self: center; padding-inline: 5px; }
+.skills-layout.list .skill-description { padding-inline-end: 0; }
+.skill-locations { display: flex; align-items: center; justify-content: flex-start; gap: 6px; font-size: 11px; color: var(--secondary); min-width: 0; text-align: start; }
+.skill-locations svg { flex-shrink: 0; }
+.skill-locations > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.skill-shelf { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 6px 4px 18px; }
+.skill-shelf-item { min-width: 0; }
+.shelf .skill-row { position: relative; display: flex; flex-direction: column; align-items: stretch; aspect-ratio: 3 / 4; min-height: 216px; gap: 0; padding: 0; overflow: hidden; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); }
+.shelf .skill-row::before { content: ''; position: absolute; inset-block: 0; inset-inline-start: 6px; border-inline-start: 1px solid var(--border); pointer-events: none; }
+.shelf .skill-row:hover { background: var(--inset); }
+.shelf .skill-row.selected { background: var(--selected); }
+.shelf .skill-select { display: block; flex: 1; min-height: 0; padding-block: 16px 12px; padding-inline: 18px 12px; border-radius: 0; }
+.shelf .skill-glyph { display: none; }
+.shelf .skill-info { display: grid; grid-template-rows: 60px 48px; align-items: start; gap: 12px; }
+.shelf .skill-name { align-items: flex-start; gap: 4px; font-size: 14px; font-weight: 500; line-height: 20px; white-space: normal; text-align: start; }
+.shelf .skill-title { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; white-space: normal; overflow-wrap: anywhere; text-align: left; }
+:root[dir='rtl'] .shelf .skill-title { text-align: right; }
+.shelf .skill-name > svg { flex-shrink: 0; margin-top: 3px; }
+.shelf .skill-description { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; align-self: start; margin: 0; padding: 0; white-space: normal; font-size: 11px; line-height: 16px; text-align: start; }
+.skill-card-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 32px; padding-block: 0 8px; padding-inline: 18px 8px; }
+.skill-card-meta { display: flex; align-items: center; gap: 6px; min-width: 0; color: var(--secondary); font-size: 10px; }
+.skill-card-counts { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.shelf .skill-origins { position: static; flex-shrink: 0; gap: 3px; padding: 0; }
+.shelf .logo-stack { gap: 3px; padding: 0; }
+.shelf .platform-logo { width: 16px; height: 16px; margin: 0; border: 0; border-radius: 0; box-shadow: none; background: transparent; }
+.shelf .skill-locations { flex-shrink: 0; justify-content: center; gap: 4px; min-width: 32px; min-height: 26px; padding: 4px 5px; font-variant-numeric: tabular-nums; }
+.locations-dialog { width: min(720px, calc(100% - 32px)); }
+.locations-dialog .modal-body { padding-top: 4px; }
+.location-copy + .location-copy { border-top: 1px solid var(--border); margin-top: 16px; padding-top: 14px; }
+.location-copy-head { display: flex; gap: 10px; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
+.location-copy-head strong { font-size: 13px; overflow-wrap: anywhere; }
+.location-copy-head > span { color: var(--secondary); font-size: 11px; flex-shrink: 0; }
+.location-legend { display: flex; align-items: center; gap: 6px; color: var(--secondary); font-size: 10px; margin: 4px 0 14px; }
+.location-legend > span { width: 22px; border-top: 1px dashed var(--secondary); }
+.location-chain { margin: 6px 0 12px; }
+.location-tree { list-style: none; margin: 0; padding: 0; }
+.location-tree > li { position: relative; min-width: 0; }
+.location-tree > li.linked-target::before { content: ''; position: absolute; inset-inline-start: calc(7px - var(--tree-step)); top: 16px; width: var(--tree-step); border-top: 1px dashed var(--secondary); }
+.location-tree > li.has-link-target::after { content: ''; position: absolute; inset-inline-start: 7px; top: 25px; bottom: -16px; border-inline-start: 1px dashed var(--secondary); pointer-events: none; }
+.location-tree-row { display: grid; grid-template-columns: 16px minmax(0, 1fr) auto 78px; align-items: start; gap: 7px; min-height: 32px; padding-block: 3px; }
+.location-tree-row > svg { margin-top: 6px; color: var(--secondary); }
+.location-tree-row code { min-width: 0; overflow-wrap: anywhere; font-size: 11px; line-height: 1.6; padding-top: 4px; text-align: left; user-select: text; }
+.location-path { min-width: 0; }
+.location-path summary { min-height: 25px; padding-top: 4px; cursor: pointer; color: var(--secondary); }
+.location-path summary code { color: var(--text); }
+.location-path summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 2px; }
+.location-path .location-full-path { display: block; padding: 4px 0 6px; color: var(--secondary); }
+.location-kind { font-size: 10px; color: var(--secondary); padding-top: 6px; white-space: nowrap; }
+.location-node-actions { display: flex; align-items: center; justify-content: end; gap: 1px; }
+.location-node-actions .icon-button, .location-action-space { width: 25px; height: 25px; flex-shrink: 0; }
+.location-node-actions .icon-button { color: var(--secondary); }
+.location-tree-row:hover .icon-button, .location-node-actions .icon-button:focus-visible { color: var(--text); }
+.location-management { padding-top: 6px; }
+.location-management > div { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.location-management button { display: inline-flex; gap: 6px; align-items: center; font-size: 11px; }
+.location-impact { display: block; overflow-wrap: anywhere; font-size: 11px; margin: 4px 0; }
+.location-recovery { padding: 12px; border-radius: 6px; background: var(--inset); }
+.location-recovery button { margin-inline-end: 6px; }
+@media (max-width: 620px) {
+ .skills-layout.list .skill-row { grid-template-columns: minmax(0, 1fr); gap: 0; }
+ .skills-layout.list .skill-locations { justify-self: start; margin-inline-start: 29px; margin-bottom: 7px; }
+ .skill-shelf { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+ .location-tree-row { grid-template-columns: 16px minmax(0, 1fr) 78px; }
+ .location-kind { display: none; }
+}

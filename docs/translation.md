@@ -69,3 +69,10 @@ it does not embed these translation apps or copy their implementations. Youdao
 is an unofficial web protocol integration. Its anonymous cookie and temporary
 response keys stay in memory and are never loaded from browser sessions, saved
 to settings, included in logs, or shared with another translation provider.
+
+
+## Shared engine
+
+Provider requests, Markdown segmentation, limits and cancellation now use the [translate-kit](https://github.com/sogud/translate-kit) Go module. SkillView still owns its settings, Keychain adapter, completed-result cache, document revision checks and bilingual UI; existing stored keys are not migrated. Interface localization remains app-specific.
+
+The shared engine is pinned to `github.com/sogud/translate-kit v0.1.0`. Go downloads the published module; independent checkout and CI builds do not require a sibling source directory or a local replacement. Existing Wails data contracts are retained.

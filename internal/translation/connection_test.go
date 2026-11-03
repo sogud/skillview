@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	kit "github.com/sogud/translate-kit"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -58,8 +59,7 @@ func TestConnectionUsesOnlySampleAndBypassesCache(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			s.googleURL = server.URL
-			s.cloudURL = server.URL
+			s.client = kit.New(kit.Options{GoogleURL: server.URL, GoogleCloudURL: server.URL})
 			if err := s.Update(Settings{Provider: provider, TargetLanguage: "zh-CN", BaseURL: server.URL + "/v1", Model: "fixture"}, "fixture-key", "fixture-key", false, false); err != nil {
 				t.Fatal(err)
 			}
@@ -93,7 +93,7 @@ func TestTranslationCancellationStopsRequestAndDoesNotCache(t *testing.T) {
 	defer server.Close()
 	defer close(release)
 	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL
+	s.client = kit.New(kit.Options{GoogleURL: server.URL})
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	finished := make(chan error, 1)

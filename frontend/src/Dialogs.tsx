@@ -1123,12 +1123,14 @@ export function TrashDialog({
   link,
   onTrash,
   onClose,
+  onFolders,
 }: {
   skillId: string
   path: string
   link?: { skillId: string; sourceId: string; path: string }
   onTrash: (token: string) => Promise<void>
   onClose: () => void
+  onFolders: () => void
 }) {
   const { t, error: message } = useLocale()
   const [preview, setPreview] = useState<api.TrashPreview | null>(null)
@@ -1215,6 +1217,7 @@ export function TrashDialog({
             {error}
           </p>
         )}
+        {error && <div className="location-recovery"><p className="quiet-note">{t('Archive and delete require an editable original folder. Linked entries remain read-only.')}</p><button onClick={onFolders}>{t('Choose editable folder')}</button><button onClick={() => void api.Reveal(skillId, '').catch((failure) => setError(message(failure)))}>{t('Show in Finder')}</button></div>}
         <div className="modal-actions">
           <button onClick={onClose} disabled={busy}>
             {t('Cancel')}

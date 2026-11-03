@@ -38,7 +38,7 @@ func main() {
 	updater.HandleHelperMode()
 	args := os.Args[1:]
 	if len(args) > 0 && !strings.HasPrefix(args[0], "-psn_") || filepath.Base(os.Args[0]) == "skillview" {
-		os.Exit(cli.Run(context.Background(), args, os.Stdout, os.Stderr, cli.Options{}))
+		os.Exit(cli.Run(context.Background(), args, os.Stdout, os.Stderr, cli.Options{Version: updates.Version()}))
 	}
 	dataDir, err := launch.DataDirectory()
 	if err != nil {

@@ -76,6 +76,24 @@ export interface Issue {
     "message": string;
 }
 
+export interface LocationChain {
+    "sourceId": string;
+    "path": string;
+    "nodes": LocationNode[] | null;
+    "status": string;
+    "removable": boolean;
+}
+
+export interface LocationNode {
+    "path": string;
+    "kind": string;
+}
+
+export interface LocationReport {
+    "originalPath": string;
+    "chains": LocationChain[] | null;
+}
+
 export interface Occurrence {
     "sourceId": string;
     "path": string;
@@ -100,6 +118,7 @@ export interface PluginCatalog {
 }
 
 export interface Preferences {
+    "libraryLayout": string;
     "automaticErrors": boolean;
     "recentTrash": TrashReceipt[] | null;
     "sources": Source[] | null;

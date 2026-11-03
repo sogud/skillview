@@ -3,6 +3,7 @@ package translation
 import (
 	"context"
 	"encoding/json"
+	kit "github.com/sogud/translate-kit"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -122,7 +123,7 @@ func TestGoogleAndCodeOnlyDocument(t *testing.T) {
 	}))
 	defer server.Close()
 	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL
+	s.client = kit.New(kit.Options{GoogleURL: server.URL})
 	result, err := s.Translate(context.Background(), "# Hello\n\n- Hello **Hello**\n", "r")
 	if err != nil || !strings.Contains(result.Text, "- 你好 **你好**") {
 		t.Fatalf("whitespace/markup: %q %v", result.Text, err)

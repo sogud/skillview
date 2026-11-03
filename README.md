@@ -41,13 +41,19 @@ SkillView is ad-hoc signed but not notarized by Apple, so a browser download is 
 - [Archive and restore Skills](docs/archive.md). Archived folders stay in `~/.agents/.skillview-archive/`.
 - [18 interface languages](docs/localization.md), including Arabic RTL, plus light/dark themes, accent color and reading size.
 - Signed downloads and [in-app updates](docs/updates.md).
-- A shared [CLI](docs/cli.md): `skillview app`, `list`, `scan` and local Skill management.
+- An independent [CLI](docs/cli.md) for `list`, `scan` and local Skill management. The App is optional.
 
 Folders are read-only until you allow editing in Settings. Changes apply to the selected original copy. Skill scripts and plugin hooks are never executed. Translation sends the selected document to your chosen provider only when requested; API keys stay in macOS Keychain. No cloud sync. [Optional error reports](docs/feedback.md#automatic-error-reports) are off by default and require consent.
 
+## CLI without the app
+
+From a source checkout, run `bash script/install-cli.sh --dry-run`, then `bash script/install-cli.sh`. It verifies a standalone release's SHA-256 and installs to `~/.local/bin`; no App, Go or Node is needed to run it. Existing commands are preserved unless you pass `--force`.
+
+Standalone release assets are not present in v0.1.3. Until a release includes them, build with `bash script/build-cli.sh` and run `bin/skillview`. See [CLI installation and updates](docs/cli.md).
+
 ## Build
 
-Requires an Apple Silicon Mac, Node/npm and Xcode Command Line Tools. The bootstrap installs pinned Go and Wails tools when needed.
+Requires an Apple Silicon Mac, Node/npm and Xcode Command Line Tools. The bootstrap installs pinned Go and Wails tools when needed. The shared translation engine is pinned to the published `translate-kit v0.1.0` module and downloads through Go; no sibling checkout is required. See [translation development requirements](docs/translation.md#shared-engine).
 
 ```sh
 git clone https://github.com/sogud/skillview.git
@@ -55,7 +61,9 @@ cd skillview
 bash script/build_and_run.sh
 ```
 
-Build only: `bash script/build.sh`. Package: `bash script/package.sh`.
+Build App only: `bash script/build.sh`. Package App: `bash script/package.sh`.
+Build standalone CLI: `bash script/build-cli.sh`. Package CLI: `bash script/package-cli.sh`.
+The CLI build uses the shared version in `internal/updates/version.txt` and does not build the frontend or require Wails tools.
 
 Tools use `runtime/`, temporary files use `tmp/`, and bundles use `bin/`. Override with `SKILLVIEW_TMP_DIR`, `SKILLVIEW_APP_BUNDLE` and `SKILLVIEW_RELEASE_DIR`. App settings and caches use `~/Library/Application Support/SkillView`.
 

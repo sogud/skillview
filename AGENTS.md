@@ -1,6 +1,6 @@
 # SkillView
 
-Read `README.md` and `project.json` for the current scope and commands.
+Read `README.md` for the current scope and commands.
 
 - Keep public copy brief: describe user-visible behavior; link to technical details. Commit titles name the change; release notes list only relevant changes and essential limits.
 - Keep the compact list and optional reader panel from the linked design. Use system fonts and the documented light/dark colors.

@@ -74,6 +74,7 @@ type ReaderProps = {
   onTrashResource: (resource: Resource) => void
   onTrashSkill: () => void
   onArchiveSkill: () => void
+  onLocations: () => void
   onRemoveLink: (copy: Skill, occurrence: Occurrence) => void
   skill: Skill
   copies: Skill[]
@@ -527,6 +528,7 @@ export function Reader(props: ReaderProps) {
                   }}
                 />
               )}
+              {!draft && <IconButton icon={Link} label={t('Locations and references')} onClick={props.onLocations} />}
               {!draft && (
                 <IconButton
                   icon={Archive}
@@ -535,11 +537,10 @@ export function Reader(props: ReaderProps) {
                       ? 'Archive Skill'
                       : 'Archive Skill (allow editing for the original folder first)',
                   )}
-                  disabled={!skill.editable}
                   onClick={props.onArchiveSkill}
                 />
               )}
-              {skill.editable && !draft && (
+              {!draft && (
                 <IconButton
                   icon={Trash2}
                   label={t('Move Skill to Trash')}

@@ -3,6 +3,7 @@ package translation
 import (
 	"context"
 	"encoding/json"
+	kit "github.com/sogud/translate-kit"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -26,7 +27,7 @@ func TestGoogleFollowsSameServiceRedirectWithoutLosingText(t *testing.T) {
 	}))
 	defer server.Close()
 	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL + "/start"
+	s.client = kit.New(kit.Options{GoogleURL: server.URL + "/start"})
 	if err := s.TestConnection(context.Background()); err != nil || calls.Load() != 2 {
 		t.Fatal("safe Google redirect failed", err, calls.Load())
 	}
@@ -66,7 +67,7 @@ func TestTranslationRefusesCrossServiceRedirectAndCachesNoFailure(t *testing.T) 
 			}))
 			defer server.Close()
 			s, _ := New(t.TempDir(), NewMemoryKeys())
-			s.googleURL, s.cloudURL = server.URL, server.URL
+			s.client = kit.New(kit.Options{GoogleURL: server.URL, GoogleCloudURL: server.URL})
 			if err := s.Update(Settings{Provider: provider, TargetLanguage: "zh-CN", BaseURL: server.URL + "/v1", Model: "fixture"}, "fixture-key", "fixture-key", false, false); err != nil {
 				t.Fatal(err)
 			}
@@ -89,7 +90,7 @@ func TestRedirectLoopIsBounded(t *testing.T) {
 	}))
 	defer server.Close()
 	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL
+	s.client = kit.New(kit.Options{GoogleURL: server.URL})
 	if err := s.TestConnection(context.Background()); err == nil || calls.Load() != 4 {
 		t.Fatal("redirect loop was not bounded", err, calls.Load())
 	}

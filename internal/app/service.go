@@ -202,8 +202,45 @@ func (s *Service) Save(id, path, revision, text string) (library.SaveResult, err
 func (s *Service) Create(sourceID, name, description string) (string, error) {
 	return s.library.Create(sourceID, name, description)
 }
-func (s *Service) Preferences() library.Preferences { return s.library.Settings() }
-func (s *Service) SetTheme(theme string) error      { return s.library.SetTheme(theme) }
+func (s *Service) Preferences() library.Preferences     { return s.library.Settings() }
+func (s *Service) SetLibraryLayout(layout string) error { return s.library.SetLibraryLayout(layout) }
+func (s *Service) Locations(id, sourceID, path string) (library.LocationReport, error) {
+	return s.library.Locations(id, sourceID, path)
+}
+func (s *Service) LocationAction(id, sourceID, path string, chainIndex, nodeIndex int, copyPath bool) error {
+	report, err := s.library.Locations(id, sourceID, path)
+	if err != nil {
+		return err
+	}
+	if chainIndex < 0 || chainIndex >= len(report.Chains) {
+		return fmt.Errorf("Location changed. Open the panel again.")
+	}
+	nodes := report.Chains[chainIndex].Nodes
+	if nodeIndex < 0 || nodeIndex >= len(nodes) {
+		return fmt.Errorf("Location changed. Open the panel again.")
+	}
+	target := nodes[nodeIndex].Path
+	if copyPath {
+		if !s.native.Application().Clipboard.SetText(target) {
+			return fmt.Errorf("Could not copy path.")
+		}
+		return nil
+	}
+	// Finder can reveal the link itself. For a missing entry, reveal its nearest
+	// existing parent; never launch the file or execute its contents.
+	for {
+		if _, err := os.Lstat(target); err == nil {
+			break
+		}
+		parent := filepath.Dir(target)
+		if parent == target {
+			return fmt.Errorf("Folder is unavailable.")
+		}
+		target = parent
+	}
+	return exec.Command("/usr/bin/open", "-R", target).Run()
+}
+func (s *Service) SetTheme(theme string) error { return s.library.SetTheme(theme) }
 func (s *Service) SetReaderLayout(fontSize, explorerWidth int) error {
 	return s.library.SetReaderLayout(fontSize, explorerWidth)
 }

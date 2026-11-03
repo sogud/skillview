@@ -3,13 +3,12 @@ package translation
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	kit "github.com/sogud/translate-kit"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
 	"strings"
-	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -113,41 +112,6 @@ func TestLibreKeyStaysSeparateAndRollsBack(t *testing.T) {
 	}
 }
 
-func TestGoogle429StopsRepeatedRequestsAndCanCancelPacing(t *testing.T) {
-	var calls atomic.Int32
-	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls.Add(1); w.WriteHeader(429) }))
-	defer server.Close()
-	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL
-	for i := 0; i < 2; i++ {
-		result, err := s.Translate(context.Background(), "# Hello\n\nText.", "r")
-		if err == nil || result.Text != "" || len(s.cache) != 0 {
-			t.Fatal("Rate limit accepted", result, err)
-		}
-	}
-	if calls.Load() != 1 {
-		t.Fatal("Cooldown sent repeated requests", calls.Load())
-	}
-	s.webMu.Lock()
-	s.webBlocked = nil
-	s.webNext = time.Now().Add(time.Hour)
-	s.webMu.Unlock()
-	ctx, cancel := context.WithCancel(context.Background())
-	cancel()
-	_, err := s.googleRequest(ctx, server.URL)
-	if !errors.Is(err, context.Canceled) || calls.Load() != 1 {
-		t.Fatal("Canceled pacing sent request", err)
-	}
-	s.webMu.Lock()
-	s.webNext = time.Time{}
-	s.webBlocked = map[string]time.Time{"google": time.Now().Add(time.Minute)}
-	s.webMu.Unlock()
-	_, _ = s.webRequest(context.Background(), "youdao", http.MethodGet, server.URL, "", nil, nil)
-	if calls.Load() != 2 {
-		t.Fatal("Google cooldown blocked another provider")
-	}
-}
-
 func TestGoogleCombinesSpansAndSpacesBatches(t *testing.T) {
 	var previous time.Time
 	var calls int
@@ -163,16 +127,9 @@ func TestGoogleCombinesSpansAndSpacesBatches(t *testing.T) {
 	}))
 	defer server.Close()
 	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL
+	s.client = kit.New(kit.Options{GoogleURL: server.URL})
 	result, err := s.Translate(context.Background(), strings.Repeat("Paragraph.\n\n", 30), "r")
 	if err != nil || result.Sections != 30 || calls != 2 {
 		t.Fatal("Spans were not combined", calls, result, err)
-	}
-}
-
-func TestLostBatchBoundariesAreRejected(t *testing.T) {
-	output, err := translateWebBatches([]string{"Heading", "Text"}, 3000, func(string) (string, error) { return "merged translation", nil }, func(int) {})
-	if err == nil || output != nil {
-		t.Fatal("Lost line boundaries accepted", output, err)
 	}
 }

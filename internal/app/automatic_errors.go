@@ -50,7 +50,8 @@ func automaticErrorDestination() (string, string, error) {
 	}
 	u, _ := url.Parse(destination)
 	loopback := u.Hostname() == "127.0.0.1" || u.Hostname() == "::1" || u.Hostname() == "localhost"
-	if destination != "https://feedback.sogud.me" && !(automaticErrorEnvironment() == "synthetic" && loopback) {
+	allowed := destination == "https://feedback-api.sogud.me" || destination == "https://feedback.sogud.me"
+	if !allowed && !(automaticErrorEnvironment() == "synthetic" && loopback) {
 		return "", "", fmt.Errorf("Feedback configuration is invalid.")
 	}
 	return destination, key, nil

@@ -201,6 +201,26 @@ func (l *Library) Settings() Preferences {
 	_ = json.Unmarshal(data, &p)
 	return p
 }
+func (l *Library) SetLibraryLayout(layout string) error {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	release, err := l.beginWrite()
+	if err != nil {
+		return err
+	}
+	defer release()
+	if layout != "list" && layout != "shelf" {
+		return fmt.Errorf("unknown library layout")
+	}
+	previous := l.prefs.LibraryLayout
+	l.prefs.LibraryLayout = layout
+	if err := l.persist(); err != nil {
+		l.prefs.LibraryLayout = previous
+		return err
+	}
+	return nil
+}
+
 func (l *Library) SetTheme(theme string) error {
 	l.mu.Lock()
 	defer l.mu.Unlock()

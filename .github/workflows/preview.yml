@@ -49,16 +49,21 @@ jobs:
           go test -race ./internal/library ./internal/translation ./internal/cache ./internal/watch
           go test -race ./internal/locale ./internal/updates ./internal/app ./internal/network ./internal/cli ./internal/launch
           go vet ./internal/library ./internal/translation ./internal/app ./internal/updates ./internal/network ./internal/cli ./internal/launch
+          go test ./cmd/skillview
+          python3 script/test_install_cli.py
           node --test frontend/src/skill-groups.test.mjs frontend/src/file-tree.test.mjs frontend/src/locales.test.mjs frontend/src/feedback-sentry.test.mjs
 
       - name: Build and package local preview
-        run: bash script/package.sh
+        run: |
+          bash script/package.sh
+          bash script/package-cli.sh
 
       - name: Check known runtime dependency vulnerabilities
         run: |
           source script/toolchain.sh
           go install golang.org/x/vuln/cmd/govulncheck@v1.8.0
           govulncheck -mode=binary bin/SkillView.app/Contents/MacOS/SkillView
+          govulncheck -mode=binary bin/skillview
           npm --prefix frontend audit --omit=dev
 
       - name: Verify package checksums
@@ -85,6 +90,8 @@ jobs:
           path: |
             bin/releases/*.zip
             bin/releases/*.dmg
+            bin/releases/*.tar.gz
+            bin/releases/install-cli.sh
             bin/releases/*.sha256
             bin/releases/BUILD_INFO.txt
           if-no-files-found: error

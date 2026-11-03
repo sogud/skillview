@@ -36,10 +36,7 @@ func Bundle(executable string) (string, error) {
 }
 
 func OpenApp(executable string) error {
-	root, err := Bundle(executable)
-	if err != nil {
-		return err
-	}
+	root, bundleErr := Bundle(executable)
 	dataDir, err := DataDirectory()
 	if err != nil {
 		return err
@@ -51,24 +48,35 @@ func OpenApp(executable string) error {
 			args = append(args, "--env", name+"="+os.Getenv(name))
 		}
 	}
-	args = append(args, root)
-	return exec.Command("/usr/bin/open", args...).Run()
+	if bundleErr == nil {
+		args = append(args, root)
+	} else {
+		args = append(args, "-b", BundleID)
+	}
+	if err := exec.Command("/usr/bin/open", args...).Run(); err != nil {
+		return fmt.Errorf("SkillView app could not be opened. Install the macOS app to use 'skillview app'; other CLI commands do not need it: %w", err)
+	}
+	return nil
 }
 
 func InstallCommand(executable, home string) (string, error) {
-	if _, err := Bundle(executable); err != nil {
-		return "", err
-	}
 	executable, err := filepath.EvalSymlinks(executable)
 	if err != nil {
 		return "", err
+	}
+	info, err := os.Stat(executable)
+	if err != nil {
+		return "", err
+	}
+	if !info.Mode().IsRegular() || info.Mode().Perm()&0111 == 0 {
+		return "", fmt.Errorf("CLI executable is not an executable file: %s", executable)
 	}
 	directory := filepath.Join(home, ".local", "bin")
 	if err = os.MkdirAll(directory, 0755); err != nil {
 		return "", err
 	}
 	target := filepath.Join(directory, "skillview")
-	if existing, err := os.Readlink(target); err == nil && existing == executable {
+	if existing, err := os.Stat(target); err == nil && os.SameFile(info, existing) {
 		return target, nil
 	}
 	if err = os.Symlink(executable, target); err != nil {

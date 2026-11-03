@@ -1,13 +1,14 @@
 :root {
-  color-scheme: light;
-  --ink: #20252e;
-  --muted: #596270;
+  color-scheme: light dark;
+  --ink: #202020;
+  --muted: #595959;
   --blue: #356ed5;
-  --wash: #f5f7fb;
-  --line: #e6eaf1;
+  --wash: #f5f5f5;
+  --line: #e6e6e6;
+  --canvas: #fff;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--ink);
-  background: #fff;
+  background: var(--canvas);
 }
 * {
   box-sizing: border-box;
@@ -36,7 +37,7 @@ button:focus-visible {
   position: absolute;
   left: 16px;
   top: -100px;
-  background: #fff;
+  background: var(--canvas);
   padding: 12px;
   z-index: 2;
 }
@@ -151,7 +152,7 @@ h1 {
   box-shadow:
     0 16px 55px #24396114,
     0 0 0 1px var(--line);
-  background: #fff;
+  background: var(--canvas);
 }
 .product > img {
   display: block;
@@ -311,4 +312,22 @@ footer > div {
   .download {
     transition: none;
   }
+}
+
+/* Keep the product layout; adapt its neutral surfaces to the system theme. */
+h1, h2 { text-wrap: balance; }
+p { text-wrap: pretty; }
+nav a, nav button { min-height: 44px; display: inline-flex; align-items: center; }
+.download:active { transform: translateY(1px); }
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ink: #f5f5f5;
+    --muted: #b5b5b5;
+    --blue: #86b2ff;
+    --wash: #272727;
+    --line: #414141;
+    --canvas: #181818;
+  }
+  .download { background: #86b2ff; color: #181818; }
+  .download:hover { background: #aac9ff; }
 }

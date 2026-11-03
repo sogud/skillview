@@ -13,6 +13,8 @@ import {
   ArchiveRestore,
   MessageSquare,
   Ellipsis,
+  List,
+  LayoutGrid,
 } from 'lucide-react'
 import * as api from './api'
 import type {
@@ -24,6 +26,7 @@ import type {
   ScanProgress,
 } from './api'
 import { Plugins, type PluginsHandle } from './Plugins'
+import { LocationsPanel, type LocationSelection } from './LocationsPanel'
 import { ArchiveSkillDialog, ArchivedSkillsDialog } from './ArchiveDialogs'
 import { UpdateDialog } from './UpdateDialog'
 import { FeedbackDialog } from './FeedbackDialog'
@@ -56,6 +59,8 @@ export default function App() {
   const actionsTrigger = useRef<HTMLButtonElement>(null)
   const [verified, setVerified] = useState(false)
   const [catalog, setCatalog] = useState<Catalog | null>(null)
+  const [libraryLayout, setLibraryLayout] = useState<'list' | 'shelf'>('list')
+  const [locations, setLocations] = useState<LocationSelection | null>(null)
   const [query, setQuery] = useState('')
   const [agentFilter, setAgentFilter] = useState('')
   const [translationVersion, setTranslationVersion] = useState(0)
@@ -93,10 +98,11 @@ export default function App() {
   } | null>(null)
   const [trashing, setTrashing] = useState<{
     path: string
+    skillId?: string
     link?: { skillId: string; sourceId: string; path: string }
   } | null>(null)
   const [lastTrash, setLastTrash] = useState<string | null>(null)
-  const [archiving, setArchiving] = useState(false)
+  const [archiving, setArchiving] = useState<Skill | null>(null)
   const [archivesOpen, setArchivesOpen] = useState(false)
   const [creating, setCreating] = useState(false)
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null)
@@ -205,6 +211,7 @@ export default function App() {
       .then((preferences) => {
         if (mounted.current) {
           setTheme(preferences.theme || 'system')
+          setLibraryLayout(preferences.libraryLayout === 'shelf' ? 'shelf' : 'list')
           setAccentColor(preferences.accentColor || '')
           setAutomaticErrors(Boolean(preferences.automaticErrors))
           setLanguage(preferences.language || 'system')
@@ -524,7 +531,8 @@ export default function App() {
           !resourceAction &&
           !trashing &&
           !archiving &&
-          !archivesOpen
+          !archivesOpen &&
+          !locations
         )
           view === 'plugins' ? plugins.current?.command('back') : closeReader()
       }}
@@ -751,12 +759,30 @@ export default function App() {
               hidden={!!selected}
               aria-label={t('Skills library')}
             >
-              <AgentTabs
-                agents={catalog?.agents ?? []}
-                groups={groups}
-                value={agentFilter}
-                onChange={changeAgent}
-              />
+              <div className="library-controls">
+                <AgentTabs
+                  agents={catalog?.agents ?? []}
+                  groups={groups}
+                  value={agentFilter}
+                  onChange={changeAgent}
+                />
+                <div className="layout-switch" role="group" aria-label={t('Skills library')}>
+                  {(['list', 'shelf'] as const).map((layout) => (
+                    <button
+                      key={layout}
+                      aria-label={t(layout === 'list' ? 'List view' : 'Bookshelf view')}
+                      title={t(layout === 'list' ? 'List view' : 'Bookshelf view')}
+                      aria-pressed={libraryLayout === layout}
+                      onClick={() => {
+                        void api.SetLibraryLayout(layout)
+                          .then(() => setLibraryLayout(layout)).catch(fail)
+                      }}
+                    >
+                      {layout === 'list' ? <List size={16} /> : <LayoutGrid size={16} />}
+                    </button>
+                  ))}
+                </div>
+              </div>
               {scanning && (
                 <div className="scan-status" role="status" aria-live="polite">
                   <div>
@@ -796,6 +822,8 @@ export default function App() {
               )}
               <SkillsList
                 groups={skills}
+                layout={libraryLayout}
+                onLocations={(group) => setLocations({ copies: group.members })}
                 agents={catalog?.agents ?? []}
                 selectedId={selected?.id}
                 verified={verified}
@@ -851,7 +879,7 @@ export default function App() {
                     : t('{count} Skills', { count: skills.length })}
                 </span>
                 {!!catalog?.issues?.length && (
-                  <button onClick={() => setSettings('folders')}>
+                  <button onClick={() => setLocations({ copies: [], issues: (catalog?.issues ?? []).filter((issue) => !!issue.path) })}>
                     {t('Some paths need attention')}
                   </button>
                 )}
@@ -900,7 +928,8 @@ export default function App() {
                   request(() => setTrashing({ path: resource.path }))
                 }
                 onTrashSkill={() => request(() => setTrashing({ path: '' }))}
-                onArchiveSkill={() => request(() => setArchiving(true))}
+                onArchiveSkill={() => request(() => setArchiving(selected))}
+                onLocations={() => setLocations({ copies: selectedGroup?.members ?? [selected] })}
                 onRemoveLink={(copy, occurrence) =>
                   request(() =>
                     setTrashing({
@@ -1091,13 +1120,19 @@ export default function App() {
           }}
         />
       )}
-      {archiving && selected && (
+      {locations && <LocationsPanel selection={locations} onClose={() => setLocations(null)}
+        onArchive={(skill) => { setLocations(null); request(() => setArchiving(skill)) }}
+        onTrash={(skill) => { setLocations(null); request(() => setTrashing({ path: '', skillId: skill.id })) }}
+        onRemoveLink={(skill, entry) => { setLocations(null); request(() => setTrashing({ path: '', skillId: skill.id, link: { skillId: skill.id, sourceId: entry.sourceId, path: entry.path } })) }}
+        onFolders={() => { setLocations(null); setSettings('folders') }} />}
+      {archiving && (
         <ArchiveSkillDialog
-          skillId={selected.id}
-          onClose={() => setArchiving(false)}
+          skillId={archiving.id}
+          onFolders={() => { setArchiving(null); setSettings('folders') }}
+          onClose={() => setArchiving(null)}
           onArchive={async (token) => {
-            const receipt = await api.ArchiveSkill(selected.id, token)
-            setArchiving(false)
+            const receipt = await api.ArchiveSkill(archiving.id, token)
+            setArchiving(null)
             readSequence.current++
             setSelected(null)
             setDocument(null)
@@ -1118,9 +1153,10 @@ export default function App() {
           }}
         />
       )}
-      {trashing && selected && (
+      {trashing && (selected || trashing.skillId) && (
         <TrashDialog
-          skillId={selected.id}
+          skillId={trashing.skillId || selected!.id}
+          onFolders={() => { setTrashing(null); setSettings('folders') }}
           path={trashing.path}
           link={trashing.link}
           onClose={() => setTrashing(null)}
@@ -1132,7 +1168,7 @@ export default function App() {
                   trashing.link.path,
                   token,
                 )
-              : await api.Trash(selected.id, trashing.path, token)
+              : await api.Trash(trashing.skillId || selected!.id, trashing.path, token)
             setLastTrash(receipt.id)
             setTrashing(null)
             if (!trashing.path) {
@@ -1140,7 +1176,7 @@ export default function App() {
               setSelected(null)
               setDocument(null)
               setDraft(null)
-            } else await load(selected)
+            } else if (selected) await load(selected)
             await refresh()
             notify(
               receipt.warning ? message(receipt.warning) : t('Moved to Trash'),

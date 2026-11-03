@@ -13,7 +13,6 @@ import (
 
 	"skillview/internal/launch"
 	"skillview/internal/library"
-	"skillview/internal/updates"
 )
 
 const help = `SkillView
@@ -52,6 +51,7 @@ type Options struct {
 	Home       string
 	DataDir    string
 	Executable string
+	Version    string
 }
 
 type arguments struct {
@@ -155,7 +155,11 @@ func Run(ctx context.Context, args []string, out, errors io.Writer, options Opti
 		return 0
 	}
 	if a.command == "version" || a.command == "--version" {
-		fmt.Fprintln(out, updates.Version())
+		version := options.Version
+		if version == "" {
+			version = "dev"
+		}
+		fmt.Fprintln(out, version)
 		return 0
 	}
 	if options.Home == "" {

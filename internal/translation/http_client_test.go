@@ -3,6 +3,7 @@ package translation
 import (
 	"context"
 	"errors"
+	kit "github.com/sogud/translate-kit"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -40,7 +41,7 @@ func TestRateLimitHintRetriesAllProviders(t *testing.T) {
 			}))
 			defer server.Close()
 			s, _ := New(t.TempDir(), NewMemoryKeys())
-			s.googleURL, s.cloudURL = server.URL, server.URL
+			s.client = kit.New(kit.Options{GoogleURL: server.URL, GoogleCloudURL: server.URL})
 			if err := s.Update(Settings{Provider: provider, TargetLanguage: "zh-CN", BaseURL: server.URL + "/v1", Model: "fixture"}, "fixture", "fixture", false, false); err != nil {
 				t.Fatal(err)
 			}
@@ -83,7 +84,7 @@ func TestRateLimitRetriesAreBoundedAndRespectHints(t *testing.T) {
 			}))
 			defer server.Close()
 			s, _ := New(t.TempDir(), NewMemoryKeys())
-			s.googleURL = server.URL
+			s.client = kit.New(kit.Options{GoogleURL: server.URL})
 			_, err := s.Translate(context.Background(), "Hello.", "r")
 			if err == nil || strings.Contains(err.Error(), "provider-private") {
 				t.Fatal("missing or leaking rate-limit error", err)
@@ -105,7 +106,7 @@ func TestCancellationInterruptsRateLimitWait(t *testing.T) {
 	}))
 	defer server.Close()
 	s, _ := New(t.TempDir(), NewMemoryKeys())
-	s.googleURL = server.URL
+	s.client = kit.New(kit.Options{GoogleURL: server.URL})
 	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
 	defer cancel()
 	started := time.Now()

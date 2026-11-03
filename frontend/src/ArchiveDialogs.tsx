@@ -9,10 +9,12 @@ export function ArchiveSkillDialog({
   skillId,
   onClose,
   onArchive,
+  onFolders,
 }: {
   skillId: string
   onClose: () => void
   onArchive: (token: string) => Promise<void>
+  onFolders: () => void
 }) {
   const { t, error: message } = useLocale()
   const [preview, setPreview] = useState<ArchivePreview | null>(null)
@@ -83,6 +85,7 @@ export function ArchiveSkillDialog({
             {failure}
           </p>
         )}
+        {failure && <div className="location-recovery"><p className="quiet-note">{t('Archive and delete require an editable original folder. Linked entries remain read-only.')}</p><button onClick={onFolders}>{t('Choose editable folder')}</button><button onClick={() => void api.Reveal(skillId, '').catch((error) => setFailure(message(error)))}>{t('Show in Finder')}</button></div>}
         <div className="modal-actions">
           <button disabled={busy} onClick={onClose}>
             {t('Cancel')}
