@@ -10,9 +10,9 @@ Use `skillview`; the standalone CLI works without the App. Both share Agent path
 
 ## Install the CLI
 
-Prefer the standalone macOS Apple Silicon CLI. Follow [CLI installation](../../docs/cli.md); the installer requires no App, Go or Node.
+Prefer the standalone macOS Apple Silicon CLI. Follow [CLI installation](https://github.com/sogud/skillview/blob/53732d2231/docs/cli.md); the installer requires no App, Go or Node.
 
-1. Check that the selected [GitHub Release](https://github.com/sogud/skillview/releases/latest) includes `install-cli.sh`, `skillview-cli-<version>-macos-arm64.tar.gz`, and its `.sha256` file. App-only releases such as v0.1.3 cannot use this installer. Until CLI assets are published, the source checkout can build with `bash script/build-cli.sh`, which requires Go and Xcode Command Line Tools but no App or frontend build.
+1. Check that the selected [GitHub Release](https://github.com/sogud/skillview/releases/latest) includes `install-cli.sh`, `skillview-cli-<version>-macos-arm64.tar.gz`, and its `.sha256` file. App-only releases such as v0.1.3 cannot use this installer. Until CLI assets are published, a source checkout containing `script/build-cli.sh` can build with `bash script/build-cli.sh`, which requires Go and Xcode Command Line Tools but no App or frontend build.
 2. Download and inspect that release's `install-cli.sh`. Run `bash install-cli.sh --dry-run`, then `bash install-cli.sh` after installation is authorized. The script verifies SHA-256 and installs a regular executable at `~/.local/bin/skillview`. Use `--version <tag>` to pin a release.
 3. Ensure `~/.local/bin` is on PATH. For the current terminal, run `export PATH="$HOME/.local/bin:$PATH"`; add it to the shell's startup file only if needed and authorized.
 4. Run `skillview version` and `skillview help` to verify command discovery and CLI startup.
